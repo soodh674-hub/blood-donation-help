@@ -111,6 +111,11 @@ if IS_RENDER:
             conn_health_checks=True,
         )
     }
+    # Override engine to use newer psycopg
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+    DATABASES['default']['OPTIONS'] = {
+        'options': '-c default_transaction_isolation=serializable'
+    }
 else:
     # Local development - use SQLite
     DATABASES = {
