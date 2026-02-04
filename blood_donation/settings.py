@@ -11,8 +11,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import logging
 from pathlib import Path
 from decouple import config
+
+# Set up logging for settings
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,6 +39,11 @@ if IS_RENDER:
     ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+
+logger.info(f"IS_RENDER: {IS_RENDER}")
+logger.info(f"SECRET_KEY length: {len(SECRET_KEY) if SECRET_KEY else 0}")
+logger.info(f"DEBUG: {DEBUG}")
+logger.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
 
 # Application definition
 
@@ -104,19 +114,25 @@ WSGI_APPLICATION = 'blood_donation.wsgi.application'
 if IS_RENDER:
     # Running on Render - use PostgreSQL
     import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=config('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
-    # Override engine to use newer psycopg
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
-    # Remove the problematic options that might cause connection issues
-    # DATABASES['default']['OPTIONS'] = {
-    #     'options': '-c default_transaction_isolation=serializable'
-    # }
+    DATABASE_URL = config('DATABASE_URL', default='')
+    if DATABASE_URL:
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=DATABASE_URL,
+                conn_max_age=600,
+                conn_health_checks=True,
+            )
+        }
+        # Ensure the engine is set correctly
+        DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+    else:
+        # Fallback to SQLite if no DATABASE_URL
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     # Local development - use SQLite
     DATABASES = {
@@ -129,11 +145,12 @@ else:
 # Cache configuration
 if IS_RENDER:
     # Production cache settings (Redis)
-    if 'REDIS_URL' in os.environ:
+    REDIS_URL = config('REDIS_URL', default='')
+    if REDIS_URL:
         CACHES = {
             'default': {
                 'BACKEND': 'django_redis.cache.RedisCache',
-                'LOCATION': config('REDIS_URL'),
+                'LOCATION': REDIS_URL,
                 'OPTIONS': {
                     'CLIENT_CLASS': 'django_redis.client.DefaultClient',
                 }
@@ -159,8 +176,9 @@ else:
 # Celery Configuration
 if IS_RENDER:
     # Production Celery settings
-    CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
-    CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://localhost:6379/0')
+    REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+    CELERY_BROKER_URL = REDIS_URL
+    CELERY_RESULT_BACKEND = REDIS_URL
 else:
     # Development Celery settings
     CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='memory://')
@@ -318,20 +336,39 @@ else:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs/django.log',
+            'formatter': 'verbose',
         },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter': 'simple',
         },
     },
     'root': {
         'handlers': ['file', 'console'],
         'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
 

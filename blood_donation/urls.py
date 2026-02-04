@@ -13,10 +13,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from accounts import health_check
 
 urlpatterns = [
     # Public home page
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    
+    # Health check endpoint (root level for easy monitoring)
+    path('health/', health_check.health_check, name='health-check'),
     
     # Admin panel
     path('admin/', admin.site.urls),
