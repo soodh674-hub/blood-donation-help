@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import health_check
 
 urlpatterns = [
     # Frontend pages (no API prefix)
@@ -9,7 +10,8 @@ urlpatterns = [
     path('search/', views.donor_search_page, name='donor-search-page'),
     path('profile/', views.profile_page, name='profile-page'),
     path('dashboard/', views.dashboard_page, name='dashboard-page'),
-
+    path('health/', health_check.health_check, name='health-check'),
+    
     
     # API endpoints (with api/ prefix in main urls.py)
     path('', views.RegisterView.as_view(), name='register-api'),

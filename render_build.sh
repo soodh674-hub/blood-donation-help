@@ -9,6 +9,10 @@ echo "Starting build process..."
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
+# Check database connection
+echo "Checking database connection..."
+python manage.py check --deploy
+
 # Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --noinput

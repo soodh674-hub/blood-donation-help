@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
 from .serializers import (
     UserSerializer, UserUpdateSerializer, UserPublicSerializer,
     CustomTokenObtainPairSerializer, EmailVerificationSerializer
@@ -133,6 +134,16 @@ def login_view(request):
             messages.error(request, 'Please enter both username/email and password.')
             return render(request, 'accounts/login.html')
         
+        # Test database connection first
+        try:
+            connection.ensure_connection()
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Database connection error: {str(e)}', exc_info=True)
+            messages.error(request, 'Service temporarily unavailable. Please try again later.')
+            return render(request, 'accounts/login.html')
+        
         # Handle both username and email login
         # Try authenticating with username first
         user = authenticate(request, username=username, password=password)
@@ -145,6 +156,13 @@ def login_view(request):
                 user = authenticate(request, username=user_obj.username, password=password)
             except User.DoesNotExist:
                 user = None
+            except Exception as e:
+                # Log the error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Login error: {str(e)}', exc_info=True)
+                messages.error(request, 'An error occurred during login. Please try again.')
+                return render(request, 'accounts/login.html')
         
         if user is not None:
             if user.is_active:

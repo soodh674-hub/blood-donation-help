@@ -18,5 +18,5 @@ django-ratelimit==4.1.0
 django-auditlog==2.3.0
 django-captcha==1.0.0
 dj-database-url==2.1.0
-psycopg[binary]>=3.0.18
+psycopg2-binary>=2.9.7
 setuptools<81

@@ -113,9 +113,10 @@ if IS_RENDER:
     }
     # Override engine to use newer psycopg
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
-    DATABASES['default']['OPTIONS'] = {
-        'options': '-c default_transaction_isolation=serializable'
-    }
+    # Remove the problematic options that might cause connection issues
+    # DATABASES['default']['OPTIONS'] = {
+    #     'options': '-c default_transaction_isolation=serializable'
+    # }
 else:
     # Local development - use SQLite
     DATABASES = {
