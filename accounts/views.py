@@ -10,6 +10,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
+from django.http import JsonResponse
 from .serializers import (
     UserSerializer, UserUpdateSerializer, UserPublicSerializer,
     CustomTokenObtainPairSerializer, EmailVerificationSerializer
@@ -134,16 +135,6 @@ def login_view(request):
             messages.error(request, 'Please enter both username/email and password.')
             return render(request, 'accounts/login.html')
         
-        # Test database connection first
-        try:
-            connection.ensure_connection()
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f'Database connection error: {str(e)}', exc_info=True)
-            messages.error(request, 'Service temporarily unavailable. Please try again later.')
-            return render(request, 'accounts/login.html')
-        
         # Handle both username and email login
         # Try authenticating with username first
         user = authenticate(request, username=username, password=password)
@@ -158,8 +149,6 @@ def login_view(request):
                 user = None
             except Exception as e:
                 # Log the error for debugging
-                import logging
-                logger = logging.getLogger(__name__)
                 logger.error(f'Login error: {str(e)}', exc_info=True)
                 messages.error(request, 'An error occurred during login. Please try again.')
                 return render(request, 'accounts/login.html')
@@ -228,15 +217,13 @@ def update_profile(request):
     
     try:
         user.save()
-        serializer = UserPublicSerializer(user)
+        serializer = UserUpdateSerializer(user)  # Changed to use UserUpdateSerializer
         return Response({
             'message': 'Profile updated successfully',
             'user': serializer.data
         }, status=status.HTTP_200_OK)
     except Exception as e:
         # Log the actual error for debugging
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f'Profile update error: {str(e)}', exc_info=True)
         
         # Return user-friendly error message
@@ -254,7 +241,9 @@ def profile_page(request):
         messages.error(request, 'Please login to view your profile.')
         return redirect('/accounts/login/')
     
-    return render(request, 'accounts/profile.html', {'user': request.user})
+    # Ensure user has all required attributes
+    user = request.user
+    return render(request, 'accounts/profile.html', {'user': user})
 
 
 def dashboard_page(request):
@@ -263,12 +252,24 @@ def dashboard_page(request):
         messages.error(request, 'Please login to access your dashboard.')
         return redirect('/accounts/login/')
     
-    # Get user statistics
-    stats = {
-        'is_eligible': request.user.is_eligible_donor,
-        'days_since_donation': request.user.days_since_last_donation,
-        'can_donate': request.user.is_eligible_donor and request.user.is_available
-    }
+    # Get user statistics with error handling
+    try:
+        is_eligible = request.user.is_eligible_donor if hasattr(request.user, 'is_eligible_donor') else False
+        days_since_donation = request.user.days_since_last_donation if hasattr(request.user, 'days_since_last_donation') else None
+        can_donate = is_eligible and getattr(request.user, 'is_available', False)
+        
+        stats = {
+            'is_eligible': is_eligible,
+            'days_since_donation': days_since_donation,
+            'can_donate': can_donate
+        }
+    except AttributeError as e:
+        # Handle cases where user attributes might not be available
+        stats = {
+            'is_eligible': False,
+            'days_since_donation': None,
+            'can_donate': False
+        }
     
     return render(request, 'accounts/dashboard.html', {'user': request.user, 'stats': stats})
 
