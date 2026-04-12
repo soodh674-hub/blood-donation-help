@@ -13,7 +13,16 @@ from django.shortcuts import render
 from accounts import views as accounts_views
 from blood_requests_app import views as blood_request_views
 from accounts import health_check
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+# Try to import JWT views - make optional to prevent deployment crashes
+try:
+    from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+    JWT_AVAILABLE = True
+except ImportError:
+    JWT_AVAILABLE = False
+    TokenObtainPairView = None
+    TokenRefreshView = None
+    TokenVerifyView = None
 
 def home_view(request):
     """Modern BloodLife dashboard homepage with real-time features"""
@@ -146,10 +155,12 @@ urlpatterns = [
     path('requests/', include('blood_requests_app.urls')),  # Handles blood requests
     path('notifications/', include('notifications.urls', namespace='notifications')),
     
-    # Authentication API
-    path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # Authentication API (JWT - if available)
+    *([
+        path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+        path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+        path('api/auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    ] if JWT_AVAILABLE else []),
     
     # Core Apps APIs
     path('api/accounts/', include('accounts.urls')),
