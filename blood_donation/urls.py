@@ -13,6 +13,7 @@ from django.shortcuts import render
 from accounts import views as accounts_views
 from blood_requests_app import views as blood_request_views
 from accounts import health_check
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 def home_view(request):
     """Modern BloodLife dashboard homepage with real-time features"""
