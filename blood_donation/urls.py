@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from accounts import views as accounts_views
 from blood_requests_app import views as blood_request_views
+from accounts import health_check
 
 def home_view(request):
     """Modern BloodLife dashboard homepage with real-time features"""
