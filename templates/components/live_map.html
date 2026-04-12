@@ -1,0 +1,408 @@
+<!-- 
+    Live Map Tracking Component
+    Usage: {% include 'components/live_map.html' with request_id=request.id target_lat=28.6139 target_lng=77.2090 %}
+    Provides real-time location tracking using Leaflet.js with WebSocket updates
+-->
+<div id="tracking-map-container" 
+     class="bg-gray-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl" 
+     x-data="liveMapTracker({{ request_id|default:'null' }}, {{ target_lat|default:'null' }}, {{ target_lng|default:'null' }})" 
+     x-init="initMap()">
+    
+    <!-- Map Header -->
+    <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+            </div>
+            <div>
+                <h3 class="text-white font-semibold">Live Tracking</h3>
+                <p class="text-red-100 text-sm" x-text="statusText"></p>
+            </div>
+        </div>
+        <button @click="toggleTracking()" 
+                class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-all">
+            <span x-text="isTracking ? 'Stop Tracking' : 'Start Tracking'"></span>
+        </button>
+    </div>
+    
+    <!-- Map Container -->
+    <div id="map" class="h-96 w-full relative bg-gray-800">
+        <!-- Loading State -->
+        <div x-show="!mapLoaded" class="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+                <p class="text-gray-400">Loading map...</p>
+            </div>
+        </div>
+        
+        <!-- Error State -->
+        <div x-show="mapError" class="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+            <div class="text-center p-4">
+                <svg class="w-12 h-12 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-red-400 mb-2">Failed to load map</p>
+                <button @click="initMap()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">Retry</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Location Info Panel -->
+    <div class="p-4 bg-gray-800 border-t border-white/10">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Your Location</p>
+                <p class="text-white font-mono text-sm" x-text="currentLocation || 'Not tracking'"></p>
+            </div>
+            <div>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Distance to Target</p>
+                <p class="text-white font-semibold" x-text="distanceToTarget || '--'"></p>
+            </div>
+        </div>
+        
+        <!-- ETA Progress Bar -->
+        <div>
+            <div class="flex justify-between text-xs text-gray-400 mb-2">
+                <span>Journey Progress</span>
+                <span x-text="progressPercentage.toFixed(0) + '%'"></span>
+            </div>
+            <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500 ease-out"
+                     :style="'width: ' + progressPercentage + '%'"></div>
+            </div>
+        </div>
+        
+        <!-- Additional Stats -->
+        <div class="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/10">
+            <div class="text-center">
+                <p class="text-gray-400 text-xs mb-1">Updates</p>
+                <p class="text-white font-semibold" x-text="updateCount"></p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 text-xs mb-1">Last Update</p>
+                <p class="text-white text-xs" x-text="lastUpdate || 'Never'"></p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400 text-xs mb-1">Accuracy</p>
+                <p class="text-green-400 text-xs">High</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Leaflet CSS & JS from CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+
+<script>
+function liveMapTracker(requestId, targetLat, targetLng) {
+    return {
+        map: null,
+        userMarker: null,
+        targetMarker: null,
+        routeLine: null,
+        donorsOnMap: [],
+        isTracking: false,
+        mapLoaded: false,
+        mapError: false,
+        currentLocation: '',
+        distanceToTarget: '',
+        progressPercentage: 0,
+        statusText: 'Ready to track',
+        watchId: null,
+        targetLat: targetLat,
+        targetLng: targetLng,
+        requestId: requestId,
+        updateCount: 0,
+        lastUpdate: '',
+        ws: null,
+        initialDistance: null,
+        
+        initMap() {
+            this.mapError = false;
+            
+            // Wait for DOM to be ready
+            setTimeout(() => {
+                try {
+                    // Initialize Leaflet map
+                    this.map = L.map('map').setView([this.targetLat || 28.6139, this.targetLng || 77.2090], 13);
+                    
+                    // Add OpenStreetMap tiles
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                        maxZoom: 19
+                    }).addTo(this.map);
+                    
+                    this.mapLoaded = true;
+                    
+                    // Add target marker (hospital/request location)
+                    if (this.targetLat && this.targetLng) {
+                        this.targetMarker = L.marker([this.targetLat, this.targetLng], {
+                            icon: L.divIcon({
+                                className: 'custom-target-marker',
+                                html: '<div style="background-color: #ef4444; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); animation: pulse 2s infinite;"></div>',
+                                iconSize: [20, 20],
+                                iconAnchor: [10, 10]
+                            })
+                        }).addTo(this.map).bindPopup('<b>Destination</b><br>Hospital/Request Location');
+                    }
+                    
+                    // Connect WebSocket for real-time donor updates
+                    if (this.requestId) {
+                        this.connectTrackingWS();
+                    }
+                    
+                    this.statusText = 'Map loaded';
+                } catch (error) {
+                    console.error('Map initialization error:', error);
+                    this.mapError = true;
+                    this.mapLoaded = false;
+                }
+            }, 100);
+        },
+        
+        connectTrackingWS() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/requests/${this.requestId}/tracking/`;
+            
+            this.ws = new WebSocket(wsUrl);
+            
+            this.ws.onopen = () => {
+                console.log('✅ Tracking WebSocket connected');
+            };
+            
+            this.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'donor_location') {
+                    this.updateDonorOnMap(data.donor_id, data.latitude, data.longitude);
+                }
+            };
+            
+            this.ws.onerror = (error) => {
+                console.error('❌ Tracking WebSocket error:', error);
+            };
+        },
+        
+        toggleTracking() {
+            if (this.isTracking) {
+                this.stopTracking();
+            } else {
+                this.startTracking();
+            }
+        },
+        
+        startTracking() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser');
+                return;
+            }
+            
+            this.isTracking = true;
+            this.statusText = 'Tracking active - Sharing location';
+            
+            // Watch position continuously
+            this.watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    this.updateUserLocation(lat, lng, accuracy);
+                    this.sendLocationToServer(lat, lng);
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    let errorMsg = 'Unable to retrieve your location';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = "Location access denied. Please enable location permissions.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = "Location information unavailable.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = "Location request timed out.";
+                            break;
+                    }
+                    this.statusText = errorMsg;
+                    this.isTracking = false;
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 5000,  // Accept positions up to 5 seconds old
+                    timeout: 10000     // Timeout after 10 seconds
+                }
+            );
+        },
+        
+        stopTracking() {
+            this.isTracking = false;
+            this.statusText = 'Tracking stopped';
+            
+            if (this.watchId !== null) {
+                navigator.geolocation.clearWatch(this.watchId);
+                this.watchId = null;
+            }
+        },
+        
+        updateUserLocation(lat, lng, accuracy) {
+            this.currentLocation = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            this.updateCount++;
+            this.lastUpdate = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Update or create user marker
+            if (this.userMarker) {
+                this.userMarker.setLatLng([lat, lng]);
+                this.userMarker.setPopupContent(`<b>You are here</b><br>Accuracy: ${Math.round(accuracy)}m`);
+            } else {
+                this.userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'custom-user-marker',
+                        html: '<div style="background-color: #3b82f6; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);"></div>',
+                        iconSize: [18, 18],
+                        iconAnchor: [9, 9]
+                    })
+                }).addTo(this.map).bindPopup('<b>You are here</b><br>Accuracy: ' + Math.round(accuracy) + 'm');
+            }
+            
+            // Calculate distance and update route if target exists
+            if (this.targetLat && this.targetLng) {
+                const distance = this.calculateDistance(lat, lng, this.targetLat, this.targetLng);
+                this.distanceToTarget = `${distance.toFixed(1)} km`;
+                
+                // Store initial distance for progress calculation
+                if (!this.initialDistance) {
+                    this.initialDistance = distance;
+                }
+                
+                // Update route line
+                if (this.routeLine) {
+                    this.map.removeLayer(this.routeLine);
+                }
+                this.routeLine = L.polyline([[lat, lng], [this.targetLat, this.targetLng]], {
+                    color: '#ef4444',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 10',
+                    lineCap: 'round'
+                }).addTo(this.map);
+                
+                // Fit bounds to show both markers
+                const bounds = L.latLngBounds([[lat, lng], [this.targetLat, this.targetLng]]);
+                this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                
+                // Calculate progress percentage
+                if (this.initialDistance > 0) {
+                    this.progressPercentage = Math.max(0, Math.min(100, ((this.initialDistance - distance) / this.initialDistance) * 100));
+                }
+            }
+        },
+        
+        updateDonorOnMap(donorId, lat, lng) {
+            // Check if donor marker already exists
+            let donorMarker = this.donorsOnMap.find(d => d.id === donorId);
+            
+            if (donorMarker) {
+                // Update existing marker
+                donorMarker.marker.setLatLng([lat, lng]);
+            } else {
+                // Create new marker
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'custom-donor-marker',
+                        html: '<div style="background-color: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"></div>',
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    })
+                }).addTo(this.map).bindPopup(`<b>Donor ${donorId}</b><br>En route`);
+                
+                this.donorsOnMap.push({ id: donorId, marker: marker });
+            }
+        },
+        
+        async sendLocationToServer(lat, lng) {
+            try {
+                await fetch('/requests/update-location/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        latitude: lat,
+                        longitude: lng,
+                        request_id: this.requestId
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to send location:', error);
+            }
+        },
+        
+        calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in kilometers
+            const dLat = this.toRad(lat2 - lat1);
+            const dLon = this.toRad(lon2 - lon1);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        },
+        
+        toRad(degrees) {
+            return degrees * (Math.PI / 180);
+        }
+    }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<style>
+/* Custom marker animations */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Ensure map container has proper sizing */
+#map {
+    z-index: 1;
+}
+
+/* Leaflet popup styling */
+.leaflet-popup-content-wrapper {
+    background: rgba(31, 41, 55, 0.95);
+    color: white;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaflet-popup-tip {
+    background: rgba(31, 41, 55, 0.95);
+}
+
+.leaflet-popup-content {
+    margin: 12px;
+    font-size: 14px;
+}
+</style>

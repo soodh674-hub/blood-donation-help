@@ -40,15 +40,22 @@ class DonorAvailability(models.Model):
     reason_unavailable = models.TextField(blank=True)
     available_from = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
-    
+
+    # NEW FIELD: Track last status update date for daily popup
+    last_status_update = models.DateField(null=True, blank=True, help_text="Last date user updated donation status")
+
+    # Location tracking fields for real-time donor tracking
+    current_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    current_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
     def __str__(self):
         return f"{self.donor.username} - {'Available' if self.is_available else 'Unavailable'}"
 
 class DonorRating(models.Model):
     """Track donor reliability and ratings"""
     
-    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings')
-    rated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
+    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='donor_ratings')
+    rated_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings_given')
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
     comment = models.TextField(blank=True)
     donation_id = models.ForeignKey(DonorHistory, on_delete=models.SET_NULL, null=True, blank=True)

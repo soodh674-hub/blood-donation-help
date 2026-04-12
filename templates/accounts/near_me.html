@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Users Near Me - BloodLife{% endblock %}
+
+{% block extra_css %}
+<style>
+    .near-me-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        padding-top: 100px;
+    }
+    
+    .near-me-header {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .near-me-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: #dc2626;
+        margin-bottom: 10px;
+    }
+    
+    .near-me-subtitle {
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .user-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .user-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    
+    .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 5px;
+    }
+    
+    .user-blood-group {
+        display: inline-block;
+        background: #fef3c7;
+        color: #92400e;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .user-distance {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .user-location {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .user-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-view {
+        flex: 1;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        text-align: center;
+    }
+    
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .user-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .near-me-container {
+            padding-top: 120px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="near-me-container">
+    <!-- Header -->
+    <div class="near-me-header">
+        <div class="near-me-title">📍 Find Users Near Me</div>
+        <div class="near-me-subtitle">Users within 25km of your location</div>
+    </div>
+    
+    <!-- User Grid -->
+    {% if nearby_users %}
+    <div class="user-grid">
+        {% for item in nearby_users %}
+        <div class="user-card">
+            <div class="user-avatar">{{ item.user.first_name|default:item.user.username|make_list|first|upper }}</div>
+            <div class="user-name">{{ item.user.get_full_name|default:item.user.username }}</div>
+            {% if item.user.blood_group %}
+            <div class="user-blood-group">{{ item.user.blood_group }}</div>
+            {% endif %}
+            <div class="user-distance">📍 {{ item.distance }} km away</div>
+            <div class="user-location">
+                {% if item.user.city %}{{ item.user.city }}{% endif %}
+                {% if item.user.state %}, {{ item.user.state }}{% endif %}
+            </div>
+            <div class="user-actions">
+                <a href="/accounts/profile/{{ item.user.id }}/" class="btn-view">View Profile</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <h3>No Users Found Nearby</h3>
+        <p>There are no users within 25km of your location.</p>
+        <p>Try expanding your search radius or check back later.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

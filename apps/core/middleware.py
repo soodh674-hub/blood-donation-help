@@ -2,47 +2,69 @@ from django.utils.deprecation import MiddlewareMixin
 from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 import time
 import json
+import logging
 
 class RateLimitMiddleware(MiddlewareMixin):
     """Rate limiting middleware to prevent spam requests"""
     
     def process_request(self, request):
-        # Skip rate limiting for admin and static files
-        if (request.path.startswith('/admin/') or 
-            request.path.startswith('/static/') or 
-            request.path.startswith('/media/')):
-            return None
-        
-        # Get client IP
-        ip = self.get_client_ip(request)
-        
-        # Rate limit key
-        cache_key = f"rate_limit_{ip}"
-        
-        # Get current count
-        request_count = cache.get(cache_key, 0)
-        
-        # Check limits
-        if request.user.is_authenticated:
-            # Authenticated users: 1000 requests/hour
-            limit = 1000
-            time_window = 3600  # 1 hour
-        else:
-            # Anonymous users: 100 requests/hour
-            limit = 100
-            time_window = 3600  # 1 hour
-        
-        # Check if limit exceeded
-        if request_count >= limit:
-            return HttpResponseForbidden(
-                json.dumps({'error': 'Rate limit exceeded'}),
-                content_type='application/json'
-            )
-        
-        # Increment count and set expiration
-        cache.set(cache_key, request_count + 1, time_window)
+        try:
+            # Skip rate limiting for admin, static files, and root path
+            if (request.path.startswith('/admin/') or 
+                request.path.startswith('/static/') or 
+                request.path.startswith('/media/') or
+                request.path == '/' or
+                request.path == '' or
+                request.path.startswith('/accounts/') or
+                request.path.startswith('/api/')):
+                return None
+            
+            # Get client IP
+            ip = self.get_client_ip(request)
+            
+            # Rate limit key
+            cache_key = f"rate_limit_{ip}"
+            
+            # Get current count - handle cache failures gracefully
+            try:
+                request_count = cache.get(cache_key, 0)
+            except Exception as cache_error:
+                # If cache is unavailable, allow the request
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Cache unavailable for rate limiting: {str(cache_error)}")
+                return None
+            
+            # Check if user is authenticated (handle anonymous users properly)
+            user_is_authenticated = hasattr(request, 'user') and request.user.is_authenticated
+            
+            # Check limits
+            if user_is_authenticated:
+                # Authenticated users: 1000 requests/hour
+                limit = 1000
+                time_window = 3600  # 1 hour
+            else:
+                # Anonymous users: 100 requests/hour
+                limit = 100
+                time_window = 3600  # 1 hour
+            
+            # Check if limit exceeded
+            if request_count >= limit:
+                return HttpResponseForbidden(
+                    json.dumps({'error': 'Rate limit exceeded'}),
+                    content_type='application/json'
+                )
+            
+            # Increment count and set expiration
+            cache.set(cache_key, request_count + 1, time_window)
+            
+        except Exception as e:
+            # If any error occurs in rate limiting, allow the request
+            logger = logging.getLogger(__name__)
+            logger.error(f"Rate limit middleware error: {str(e)}")
+            pass  # Continue processing
         
         return None
     
@@ -63,11 +85,16 @@ class AuditMiddleware(MiddlewareMixin):
         if not hasattr(request, '_audit_info'):
             request._audit_info = {}
         
+        # Check if user is authenticated (handle anonymous users properly)
+        user_id = None
+        if hasattr(request, 'user') and request.user.is_authenticated:
+            user_id = request.user.id
+        
         request._audit_info.update({
             'timestamp': time.time(),
             'method': request.method,
             'path': request.path,
-            'user_id': request.user.id if request.user.is_authenticated else None,
+            'user_id': user_id,
             'ip_address': self.get_client_ip(request),
             'user_agent': request.META.get('HTTP_USER_AGENT', ''),
         })

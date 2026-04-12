@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://bloodis-life.online/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/how-it-works/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/accounts/login/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/accounts/register/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/search/donors/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/requests/create/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/accounts/profile/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bloodis-life.online/accounts/near-me/</loc>
+    <lastmod>{% now "Y-m-d" %}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

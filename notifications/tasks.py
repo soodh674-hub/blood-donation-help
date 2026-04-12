@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 from accounts.models import User
-from requests.models import BloodRequest
+from blood_requests_app.models import BloodRequest
 from notifications.models import Notification
 import logging
 
@@ -90,7 +90,14 @@ def send_email_notification(notification_id):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [user.email]
         
-        send_mail(subject, message, from_email, recipient_list)
+        # Use explicit Brevo backend connection
+        from django.core.mail import get_connection
+        connection = get_connection(
+            backend='blood_donation.email_backend.BrevoAPIEmailBackend',
+            fail_silently=False
+        )
+        
+        send_mail(subject, message, from_email, recipient_list, connection=connection)
         notification.email_sent = True
         notification.save()
         
@@ -102,6 +109,7 @@ def send_email_notification(notification_id):
         return "Notification not found"
     except Exception as e:
         logger.error(f"Error sending email: {str(e)}")
+        logger.exception(e)  # Log full traceback
         return f"Error: {str(e)}"
 
 @shared_task

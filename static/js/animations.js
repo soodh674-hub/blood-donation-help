@@ -21,60 +21,72 @@ document.addEventListener('DOMContentLoaded', function() {
         const hero = document.querySelector('.hero');
         if (!hero) return;
 
-        // Background elements animation
-        gsap.to('.hero .absolute:nth-child(2) .absolute:nth-child(1)', {
-            x: -50,
-            y: -30,
-            duration: 8,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
+        // Background elements animation - only if elements exist
+        const bgElement1 = document.querySelector('.hero .absolute:nth-child(2) .absolute:nth-child(1)');
+        if (bgElement1) {
+            gsap.to(bgElement1, {
+                x: -50,
+                y: -30,
+                duration: 8,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+        }
 
-        gsap.to('.hero .absolute:nth-child(2) .absolute:nth-child(2)', {
-            x: 30,
-            y: 40,
-            duration: 10,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: 1
-        });
+        const bgElement2 = document.querySelector('.hero .absolute:nth-child(2) .absolute:nth-child(2)');
+        if (bgElement2) {
+            gsap.to(bgElement2, {
+                x: 30,
+                y: 40,
+                duration: 10,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                delay: 1
+            });
+        }
 
-        // Hero content stagger animation
+        // Hero content stagger animation - only if elements exist
         const heroElements = gsap.utils.toArray('.hero-content > div > *');
-        gsap.from(heroElements, {
-            opacity: 0,
-            y: 50,
-            stagger: 0.15,
-            duration: 1,
-            ease: "back.out(1.4)",
-            scrollTrigger: {
-                trigger: '.hero',
-                start: "top 80%",
-                toggleActions: "play none none reverse"
-            }
-        });
+        if (heroElements.length > 0) {
+            gsap.from(heroElements, {
+                opacity: 0,
+                y: 50,
+                stagger: 0.15,
+                duration: 1,
+                ease: "back.out(1.4)",
+                scrollTrigger: {
+                    trigger: '.hero',
+                    start: "top 80%",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        }
 
-        // Hero media card animation
-        gsap.from('.hero-media-card', {
-            opacity: 0,
-            x: 100,
-            rotation: 5,
-            duration: 1.2,
-            ease: "elastic.out(1, 0.5)",
-            scrollTrigger: {
-                trigger: '.hero-media',
-                start: "top 70%",
-                toggleActions: "play none none reverse"
-            }
-        });
+        // Hero media card animation - only if element exists
+        const heroMediaCard = document.querySelector('.hero-media-card');
+        if (heroMediaCard) {
+            gsap.from(heroMediaCard, {
+                opacity: 0,
+                x: 100,
+                rotation: 5,
+                duration: 1.2,
+                ease: "elastic.out(1, 0.5)",
+                scrollTrigger: {
+                    trigger: '.hero-media',
+                    start: "top 70%",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        }
     }
 
     // Story Block Animations
     function initStoryAnimations() {
-        // Story points animation
-        gsap.utils.toArray('.story-point').forEach((point, i) => {
+        // Story points animation - only if elements exist
+        const storyPoints = gsap.utils.toArray('.story-point');
+        storyPoints.forEach((point, i) => {
             gsap.from(point, {
                 opacity: 0,
                 y: 30,
@@ -88,8 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Steps animation
-        gsap.utils.toArray('.steps > li').forEach((step, i) => {
+        // Steps animation - only if elements exist
+        const steps = gsap.utils.toArray('.steps > li');
+        steps.forEach((step, i) => {
             gsap.from(step, {
                 opacity: 0,
                 x: -50,
@@ -103,8 +116,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Media cards floating effect
-        gsap.utils.toArray('.story-media .rounded-2xl').forEach(card => {
+        // Media cards floating effect - only if elements exist
+        const mediaCards = gsap.utils.toArray('.story-media .rounded-2xl');
+        mediaCards.forEach(card => {
             gsap.to(card, {
                 y: -15,
                 duration: 3,
@@ -117,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Impact Section Animations
     function initImpactAnimations() {
-        // Animated counters
+        // Animated counters - only if elements exist
         const counters = document.querySelectorAll('.impact-number');
         counters.forEach(counter => {
             const target = parseInt(counter.getAttribute('data-count-to')) || 0;
@@ -132,8 +146,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Impact cards entrance
-        gsap.utils.toArray('.impact-card').forEach((card, i) => {
+        // Impact cards entrance - only if elements exist
+        const impactCards = gsap.utils.toArray('.impact-card');
+        impactCards.forEach((card, i) => {
             gsap.from(card, {
                 opacity: 0,
                 y: 50,
@@ -183,8 +198,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Input field focus animations
-        gsap.utils.toArray('input, select, textarea').forEach(input => {
+        // Input field focus animations - only if inputs exist
+        const inputs = gsap.utils.toArray('input, select, textarea');
+        inputs.forEach(input => {
             input.addEventListener('focus', () => {
                 gsap.to(input, {
                     scale: 1.02,
@@ -202,8 +218,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Button hover effects
-        gsap.utils.toArray('button:not(.gsap-ignore)').forEach(button => {
+        // Button hover effects - only if buttons exist
+        const buttons = gsap.utils.toArray('button:not(.gsap-ignore)');
+        buttons.forEach(button => {
             button.addEventListener('mouseenter', () => {
                 gsap.to(button, {
                     scale: 1.05,
@@ -224,7 +241,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Search Results Animations
     function initSearchAnimations() {
-        // Donor card entrance animations
+        // Donor card entrance animations - only if results container exists
+        const resultsContainer = document.querySelector('#results-container');
+        if (!resultsContainer) return;
+        
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, index) => {
                 if (entry.isIntersecting) {
@@ -244,8 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, { threshold: 0.1 });
 
-        // Observe donor cards
-        gsap.utils.toArray('#results-container > div').forEach(card => {
+        // Observe donor cards - only if elements exist
+        const donorCards = gsap.utils.toArray('#results-container > div');
+        donorCards.forEach(card => {
             observer.observe(card);
         });
     }
@@ -283,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Page Load Entrance Animations
     function initPageLoadAnimations() {
-        // Staggered entrance for all animated elements
+        // Staggered entrance for all animated elements - only if elements exist
         const animatedElements = gsap.utils.toArray('.animate-on-scroll');
         
         animatedElements.forEach((element, i) => {

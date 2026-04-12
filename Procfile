@@ -1,1 +1,1 @@
-web: gunicorn blood_donation.wsgi:application
+web: daphne -b 0.0.0.0 -p $PORT blood_donation.asgi:application

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('requests', '0001_initial'),
+        ('blood_requests_app', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('push_sent', models.BooleanField(default=False)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('related_request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notifications', to='requests.bloodrequest')),
+                ('related_request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='notifications', to='blood_requests_app.bloodrequest')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to=settings.AUTH_USER_MODEL)),
             ],
             options={

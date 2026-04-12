@@ -9,6 +9,7 @@ urlpatterns = [
         views.compatibility_info,
         name="donor-compatibility",
     ),
+    path("profile/<int:user_id>/", views.donor_profile, name="donor-profile"),
 ]
 
 

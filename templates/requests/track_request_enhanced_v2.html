@@ -1,0 +1,1341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .track-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        padding-top: 80px; /* Space for sticky navbar */
+    }
+    
+    .track-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .track-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: #dc2626;
+        margin-bottom: 10px;
+    }
+    
+    .track-subtitle {
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    /* Management Section */
+    .management-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .management-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .manage-btn {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .manage-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .manage-btn.create {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .manage-btn.manage {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .manage-btn.delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-icon {
+        font-size: 18px;
+    }
+
+    .btn-text {
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .management-buttons {
+            flex-direction: column;
+        }
+
+        .manage-btn {
+            min-width: 100%;
+        }
+    }
+
+    /* Analytics Section */
+    .analytics-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .analytics-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: white;
+        text-align: center;
+    }
+
+    .analytics-card.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .analytics-card.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .analytics-card.danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .analytics-value {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .analytics-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: #10b981;
+        transition: width 0.3s ease;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .panel {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+    
+    .panel-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .map-section {
+        grid-column: span 2;
+    }
+    
+    .map-container {
+        height: 400px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #tracking-map {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .map-placeholder {
+        text-align: center;
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .request-details {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .request-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
+    
+    .info-value {
+        color: #1f2937;
+        font-size: 16px;
+    }
+    
+    .urgency-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .urgency-indicator.emergency {
+        background: #dc2626;
+        color: white;
+    }
+    
+    .urgency-indicator.urgent {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .urgency-indicator.normal {
+        background: #10b981;
+        color: white;
+    }
+    
+    .donor-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .donor-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        border-left: 3px solid #10b981;
+    }
+    
+    .donor-card.en-route {
+        border-left-color: #f59e0b;
+        background: #fffbeb;
+    }
+    
+    .donor-card.selected {
+        border-left-color: #10b981;
+        background: #f0fdf4;
+    }
+    
+    .donor-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .donor-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .donor-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .donor-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .donor-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 16px;
+    }
+    
+    .donor-status {
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+    
+    .status-dot.en-route {
+        background: #f59e0b;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-dot.available {
+        background: #10b981;
+    }
+    
+    .donor-distance {
+        font-size: 14px;
+        color: #6b7280;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-call {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-call:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+    
+    .btn-select {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-select:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+    
+    .btn-select:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Enhanced Timeline */
+    .timeline-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 25px;
+    }
+    
+    .timeline-container {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-line {
+        position: absolute;
+        left: 24px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #10b981 0%, #e5e7eb 100%);
+    }
+    
+    .timeline-item {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .timeline-marker {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #3b82f6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+        flex-shrink: 0;
+        z-index: 1;
+        box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-marker.completed {
+        background: #10b981;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+    
+    .timeline-marker.current {
+        background: #f59e0b;
+        animation: pulse 2s infinite;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+    }
+    
+    .timeline-marker.pending {
+        background: #9ca3af;
+    }
+    
+    .timeline-content {
+        flex: 1;
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+        border-radius: 12px;
+        padding: 20px;
+        border-left: 4px solid #3b82f6;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-content:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-content.completed {
+        border-left-color: #10b981;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    }
+    
+    .timeline-content.current {
+        border-left-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    }
+    
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .timeline-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .timeline-time {
+        font-size: 12px;
+        color: #6b7280;
+        background: #e5e7eb;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .timeline-description {
+        font-size: 14px;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+    
+    .timeline-meta {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    .timeline-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    /* Notification Toast */
+    .notification-toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        z-index: 1000;
+        max-width: 350px;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+    }
+    
+    .notification-toast.show {
+        transform: translateX(0);
+    }
+    
+    .notification-toast.success {
+        border-left: 4px solid #10b981;
+    }
+    
+    .notification-toast.error {
+        border-left: 4px solid #ef4444;
+    }
+    
+    .notification-toast.info {
+        border-left: 4px solid #3b82f6;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #1f2937;
+    }
+    
+    .notification-message {
+        font-size: 14px;
+        color: #6b7280;
+    }
+    
+    .contact-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-top: 25px;
+    }
+    
+    .contact-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .contact-item {
+        text-align: center;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+    
+    .contact-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+    
+    .contact-value {
+        font-size: 18px;
+        color: #1f2937;
+        font-weight: 600;
+    }
+    
+    .contact-action {
+        margin-top: 10px;
+    }
+    
+    .btn-contact {
+        background: linear-gradient(45deg, #dc2626, #ef4444);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-contact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.05); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .map-section {
+            grid-column: span 1;
+        }
+        
+        .contact-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .track-container {
+            padding-top: 100px;
+        }
+    }
+
+    /* Loading State */
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="track-container" id="track-container" data-request-id="{{ request_id }}">
+    <!-- Track Request Header -->
+    <div class="track-header">
+        <div class="track-title">📍 Track Blood Request</div>
+        <div class="track-subtitle">Real-time donor tracking and coordination</div>
+    </div>
+
+    <!-- Request Management Options -->
+    <div class="management-section">
+        <div class="management-buttons">
+            <button onclick="showCreateRequestModal()" class="manage-btn create">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Create New Request</span>
+            </button>
+            <button onclick="showManageRequestsModal()" class="manage-btn manage">
+                <span class="btn-icon">📋</span>
+                <span class="btn-text">Manage My Requests</span>
+            </button>
+            <button onclick="showAnalyticsModal()" class="manage-btn manage">
+                <span class="btn-icon">📊</span>
+                <span class="btn-text">View Analytics</span>
+            </button>
+            {% if user.is_authenticated %}
+            <button onclick="confirmDeleteRequest()" class="manage-btn delete">
+                <span class="btn-icon">🗑️</span>
+                <span class="btn-text">Delete This Request</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="analytics-section">
+        <div class="panel-header">
+            <h2 class="panel-title">📊 Request Analytics</h2>
+            <span style="color: #6b7280; font-size: 14px;">Live statistics</span>
+        </div>
+        <div class="analytics-grid">
+            <div class="analytics-card success">
+                <div class="analytics-value" id="total-donors">0</div>
+                <div class="analytics-label">Total Donors</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="donor-progress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="analytics-card warning">
+                <div class="analytics-value" id="en-route-donors">0</div>
+                <div class="analytics-label">En Route</div>
+            </div>
+            <div class="analytics-card danger">
+                <div class="analytics-value" id="time-remaining">--:--</div>
+                <div class="analytics-label">Time Remaining</div>
+            </div>
+            <div class="analytics-card">
+                <div class="analytics-value" id="fulfillment-rate">0%</div>
+                <div class="analytics-label">Fulfillment Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+        <!-- Map Section -->
+        <div class="panel map-section">
+            <div class="panel-header">
+                <h2 class="panel-title">Live Tracking Map</h2>
+                <span style="color: #10b981; font-size: 14px;">● Real-time</span>
+            </div>
+            
+            <div class="map-container">
+                <div id="tracking-map"></div>
+            </div>
+            
+            <div class="request-details" id="request-details">
+                <!-- Dynamic request details will be loaded here -->
+                <div class="loading-skeleton" style="height: 100px;"></div>
+            </div>
+        </div>
+
+        <!-- Donors Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Interested Donors</h2>
+                <span id="donor-count" style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">0 Available</span>
+            </div>
+            
+            <div class="donor-list" id="donor-list">
+                <!-- Dynamic donor list will be loaded here -->
+                <div class="loading-skeleton" style="height: 100px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Section -->
+    <div class="timeline-section">
+        <div class="panel-header">
+            <h2 class="panel-title">Request Timeline</h2>
+            <span style="color: #6b7280; font-size: 14px;">Live updates</span>
+        </div>
+        
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div id="timeline-items">
+                <!-- Dynamic timeline items will be loaded here -->
+                <div class="loading-skeleton" style="height: 100px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+        <div class="panel-header">
+            <h2 class="panel-title">Emergency Contact</h2>
+            <span style="color: #dc2626; font-size: 14px;">24/7 Available</span>
+        </div>
+        
+        <div class="contact-info" id="contact-info">
+            <!-- Dynamic contact info will be loaded here -->
+            <div class="loading-skeleton" style="height: 100px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div class="notification-toast" id="notification-toast">
+    <div class="notification-title" id="notification-title"></div>
+    <div class="notification-message" id="notification-message"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/leaflet.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/leaflet.css' %}" />
+<script>
+// Global variables
+let map = null;
+let donorMarkers = [];
+let requestMarker = null;
+let pollingInterval = null;
+let wsConnection = null;
+
+// Get request ID from URL
+const requestId = window.location.pathname.split('/').filter(Boolean).pop();
+
+// Initialize map
+function initMap() {
+    try {
+        map = L.map('tracking-map').setView([28.6139, 77.2090], 12); // Default to Delhi
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        console.log('✅ Map initialized successfully');
+    } catch (error) {
+        console.error('❌ Error initializing map:', error);
+    }
+}
+
+// Load request details
+async function loadRequestDetails() {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/`);
+        if (!response.ok) throw new Error('Failed to load request details');
+        
+        const data = await response.json();
+        updateRequestDetails(data);
+        updateAnalytics(data);
+    } catch (error) {
+        console.error('❌ Error loading request details:', error);
+        showNotification('error', 'Error', 'Failed to load request details');
+    }
+}
+
+// Update request details in UI
+function updateRequestDetails(request) {
+    const container = document.getElementById('request-details');
+    
+    const urgencyClass = request.priority === 'urgent' ? 'emergency' : 
+                          request.priority === 'high' ? 'urgent' : 'normal';
+    
+    container.innerHTML = `
+        <div class="urgency-indicator ${urgencyClass}">
+            ${request.priority === 'urgent' ? '🚨 URGENT' : request.priority === 'high' ? '⚡ HIGH' : '✓ NORMAL'}
+        </div>
+        
+        <div class="request-info">
+            <div class="info-item">
+                <div class="info-label">Patient Name</div>
+                <div class="info-value">${request.patient_name || 'Unknown'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Blood Group</div>
+                <div class="info-value">${request.blood_group || 'A+'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Hospital</div>
+                <div class="info-value">${request.hospital_name || 'City Hospital'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Contact Person</div>
+                <div class="info-value">${request.contact_person || 'N/A'}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Units Required</div>
+                <div class="info-value">${request.required_units || 2} units</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value">${request.status || 'Pending'}</div>
+            </div>
+        </div>
+    `;
+    
+    // Add request marker to map
+    if (map && request.latitude && request.longitude) {
+        if (requestMarker) {
+            map.removeLayer(requestMarker);
+        }
+        
+        const hospitalIcon = L.divIcon({
+            html: '<div style="background: #dc2626; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">🏥</div>',
+            className: 'hospital-marker',
+            iconSize: [30, 30]
+        });
+        
+        requestMarker = L.marker([request.latitude, request.longitude], { icon: hospitalIcon })
+            .addTo(map)
+            .bindPopup(`<b>${request.hospital_name}</b><br>Blood Request Location`);
+        
+        map.setView([request.latitude, request.longitude], 13);
+    }
+}
+
+// Load donor list
+async function loadDonorList() {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/responses/`);
+        if (!response.ok) throw new Error('Failed to load donor list');
+        
+        const data = await response.json();
+        updateDonorList(data.results || data);
+    } catch (error) {
+        console.error('❌ Error loading donor list:', error);
+        showNotification('error', 'Error', 'Failed to load donor list');
+    }
+}
+
+// Update donor list in UI
+function updateDonorList(donors) {
+    const container = document.getElementById('donor-list');
+    const countBadge = document.getElementById('donor-count');
+    
+    countBadge.textContent = `${donors.length} Available`;
+    
+    if (donors.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">👥</div>
+                <div>No donors have responded yet</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = donors.map((donor, index) => {
+        const statusClass = donor.status === 'en_route' ? 'en-route' : 
+                           donor.status === 'selected' ? 'selected' : '';
+        const statusDot = donor.status === 'en_route' ? 'en-route' : 'available';
+        
+        return `
+            <div class="donor-card ${statusClass}" data-donor-id="${donor.id}">
+                <div class="donor-info">
+                    <div class="donor-avatar">${donor.donor_name ? donor.donor_name.substring(0, 2).toUpperCase() : '??'}</div>
+                    <div class="donor-details">
+                        <div class="donor-name">${donor.donor_name || 'Unknown Donor'}</div>
+                        <div class="donor-status">
+                            <div class="status-dot ${statusDot}"></div>
+                            ${donor.status.replace('_', ' ')} • ${donor.distance_km || '?'} km away
+                        </div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="tel:${donor.donor_phone || ''}" class="btn-call">
+                        📞 Call
+                    </a>
+                    <button class="btn-select" onclick="selectDonor(${donor.id})" ${donor.status === 'selected' ? 'disabled' : ''}>
+                        ${donor.status === 'selected' ? '✓ Selected' : '✓ Select'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add donor markers to map
+    if (map) {
+        // Clear existing donor markers
+        donorMarkers.forEach(marker => map.removeLayer(marker));
+        donorMarkers = [];
+        
+        donors.forEach(donor => {
+            if (donor.latitude && donor.longitude) {
+                const donorIcon = L.divIcon({
+                    html: '<div style="background: #10b981; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">👤</div>',
+                    className: 'donor-marker',
+                    iconSize: [30, 30]
+                });
+                
+                const marker = L.marker([donor.latitude, donor.longitude], { icon: donorIcon })
+                    .addTo(map)
+                    .bindPopup(`<b>${donor.donor_name}</b><br>Status: ${donor.status}<br>Distance: ${donor.distance_km} km`);
+                
+                donorMarkers.push(marker);
+            }
+        });
+    }
+}
+
+// Load timeline
+async function loadTimeline() {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/timeline/`);
+        if (!response.ok) throw new Error('Failed to load timeline');
+        
+        const data = await response.json();
+        updateTimeline(data.results || data);
+    } catch (error) {
+        console.error('❌ Error loading timeline:', error);
+        showNotification('error', 'Error', 'Failed to load timeline');
+    }
+}
+
+// Update timeline in UI
+function updateTimeline(timeline) {
+    const container = document.getElementById('timeline-items');
+    
+    if (!timeline || timeline.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div>No timeline events yet</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = timeline.map((item, index) => {
+        const markerClass = item.status === 'completed' ? 'completed' : 
+                            item.status === 'current' ? 'current' : 'pending';
+        const contentClass = item.status === 'completed' ? 'completed' : 
+                           item.status === 'current' ? 'current' : '';
+        
+        return `
+            <div class="timeline-item">
+                <div class="timeline-marker ${markerClass}">${index + 1}</div>
+                <div class="timeline-content ${contentClass}">
+                    <div class="timeline-header">
+                        <div class="timeline-title">${item.title}</div>
+                        <div class="timeline-time">${formatTime(item.timestamp)}</div>
+                    </div>
+                    <div class="timeline-description">${item.description}</div>
+                    <div class="timeline-meta">
+                        <div class="timeline-meta-item">👤 ${item.actor || 'System'}</div>
+                        ${item.location ? `<div class="timeline-meta-item">📍 ${item.location}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Update analytics
+function updateAnalytics(request) {
+    document.getElementById('total-donors').textContent = request.total_donors || 0;
+    document.getElementById('en-route-donors').textContent = request.en_route_donors || 0;
+    document.getElementById('fulfillment-rate').textContent = `${request.fulfillment_rate || 0}%`;
+    
+    // Update progress bar
+    const progress = Math.min((request.total_donors || 0) / (request.required_units || 1) * 100, 100);
+    document.getElementById('donor-progress').style.width = `${progress}%`;
+    
+    // Update time remaining
+    if (request.expires_at) {
+        const remaining = getTimeRemaining(request.expires_at);
+        document.getElementById('time-remaining').textContent = remaining;
+    }
+}
+
+// Select donor
+async function selectDonor(donorId) {
+    if (!confirm('Are you sure you want to select this donor?')) return;
+    
+    try {
+        const response = await fetch(`/api/requests/${requestId}/select-donor/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ donor_id: donorId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('success', 'Success', 'Donor selected successfully!');
+            loadDonorList();
+            loadTimeline();
+        } else {
+            showNotification('error', 'Error', data.message || 'Failed to select donor');
+        }
+    } catch (error) {
+        console.error('❌ Error selecting donor:', error);
+        showNotification('error', 'Error', 'Failed to select donor');
+    }
+}
+
+// Show notification
+function showNotification(type, title, message) {
+    const toast = document.getElementById('notification-toast');
+    const titleEl = document.getElementById('notification-title');
+    const messageEl = document.getElementById('notification-message');
+    
+    toast.className = `notification-toast ${type} show`;
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 5000);
+}
+
+// Format time
+function formatTime(timestamp) {
+    if (!timestamp) return 'Just now';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
+    return date.toLocaleDateString();
+}
+
+// Get time remaining
+function getTimeRemaining(expiresAt) {
+    if (!expiresAt) return '--:--';
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    const diff = expiry - now;
+    
+    if (diff <= 0) return 'Expired';
+    
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    return `${hours}h ${minutes}m`;
+}
+
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Management functions
+function showCreateRequestModal() {
+    window.location.href = '/requests/create/';
+}
+
+function showManageRequestsModal() {
+    window.location.href = '/requests/my-requests/';
+}
+
+function showAnalyticsModal() {
+    window.location.href = '/requests/analytics/';
+}
+
+function confirmDeleteRequest() {
+    if (confirm('Are you sure you want to delete this blood request? This action cannot be undone.')) {
+        deleteRequest();
+    }
+}
+
+async function deleteRequest() {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        if (response.ok) {
+            showNotification('success', 'Success', 'Request deleted successfully!');
+            setTimeout(() => {
+                window.location.href = '/requests/my-requests/';
+            }, 2000);
+        } else {
+            showNotification('error', 'Error', 'Failed to delete request');
+        }
+    } catch (error) {
+        console.error('❌ Error deleting request:', error);
+        showNotification('error', 'Error', 'Failed to delete request');
+    }
+}
+
+// Initialize WebSocket connection
+function initWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/request/${requestId}/`;
+    
+    try {
+        wsConnection = new WebSocket(wsUrl);
+        
+        wsConnection.onopen = () => {
+            console.log('✅ WebSocket connected');
+        };
+        
+        wsConnection.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            handleWebSocketMessage(data);
+        };
+        
+        wsConnection.onclose = () => {
+            console.log('⚠️ WebSocket disconnected, attempting to reconnect...');
+            setTimeout(initWebSocket, 5000);
+        };
+        
+        wsConnection.onerror = (error) => {
+            console.error('❌ WebSocket error:', error);
+            startPolling();
+        };
+    } catch (error) {
+        console.error('❌ Failed to connect WebSocket:', error);
+        startPolling();
+    }
+}
+
+// Handle WebSocket messages
+function handleWebSocketMessage(data) {
+    switch (data.type) {
+        case 'donor_response':
+            showNotification('info', 'New Response', `${data.donor_name} has responded to your request`);
+            loadDonorList();
+            break;
+        case 'status_update':
+            showNotification('success', 'Status Update', data.message);
+            loadTimeline();
+            loadRequestDetails();
+            break;
+        case 'location_update':
+            updateDonorLocation(data.donor_id, data.latitude, data.longitude);
+            break;
+        default:
+            console.log('Unknown message type:', data.type);
+    }
+}
+
+// Update donor location on map
+function updateDonorLocation(donorId, latitude, longitude) {
+    const marker = donorMarkers.find(m => m.donorId === donorId);
+    if (marker) {
+        marker.setLatLng([latitude, longitude]);
+    }
+}
+
+// Start polling (fallback)
+function startPolling() {
+    if (pollingInterval) return;
+    
+    pollingInterval = setInterval(() => {
+        loadDonorList();
+        loadTimeline();
+        loadRequestDetails();
+    }, 10000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    initMap();
+    loadRequestDetails();
+    loadDonorList();
+    loadTimeline();
+    initWebSocket();
+    
+    // Load contact info
+    loadContactInfo();
+});
+
+// Load contact info
+async function loadContactInfo() {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/`);
+        const data = await response.json();
+        
+        const container = document.getElementById('contact-info');
+        container.innerHTML = `
+            <div class="contact-item">
+                <div class="contact-label">📞 Call Hospital</div>
+                <div class="contact-value">${data.hospital_phone || '+91 98765 43210'}</div>
+                <div class="contact-action">
+                    <a href="tel:${data.hospital_phone || '+919876543210'}" class="btn-contact">
+                        📞 Call Now
+                    </a>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-label">📱 Contact Requester</div>
+                <div class="contact-value">${data.contact_phone || '+91 98765 43211'}</div>
+                <div class="contact-action">
+                    <a href="tel:${data.contact_phone || '+919876543211'}" class="btn-contact">
+                        📱 Message
+                    </a>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('❌ Error loading contact info:', error);
+    }
+}
+</script>
+{% endblock %}

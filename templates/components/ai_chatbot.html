@@ -1,0 +1,356 @@
+<!-- 
+    AI Chatbot Assistant Component
+    Provides intelligent assistance for blood donation queries
+    Includes predefined responses + can be extended with AI API
+-->
+<div id="ai-chatbot" class="fixed bottom-6 left-6 z-50" x-data="aiChatbot()">
+    <!-- Chatbot Toggle Button -->
+    <button @click="toggleChatbot()" 
+            class="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-purple-500/50 relative">
+        <svg x-show="!isOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        <svg x-show="isOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        
+        <!-- Notification Badge -->
+        <span x-show="hasNewMessage && !isOpen" 
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+            !
+        </span>
+    </button>
+    
+    <!-- Chatbot Window -->
+    <div x-show="isOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+         x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+         class="absolute bottom-16 left-0 w-80 md:w-96 bg-gray-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
+         @click.away="isOpen = false">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-purple-500"></div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-white font-semibold">BloodBot Assistant</h3>
+                    <p class="text-purple-100 text-xs">Always here to help 🩸</p>
+                </div>
+                <button @click="resetChat()" class="text-white/70 hover:text-white transition-colors" title="Reset conversation">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="p-3 bg-gray-800 border-b border-white/10">
+            <p class="text-gray-400 text-xs mb-2">Quick Questions:</p>
+            <div class="flex flex-wrap gap-2">
+                <button @click="sendQuickMessage('How can I donate blood?')" 
+                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                    How to donate?
+                </button>
+                <button @click="sendQuickMessage('What are the eligibility criteria?')" 
+                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                    Eligibility?
+                </button>
+                <button @click="sendQuickMessage('Find blood donors near me')" 
+                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                    Find donors
+                </button>
+                <button @click="sendQuickMessage('Create a blood request')" 
+                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                    Create request
+                </button>
+            </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div id="chatbot-messages" class="h-80 overflow-y-auto p-4 space-y-3 bg-gray-800 scroll-smooth">
+            <!-- Welcome Message -->
+            <div x-show="messages.length === 0" class="text-center py-8">
+                <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <p class="text-white font-semibold mb-1">Hello! 👋</p>
+                <p class="text-gray-400 text-sm">I'm your BloodBot assistant. Ask me anything about blood donation!</p>
+            </div>
+            
+            <!-- Message List -->
+            <template x-for="(msg, index) in messages" :key="index">
+                <div :class="msg.type === 'user' ? 'text-right' : 'text-left'"
+                     class="animate-fade-in">
+                    <div :class="msg.type === 'user' ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-200'"
+                         class="inline-block px-4 py-2 rounded-lg max-w-[85%] shadow-md">
+                        <p x-html="msg.text" class="text-sm leading-relaxed"></p>
+                        <span class="text-xs opacity-75 mt-1 block" x-text="formatTime(msg.timestamp)"></span>
+                    </div>
+                </div>
+            </template>
+            
+            <!-- Typing Indicator -->
+            <div x-show="isTyping" class="text-left">
+                <div class="bg-gray-700 text-gray-200 inline-block px-4 py-3 rounded-lg">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="p-4 bg-gray-900 border-t border-white/10">
+            <form @submit.prevent="sendMessage" class="flex gap-2">
+                <input type="text" 
+                       x-model="userInput" 
+                       @keydown.enter="sendMessage"
+                       placeholder="Ask me anything..." 
+                       class="flex-1 px-3 py-2 bg-gray-800 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm">
+                <button type="submit" 
+                        :disabled="!userInput.trim() || isTyping"
+                        class="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function aiChatbot() {
+    return {
+        isOpen: false,
+        isTyping: false,
+        userInput: '',
+        messages: [],
+        hasNewMessage: false,
+        
+        // Knowledge base for common questions
+        knowledgeBase: {
+            'donate': {
+                keywords: ['donate', 'donation', 'how to donate', 'donate blood'],
+                response: `To donate blood:<br><br>
+                    1️⃣ <b>Register</b> - Create an account on BloodLife<br>
+                    2️⃣ <b>Check Eligibility</b> - Age 18-65, weight >50kg, healthy<br>
+                    3️⃣ <b>Find Centers</b> - Use our locator to find nearby centers<br>
+                    4️⃣ <b>Schedule</b> - Book an appointment<br>
+                    5️⃣ <b>Donate</b> - Takes only 10-15 minutes!<br><br>
+                    💡 You can donate every 3 months (males) or 4 months (females)`
+            },
+            'eligibility': {
+                keywords: ['eligibility', 'eligible', 'criteria', 'requirements', 'who can donate'],
+                response: `<b>Blood Donation Eligibility:</b><br><br>
+                    ✅ Age: 18-65 years<br>
+                    ✅ Weight: Above 50 kg<br>
+                    ✅ Hemoglobin: 12.5 g/dL minimum<br>
+                    ✅ Healthy & feeling well<br>
+                    ✅ No recent infections<br><br>
+                    ❌ Not eligible if:<br>
+                    • Pregnant or breastfeeding<br>
+                    • Recent tattoo/piercing (6 months)<br>
+                    • Certain medical conditions<br>
+                    • Recent surgery<br><br>
+                    🏥 Final eligibility determined at donation center`
+            },
+            'find': {
+                keywords: ['find', 'search', 'near me', 'locate', 'donors near'],
+                response: `To find blood donors or centers:<br><br>
+                    🔍 <b>Search Donors:</b><br>
+                    • Go to "Find Donor" page<br>
+                    • Select blood group needed<br>
+                    • Enter your location/pincode<br>
+                    • View available donors nearby<br><br>
+                    🏥 <b>Find Blood Banks:</b><br>
+                    • Check our directory<br>
+                    • Filter by location<br>
+                    • See contact details & hours<br><br>
+                    📱 Or use the search bar on homepage!`
+            },
+            'request': {
+                keywords: ['request', 'create request', 'need blood', 'blood request'],
+                response: `To create a blood request:<br><br>
+                    1️⃣ Click "Create Request" button<br>
+                    2️⃣ Fill patient details:<br>
+                    • Name, age, blood group<br>
+                    • Units required<br>
+                    • Hospital/location<br>
+                    • Urgency level<br>
+                    3️⃣ Submit request<br>
+                    4️⃣ Compatible donors notified instantly!<br><br>
+                    ⚡ Emergency requests get priority notification<br>
+                    📊 Track request status in real-time`
+            },
+            'safety': {
+                keywords: ['safe', 'safety', 'risk', 'dangerous', 'side effects'],
+                response: `<b>Blood donation is VERY safe!</b><br><br>
+                    ✅ Sterile, single-use needles<br>
+                    ✅ Trained medical staff<br>
+                    ✅ Health screening before donation<br>
+                    ✅ Refreshments provided after<br><br>
+                    <b>Common concerns:</b><br>
+                    • Minimal discomfort (small needle prick)<br>
+                    • Body replaces plasma in 24-48 hours<br>
+                    • Red blood cells in 4-6 weeks<br>
+                    • Very low risk of complications<br><br>
+                    💪 Millions donate safely every year!`
+            },
+            'units': {
+                keywords: ['units', 'how much', 'quantity', 'volume'],
+                response: `<b>About Blood Units:</b><br><br>
+                    🩸 One unit = ~450-500 ml<br>
+                    ⏱️ Donation time: 10-15 minutes<br>
+                    🔄 Recovery: 24-48 hours for plasma<br><br>
+                    <b>Donation frequency:</b><br>
+                    • Whole blood: Every 3-4 months<br>
+                    • Platelets: Every 7 days (max 24/year)<br>
+                    • Plasma: Every 28 days<br><br>
+                    💡 Your body constantly produces new blood cells!`
+            },
+            'help': {
+                keywords: ['help', 'support', 'contact', 'assistance'],
+                response: `<b>How can I help you?</b><br><br>
+                    I can assist with:<br>
+                    • 🩸 Donation process & eligibility<br>
+                    • 🔍 Finding donors/blood banks<br>
+                    • 📝 Creating blood requests<br>
+                    • ❓ General blood donation questions<br>
+                    • 🚨 Emergency procedures<br><br>
+                    For technical support:<br>
+                    📧 Email: support@bloodlife.com<br>
+                    📞 Phone: +91-XXX-XXX-XXXX<br><br>
+                    Just ask your question! 😊`
+            }
+        },
+        
+        toggleChatbot() {
+            this.isOpen = !this.isOpen;
+            if (this.isOpen) {
+                this.hasNewMessage = false;
+                this.scrollToBottom();
+            }
+        },
+        
+        sendQuickMessage(text) {
+            this.userInput = text;
+            this.sendMessage();
+        },
+        
+        sendMessage() {
+            if (!this.userInput.trim() || this.isTyping) return;
+            
+            const userMessage = this.userInput.trim();
+            
+            // Add user message
+            this.messages.push({
+                type: 'user',
+                text: userMessage,
+                timestamp: new Date()
+            });
+            
+            this.userInput = '';
+            this.scrollToBottom();
+            
+            // Show typing indicator
+            this.isTyping = true;
+            
+            // Generate response
+            setTimeout(() => {
+                const response = this.generateResponse(userMessage);
+                
+                this.messages.push({
+                    type: 'bot',
+                    text: response,
+                    timestamp: new Date()
+                });
+                
+                this.isTyping = false;
+                this.scrollToBottom();
+            }, 1000 + Math.random() * 1000); // Simulate thinking time
+        },
+        
+        generateResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Search knowledge base
+            for (const key in this.knowledgeBase) {
+                const entry = this.knowledgeBase[key];
+                if (entry.keywords.some(keyword => message.includes(keyword))) {
+                    return entry.response;
+                }
+            }
+            
+            // Default responses based on context
+            if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                return `Hello! 👋 Welcome to BloodLife!<br><br>I'm here to help you with blood donation queries. What would you like to know?`;
+            }
+            
+            if (message.includes('thank')) {
+                return `You're welcome! 😊<br><br>Is there anything else I can help you with?`;
+            }
+            
+            if (message.includes('bye') || message.includes('goodbye')) {
+                return `Goodbye! Take care! 👋<br><br>Remember, donating blood saves lives! ❤️`;
+            }
+            
+            // Fallback response
+            return `I appreciate your question! 🤔<br><br>
+                While I'm still learning, I can help you with:<br>
+                • Blood donation process<br>
+                • Eligibility criteria<br>
+                • Finding donors<br>
+                • Creating requests<br>
+                • Safety information<br><br>
+                Try asking about these topics, or contact our support team for detailed assistance! 📧`;
+        },
+        
+        resetChat() {
+            if (confirm('Start a new conversation?')) {
+                this.messages = [];
+                this.hasNewMessage = false;
+            }
+        },
+        
+        scrollToBottom() {
+            setTimeout(() => {
+                const container = document.getElementById('chatbot-messages');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }, 100);
+        },
+        
+        formatTime(timestamp) {
+            return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    }
+}
+</script>
+
+<style>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+}
+</style>

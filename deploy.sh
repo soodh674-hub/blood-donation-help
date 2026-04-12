@@ -1,6 +1,9 @@
 #!/bin/bash
 # Deployment script for Render
 
+echo "Checking database connection..."
+python manage.py check --deploy
+
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 

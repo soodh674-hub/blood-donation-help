@@ -1,242 +1,1275 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}BloodLife - Find Blood Donors Near You in India | Emergency Blood Request{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --neon-red: #ff3b3b;
+        --neon-coral: #ff6b6b;
+        --neon-orange: #ff9500;
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow-x: hidden;
+    }
+
+    /* ===== PARTICLE CANVAS BACKGROUND ===== */
+    #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 4rem 2rem;
+        z-index: 10;
+    }
+
+    .hero-container {
+        text-align: center;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 59, 59, 0.1);
+        border: 1px solid rgba(255, 59, 59, 0.3);
+        border-radius: 50px;
+        color: var(--neon-red);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 8vw, 5rem);
+        font-weight: 900;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero-title .gradient-text {
+        background: linear-gradient(135deg, var(--neon-red) 0%, var(--neon-coral) 50%, var(--neon-orange) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        background-size: 200% auto;
+        animation: gradientShift 3s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% center; }
+        50% { background-position: 100% center; }
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 700px;
+        margin: 0 auto 3rem;
+        line-height: 1.8;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    /* Search Bar */
+    .hero-search-bar {
+        max-width: 700px;
+        margin: 0 auto 2.5rem;
+        animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+
+    .search-container {
+        display: flex;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 59, 59, 0.3);
+        border-radius: 50px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .search-container:focus-within {
+        border-color: var(--neon-red);
+        box-shadow: 0 0 30px rgba(255, 59, 59, 0.3);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1rem;
+        outline: none;
+    }
+
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .search-button {
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        border: none;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-button:hover {
+        background: linear-gradient(135deg, var(--neon-coral), var(--neon-orange));
+        transform: scale(1.05);
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .btn-neon {
+        padding: 1rem 2.5rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-neon-primary {
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        color: white;
+        border: none;
+        box-shadow: 0 0 30px rgba(255, 59, 59, 0.4);
+    }
+
+    .btn-neon-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 0 50px rgba(255, 59, 59, 0.6);
+    }
+
+    .btn-neon-secondary {
+        background: transparent;
+        color: var(--text-primary);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-neon-secondary:hover {
+        border-color: var(--neon-red);
+        box-shadow: 0 0 30px rgba(255, 59, 59, 0.3);
+        transform: translateY(-3px);
+    }
+
+    /* ===== LIVE ACTIVITY FEED ===== */
+    .live-feed-section {
+        padding: 5rem 2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .feed-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1rem;
+    }
+
+    .feed-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+        animation: slideInLeft 0.5s ease-out;
+    }
+
+    .feed-card:hover {
+        border-color: var(--neon-red);
+        transform: translateX(10px);
+        box-shadow: 0 10px 30px rgba(255, 59, 59, 0.2);
+    }
+    
+    .feed-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    
+    .btn-accept-request {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .btn-accept-request:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 59, 59, 0.4);
+    }
+    
+    .btn-view-details {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-details:hover {
+        border-color: var(--neon-red);
+        background: rgba(255, 59, 59, 0.1);
+    }
+
+    .feed-blood-type {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 900;
+        flex-shrink: 0;
+    }
+
+    .feed-info {
+        flex: 1;
+    }
+
+    .feed-location {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .feed-time {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .feed-urgency {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .urgency-emergency {
+        background: rgba(255, 59, 59, 0.2);
+        color: var(--neon-red);
+        border: 1px solid var(--neon-red);
+    }
+
+    .urgency-urgent {
+        background: rgba(255, 149, 0, 0.2);
+        color: var(--neon-orange);
+        border: 1px solid var(--neon-orange);
+    }
+
+    .urgency-normal {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .how-it-works-section {
+        padding: 5rem 2rem;
+        background: var(--bg-secondary);
+        position: relative;
+        z-index: 10;
+    }
+
+    .steps-container {
+        max-width: 1000px;
+        margin: 3rem auto 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        position: relative;
+    }
+
+    .step-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .step-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--neon-red);
+        box-shadow: 0 20px 40px rgba(255, 59, 59, 0.2);
+    }
+
+    .step-number {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 900;
+        box-shadow: 0 0 20px rgba(255, 59, 59, 0.5);
+    }
+
+    .step-icon {
+        font-size: 3rem;
+        margin: 1.5rem 0 1rem;
+    }
+
+    .step-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .step-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    /* ===== IMPACT STATISTICS ===== */
+    .stats-section {
+        padding: 5rem 2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .stats-grid {
+        max-width: 1200px;
+        margin: 3rem auto 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: scale(1.05);
+        border-color: var(--neon-coral);
+        box-shadow: 0 15px 35px rgba(255, 107, 107, 0.2);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-orange));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* ===== FEATURES GRID ===== */
+    .features-section {
+        padding: 5rem 2rem;
+        background: var(--bg-secondary);
+        position: relative;
+        z-index: 10;
+    }
+
+    .features-grid {
+        max-width: 1200px;
+        margin: 3rem auto 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 2.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--neon-red), var(--neon-coral), var(--neon-orange));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--neon-red);
+        box-shadow: 0 20px 40px rgba(255, 59, 59, 0.2);
+    }
+
+    .feature-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, rgba(255, 59, 59, 0.2), rgba(255, 107, 107, 0.2));
+        border: 2px solid var(--neon-red);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon-wrapper {
+        transform: rotate(10deg) scale(1.1);
+        box-shadow: 0 0 30px rgba(255, 59, 59, 0.4);
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+
+    /* ===== FINAL CTA ===== */
+    .cta-section {
+        padding: 6rem 2rem;
+        position: relative;
+        z-index: 10;
+        overflow: hidden;
+    }
+
+    .cta-background {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 59, 59, 0.1), rgba(255, 107, 107, 0.1));
+        animation: pulseGradient 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGradient {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 0.8; }
+    }
+
+    .cta-content {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .cta-title {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+    }
+
+    .cta-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        margin-bottom: 3rem;
+        line-height: 1.8;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-neon {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .feed-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-    <main class="page">
-        <!-- HERO -->
-        <section class="hero min-h-screen relative overflow-hidden">
-            <div class="absolute inset-0 z-0">
-                <!-- Fallback background with gradient overlay -->
-                <div class="absolute inset-0 bg-gradient-to-br from-red-900/20 via-gray-900/80 to-gray-900"></div>
-                
-                <!-- Decorative background elements -->
-                <div class="absolute inset-0">
-                    <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
-                    <div class="absolute bottom-1/3 right-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+<!-- User Authentication Data (Hidden) -->
+<div id="user-auth-data" 
+     data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+     data-user-id="{% if user.is_authenticated %}{{ user.id }}{% else %}{% endif %}"
+     data-username="{% if user.is_authenticated %}{{ user.username }}{% else %}{% endif %}"
+     style="display: none;">
+</div>
+
+<!-- Particle Animation Canvas -->
+<canvas id="particle-canvas" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"></canvas>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="hero-section">
+    <div class="hero-container container mx-auto">
+        <div class="hero-badge">
+            <span>⚡</span>
+            <span>Real-Time Blood Donation Network</span>
+        </div>
+        
+        <h1 class="hero-title">
+            Every Drop<br>
+            <span class="gradient-text">Creates a Ripple</span>
+        </h1>
+        
+        <p class="hero-subtitle">
+            Join the future of blood donation. Our AI-powered platform connects donors with those in need 
+            instantly, saving lives through technology and compassion.
+        </p>
+        
+        <!-- Search Bar -->
+        <div class="hero-search-bar">
+            <form id="home-search-form" class="search-container">
+                <input type="text" 
+                       id="home-search-input"
+                       name="q" 
+                       class="search-input" 
+                       placeholder="Search for blood donors by location or blood group (e.g., 'A+ Delhi' or 'O+ Mumbai')..."
+                       required>
+                <button type="submit" class="search-button">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Search
+                </button>
+            </form>
+        </div>
+        
+        <div class="hero-buttons">
+            {% if user.is_authenticated %}
+            <a href="/requests/create/" class="btn-neon btn-neon-primary">
+                Request Blood Now
+            </a>
+            <a href="/accounts/dashboard/" class="btn-neon btn-neon-secondary">
+                Go to Dashboard
+            </a>
+            {% else %}
+            <a href="/accounts/register/" class="btn-neon btn-neon-primary">
+                Join as Donor
+            </a>
+            <a href="/accounts/login/" class="btn-neon btn-neon-secondary">
+                Sign In
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== LIVE ACTIVITY FEED ===== -->
+<section class="live-feed-section">
+    <div class="container mx-auto">
+        <div class="section-header">
+        <h2 class="section-title">Live Activity Feed</h2>
+        <p class="section-subtitle">Real-time blood requests happening now</p>
+    </div>
+    
+    <div class="feed-container" id="liveFeed">
+        {% if blood_requests %}
+            {% for request in blood_requests|slice:":5" %}
+            <div class="feed-card">
+                <div class="feed-blood-type">{{ request.patient_blood_group }}</div>
+                <div class="feed-info">
+                    <div class="feed-location">{{ request.city }}, {{ request.state }}</div>
+                    <div class="feed-time">{{ request.created_at|timesince }} ago</div>
+                </div>
+                <div class="feed-urgency {% if request.priority == 'emergency' %}urgency-emergency{% elif request.priority == 'urgent' %}urgency-urgent{% else %}urgency-normal{% endif %}">{{ request.priority|title }}</div>
+                {% if user.is_authenticated %}
+                <div class="feed-actions">
+                    <button onclick="acceptRequest({{ request.id }})" class="btn-accept-request" title="Accept this request">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Accept
+                    </button>
+                    <button onclick="viewRequestDetails({{ request.id }})" class="btn-view-details" title="View details">
+                        Details
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="feed-card">
+                <div class="feed-info" style="text-align: center; color: #9ca3af;">
+                    <p>No active blood requests at the moment</p>
+                    <p style="font-size: 0.9rem;">Be the first to request blood!</p>
                 </div>
             </div>
+        {% endif %}
+    </div>
+    </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-it-works-section">
+    <div class="container mx-auto">
+        <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Three simple steps to save lives</p>
+        </div>
+        
+        <div class="steps-container">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-icon">📝</div>
+            <h3 class="step-title">Request or Donate</h3>
+            <p class="step-description">
+                Create a blood request or register as a donor. Share your location and blood type 
+                to get started.
+            </p>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-icon">🤖</div>
+            <h3 class="step-title">Get Matched</h3>
+            <p class="step-description">
+                Our AI algorithm instantly finds compatible donors or recipients nearby based on 
+                blood type, location, and availability.
+            </p>
+        </div>
+        
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-icon">❤️</div>
+            <h3 class="step-title">Save Lives</h3>
+            <p class="step-description">
+                Connect directly, coordinate donation, and make a life-saving impact. Track your 
+                contribution in real-time.
+            </p>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- ===== IMPACT STATISTICS ===== -->
+<section class="stats-section">
+    <div class="container mx-auto">
+        <div class="section-header">
+            <h2 class="section-title">Our Impact</h2>
+            <p class="section-subtitle">Together we're making a difference</p>
+        </div>
+        
+        <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" data-target="15234">0</div>
+            <div class="stat-label">Active Donors</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💉</div>
+            <div class="stat-value" data-target="8967">0</div>
+            <div class="stat-label">Lives Saved</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">🏙️</div>
+            <div class="stat-value" data-target="342">0</div>
+            <div class="stat-label">Cities Covered</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" data-target="98">0</div>
+            <div class="stat-label">% Success Rate</div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES GRID ===== -->
+<section class="features-section">
+    <div class="container mx-auto">
+        <div class="section-header">
+            <h2 class="section-title">Why Choose BloodLife?</h2>
+            <p class="section-subtitle">Advanced technology meets compassionate care</p>
+        </div>
+        
+        <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">⚡</div>
+            <h3 class="feature-title">Instant Matching</h3>
+            <p class="feature-description">
+                AI-powered algorithm finds compatible donors in your area within seconds, 
+                not hours. Speed saves lives.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">✓</div>
+            <h3 class="feature-title">Verified Donors</h3>
+            <p class="feature-description">
+                All donors undergo strict verification and medical history checks for maximum 
+                safety and reliability.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">📍</div>
+            <h3 class="feature-title">Real-time Tracking</h3>
+            <p class="feature-description">
+                Track donor location in real-time with ETA updates and optimized routes. 
+                Know exactly when help arrives.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">💬</div>
+            <h3 class="feature-title">Secure Chat</h3>
+            <p class="feature-description">
+                Built-in messaging system to coordinate donation details privately and securely 
+                between donors and recipients.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">🔔</div>
+            <h3 class="feature-title">Smart Alerts</h3>
+            <p class="feature-description">
+                Get notified instantly when emergency requests match your blood type nearby. 
+                Never miss a chance to help.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon-wrapper">🏆</div>
+            <h3 class="feature-title">Reward System</h3>
+            <p class="feature-description">
+                Earn badges, points, and recognition for your life-saving contributions. 
+                Heroes deserve appreciation.
+            </p>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="cta-section">
+    <div class="cta-background"></div>
+    <div class="container mx-auto">
+        <div class="cta-content">
+        <h2 class="cta-title">Ready to Make a Difference?</h2>
+        <p class="cta-subtitle">
+            Join thousands of heroes saving lives every day. Your donation can save up to 3 lives. 
+            Start your journey today.
+        </p>
+        
+        <div class="hero-buttons">
+            {% if user.is_authenticated %}
+            <a href="/requests/create/" class="btn-neon btn-neon-primary">
+                Create Blood Request
+            </a>
+            <a href="/accounts/search/" class="btn-neon btn-neon-secondary">
+                Find Donors Near You
+            </a>
+            {% else %}
+            <a href="/accounts/register/" class="btn-neon btn-neon-primary">
+                Join Now - It's Free
+            </a>
+            <a href="/accounts/login/" class="btn-neon btn-neon-secondary">
+                Sign In to Continue
+            </a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ===== PARTICLE ANIMATION SYSTEM =====
+class ParticleSystem {
+    constructor() {
+        this.canvas = document.getElementById('particle-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.resize();
+        this.init();
+        this.animate();
+        
+        window.addEventListener('resize', () => this.resize());
+    }
+    
+    resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    }
+    
+    init() {
+        const particleCount = Math.min(50, Math.floor(window.innerWidth / 30));
+        
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push({
+                x: Math.random() * this.canvas.width,
+                y: Math.random() * this.canvas.height,
+                size: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 0.5,
+                speedY: (Math.random() - 0.5) * 0.5,
+                opacity: Math.random() * 0.5 + 0.2
+            });
+        }
+    }
+    
+    animate() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.particles.forEach(particle => {
+            // Update position
+            particle.x += particle.speedX;
+            particle.y += particle.speedY;
             
-            <div class="hero-overlay"></div>
-            <div class="hero-content relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div class="max-w-3xl">
-                    <p class="eyebrow text-red-400 uppercase tracking-wider text-sm font-medium animate-on-scroll">
-                        Blood Donation Platform
-                    </p>
-                    <h1 class="text-4xl md:text-6xl font-bold leading-tight mt-4 animate-on-scroll" style="animation-delay: 0.1s;">
-                        Blood that moves today.<br>
-                        <span class="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">Lives that continue tomorrow.</span>
-                    </h1>
-                    <p class="hero-copy text-xl text-gray-300 mt-6 animate-on-scroll" style="animation-delay: 0.2s;">
-                        A calm, clear way to connect people who can give with patients who urgently need blood –
-                        built for real hospitals, real donors, and real emergencies.
-                    </p>
+            // Wrap around edges
+            if (particle.x < 0) particle.x = this.canvas.width;
+            if (particle.x > this.canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = this.canvas.height;
+            if (particle.y > this.canvas.height) particle.y = 0;
+            
+            // Draw particle
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = `rgba(255, 59, 59, ${particle.opacity})`;
+            this.ctx.fill();
+        });
+        
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
+// ===== COUNTER ANIMATION =====
+function animateCounters() {
+    const counters = document.querySelectorAll('.stat-value[data-target]');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += step;
+            if (current < target) {
+                counter.textContent = Math.floor(current).toLocaleString();
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target.toLocaleString() + (target === 98 ? '%' : '+');
+            }
+        };
+        
+        updateCounter();
+    });
+}
+
+// ===== LIVE FEED UPDATER =====
+function updateLiveFeed() {
+    console.log('🔄 Fetching live requests...');
+    fetch('/api/requests/live/')
+        .then(response => {
+            console.log('API Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Received data:', data);
+            console.log('Data length:', data ? data.length : 0);
+            
+            const feedContainer = document.getElementById('liveFeed');
+            if (!feedContainer) {
+                console.error('❌ liveFeed container not found in DOM!');
+                return;
+            }
+            
+            if (data && data.length > 0) {
+                console.log(`✅ Displaying ${data.length} requests`);
+                
+                // Check if user is authenticated
+                const isAuthenticated = document.getElementById('particle-canvas').dataset.authenticated === 'true';
+                
+                feedContainer.innerHTML = data.slice(0, 5).map(request => {
+                    const urgencyClass = request.priority === 'emergency' ? 'urgency-emergency' : 
+                                       request.priority === 'urgent' ? 'urgency-urgent' : 'urgency-normal';
                     
-                    <!-- Search Bar for Logged-in Users -->
-                    {% if user.is_authenticated %}
-                    <div class="mt-8 animate-on-scroll" style="animation-delay: 0.3s;">
-                        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-xl max-w-2xl mx-auto">
-                            <h3 class="text-lg font-semibold text-white mb-4 text-center">Find Blood Donors Near You</h3>
-                            <form id="home-search-form" class="space-y-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <select id="home-blood-group" name="blood_group" required
-                                                class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                                            <option value="">Select Blood Group</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A-">A-</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B-">B-</option>
-                                            <option value="AB+">AB+</option>
-                                            <option value="AB-">AB-</option>
-                                            <option value="O+">O+</option>
-                                            <option value="O-">O-</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <input type="text" id="home-pincode" name="pincode" 
-                                               placeholder="Enter pincode (optional)"
-                                               maxlength="6"
-                                               class="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                                    </div>
-                                </div>
-                                <button type="submit" 
-                                        class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                    Search Donors
-                                </button>
-                            </form>
+                    console.log(`Request: ${request.patient_blood_group} - ${request.city}, ${request.state}`);
+                    
+                    // Action buttons HTML (only show if authenticated)
+                    const actionButtons = isAuthenticated ? `
+                        <div class="feed-actions">
+                            <button onclick="acceptRequest(${request.id})" class="btn-accept-request" title="Accept this request">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Accept
+                            </button>
+                            <button onclick="viewRequestDetails(${request.id})" class="btn-view-details" title="View details">
+                                Details
+                            </button>
                         </div>
-                    </div>
-                    {% endif %}
-                    <div class="hero-actions mt-8 flex flex-wrap gap-4 animate-on-scroll" style="animation-delay: 0.3s;">
-                        <a href="#join" class="btn btn-primary bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                            Become a donor
-                        </a>
-                        <a href="#story" class="btn btn-ghost bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/20">
-                            Why it matters
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="hero-media scroll-parallax relative z-10">
-                <div class="hero-media-card bg-white/10 backdrop-blur-md rounded-2xl p-6 max-w-xs ml-auto animate-on-scroll" style="animation-delay: 0.4s;">
-                    <p class="hero-stat-label text-red-400 uppercase tracking-wide text-sm">Every 2 seconds</p>
-                    <p class="hero-stat-value text-white text-2xl font-bold">someone needs blood.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 01 STORY -->
-        <section id="story" class="story-block py-20 relative">
-            <div class="story-label scroll-fade max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-                <span class="story-index text-2xl font-bold text-red-500">01</span>
-                <span class="story-tag text-gray-400 uppercase tracking-wider ml-4">Why blood donation matters</span>
-            </div>
-            <div class="story-body scroll-fade max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 animate-on-scroll" style="animation-delay: 0.1s;">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8">Blood can't be manufactured. It has to be given.</h2>
-                <p class="text-xl text-gray-300 mb-8">
-                    In emergencies, surgeries, cancer treatments, childbirth complications, and chronic illnesses,
-                    safe blood is often the one thing that decides whether a patient gets a second chance.
-                </p>
-                <div class="story-grid grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-                    <div class="story-point bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 animate-on-scroll" style="animation-delay: 0.2s;">
-                        <h3 class="text-xl font-semibold text-white mb-3">Emergencies</h3>
-                        <p class="text-gray-300">Accidents, trauma, and disasters require immediate transfusions when every minute counts.</p>
-                    </div>
-                    <div class="story-point bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 animate-on-scroll" style="animation-delay: 0.3s;">
-                        <h3 class="text-xl font-semibold text-white mb-3">Treatments</h3>
-                        <p class="text-gray-300">Cancer, thalassemia, sickle cell disease, and major surgeries all depend on regular blood and platelet support.</p>
-                    </div>
-                    <div class="story-point bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 animate-on-scroll" style="animation-delay: 0.4s;">
-                        <h3 class="text-xl font-semibold text-white mb-3">India's gap</h3>
-                        <p class="text-gray-300">Millions of units are needed each year, yet many hospitals still face shortages – especially for rare groups.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="story-media scroll-parallax absolute right-0 top-0 w-full md:w-1/2 h-full flex items-center justify-end pr-8">
-                <div class="w-full max-w-md animate-on-scroll" style="animation-delay: 0.5s;">
-                    <div class="bg-gradient-to-br from-red-500/25 to-red-600/20 rounded-2xl p-8 border border-red-400/30 shadow-xl">
-                        <div class="aspect-w-16 aspect-h-9">
-                            <div class="bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-xl h-64 flex items-center justify-center border border-red-500/20">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-red-300 font-bold text-lg">Seamless Donation</p>
-                                    <p class="text-red-200 text-sm mt-2 font-medium">Secure & streamlined blood giving</p>
-                                </div>
+                    ` : '';
+                    
+                    return `
+                        <div class="feed-card">
+                            <div class="feed-blood-type">${request.patient_blood_group}</div>
+                            <div class="feed-info">
+                                <div class="feed-location">${request.city}, ${request.state}</div>
+                                <div class="feed-time">${getTimeAgo(request.created_at)}</div>
                             </div>
+                            <div class="feed-urgency ${urgencyClass}">${request.priority}</div>
+                            ${actionButtons}
                         </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+                    `;
+                }).join('');
+            } else {
+                console.warn('⚠️ No requests to display');
+                feedContainer.innerHTML = '<div class="feed-card"><p style="text-align:center;color:#9ca3af;">No active blood requests at the moment</p></div>';
+            }
+        })
+        .catch(error => {
+            console.error('❌ Feed update error:', error);
+        });
+}
 
-        <!-- 02 HOW IT WORKS -->
-        <section id="how-it-works" class="story-block py-20 relative bg-gradient-to-b from-gray-900/50 to-gray-800/50">
-            <div class="story-label scroll-fade max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-                <span class="story-index text-2xl font-bold text-red-500">02</span>
-                <span class="story-tag text-gray-400 uppercase tracking-wider ml-4">How the platform works</span>
-            </div>
-            <div class="story-body scroll-fade max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 animate-on-scroll" style="animation-delay: 0.1s;">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-8">From request to donation in a few simple steps.</h2>
-                <ol class="steps space-y-8">
-                    <li class="flex items-start animate-on-scroll" style="animation-delay: 0.2s;">
-                        <div class="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold mr-4">1</div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-white">Hospitals create a request</h3>
-                            <p class="text-gray-300">Doctors or admins log in, add the patient's blood group, urgency, location, and contact details.</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start animate-on-scroll" style="animation-delay: 0.3s;">
-                        <div class="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold mr-4">2</div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-white">Smart matching finds nearby donors</h3>
-                            <p class="text-gray-300">Our algorithm checks blood group compatibility, distance, and donor availability to suggest best matches.</p>
-                        </div>
-                    </li>
-                    <li class="flex items-start animate-on-scroll" style="animation-delay: 0.4s;">
-                        <div class="flex-shrink-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold mr-4">3</div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-white">Donors are notified instantly</h3>
-                            <p class="text-gray-300">Verified donors receive clear, actionable notifications and can respond quickly to help.</p>
-                        </div>
-                    </li>
-                </ol>
-            </div>
-            <div class="story-media scroll-parallax absolute left-0 top-0 w-full md:w-1/2 h-full flex items-center justify-start pl-8">
-                <div class="w-full max-w-md animate-on-scroll" style="animation-delay: 0.5s;">
-                    <div class="bg-gradient-to-br from-blue-500/25 to-blue-600/20 rounded-2xl p-8 border border-blue-400/30 shadow-xl">
-                        <div class="aspect-w-16 aspect-h-9">
-                            <div class="bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-xl h-64 flex items-center justify-center border border-blue-500/20">
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <p class="text-blue-300 font-bold text-lg">Smart Matching</p>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+function getTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+}
 
-        <!-- 03 IMPACT -->
-        <section id="impact" class="impact-block py-20">
-            <div class="impact-inner max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-                <div class="impact-header text-center mb-12">
-                    <span class="story-index text-2xl font-bold text-red-500">03</span>
-                    <span class="story-tag text-gray-400 uppercase tracking-wider ml-4">Impact at a glance</span>
-                </div>
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-white mb-16">Designed for people first – donors, patients, and hospitals.</h2>
-                <div class="impact-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="impact-card bg-white/5 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10 animate-on-scroll" style="animation-delay: 0.1s;">
-                        <p class="impact-number text-5xl font-bold text-red-400 mb-4" data-count-to="3">0</p>
-                        <p class="impact-text text-gray-300">Patients who can benefit from a single blood donation (red cells, plasma, platelets).</p>
-                    </div>
-                    <div class="impact-card bg-white/5 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10 animate-on-scroll" style="animation-delay: 0.2s;">
-                        <p class="impact-number text-5xl font-bold text-red-400 mb-4" data-count-to="90">0</p>
-                        <p class="impact-text text-gray-300">Days is the typical safe gap between donations – our system helps donors track this.</p>
-                    </div>
-                    <div class="impact-card bg-white/5 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10 animate-on-scroll" style="animation-delay: 0.3s;">
-                        <p class="impact-number text-5xl font-bold text-red-400 mb-4" data-count-to="24">0</p>
-                        <p class="impact-text text-gray-300">Requests and matches can be created, monitored, and updated at any time.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+// Get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-        <!-- 04 JOIN -->
-        <section id="join" class="join-block py-20">
-            <div class="join-inner max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-                <div class="join-pill text-center text-sm uppercase tracking-wider text-white bg-white/10 backdrop-blur-md rounded-full py-2 px-6 inline-block mb-8 border border-white/20">
-                    04 · Take the next step
-                </div>
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-white mb-6">Ready to help? Start where you are.</h2>
-                <p class="join-copy text-center text-xl text-gray-300 mb-10">
-                    If you are healthy and eligible, donating blood once every 3–4 months can change someone's story.
-                    Hospitals and blood banks can use this platform to make every unit count.
-                </p>
-                <div class="join-actions flex flex-wrap justify-center gap-6 mb-10">
-                    <a href="/accounts/register/" class="btn btn-primary bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                        Register as donor
-                    </a>
-                    <a href="/admin/" class="btn btn-ghost bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-white/20">
-                        Hospital / admin login
-                    </a>
-                </div>
-                <p class="join-note text-center text-gray-400">
-                    Not sure if you're eligible? Your local blood bank will guide you on age, weight, health, and donation intervals.
-                </p>
-            </div>
-        </section>
-    </main>
+// Accept request function
+async function acceptRequest(requestId) {
+    console.log('🔵 Accepting request:', requestId);
+
+    try {
+        // Check authentication using global variable
+        if (!window.isUserLoggedIn) {
+            alert('⚠️ Please login to accept blood requests');
+            window.location.href = '/accounts/login/?next=/';
+            return;
+        }
+
+        // Show confirmation
+        if (!confirm('Are you sure you want to accept this blood donation request?')) {
+            return;
+        }
+
+        // Call API to respond to request
+        const response = await fetch(`/api/requests/${requestId}/respond/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('✅ Request accepted successfully! You will be contacted soon.');
+            // Reload the feed to update
+            updateLiveFeed();
+        } else {
+            throw new Error(data.error || data.detail || 'Failed to accept request');
+        }
+    } catch (error) {
+        console.error('❌ Error accepting request:', error);
+        // If it's a network error, try to redirect to login
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            alert('⚠️ Please login to accept blood requests');
+            window.location.href = '/accounts/login/?next=/';
+            return;
+        }
+        alert(`Error: ${error.message}`);
+    }
+}
+
+// View request details function
+function viewRequestDetails(requestId) {
+    console.log('👁️ Viewing request details:', requestId);
+    // Navigate to track dashboard with specific request
+    window.location.href = `/requests/track/?request_id=${requestId}`;
+}
+
+// ===== INTERSECTION OBSERVER FOR ANIMATIONS =====
+const observerOptions = {
+    threshold: 0.2,
+    rootMargin: '0px 0px -100px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            if (entry.target.classList.contains('stats-section')) {
+                animateCounters();
+            }
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// ===== INITIALIZE ON LOAD =====
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize particle system
+    new ParticleSystem();
+    
+    // Observe sections for animations
+    document.querySelectorAll('.stats-section, .features-section, .how-it-works-section').forEach(section => {
+        section.style.opacity = '0';
+        section.style.transform = 'translateY(30px)';
+        section.style.transition = 'all 0.6s ease-out';
+        observer.observe(section);
+    });
+    
+    // Update live feed initially and every 30 seconds
+    updateLiveFeed();
+    setInterval(updateLiveFeed, 30000);
+    
+    // ===== HOME SEARCH BAR FUNCTIONALITY =====
+    const homeSearchForm = document.getElementById('home-search-form');
+    const homeSearchInput = document.getElementById('home-search-input');
+    
+    if (homeSearchForm && homeSearchInput) {
+        homeSearchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const query = homeSearchInput.value.trim();
+            if (!query) {
+                alert('Please enter a search term');
+                return;
+            }
+            
+            console.log('🔍 Processing search query:', query);
+            
+            // Smart search parsing
+            const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+            let bloodGroup = null;
+            let location = '';
+            
+            // Check if query contains a blood group
+            const upperQuery = query.toUpperCase();
+            for (const bg of bloodGroups) {
+                if (upperQuery.includes(bg)) {
+                    bloodGroup = bg;
+                    // Remove blood group from query to get location
+                    location = query.replace(new RegExp(bg, 'gi'), '').trim();
+                    break;
+                }
+            }
+            
+            // If no blood group found, treat entire query as location
+            if (!bloodGroup) {
+                location = query;
+            }
+            
+            console.log('📊 Parsed search:', { bloodGroup, location });
+            
+            // Build search URL
+            let searchUrl = '/accounts/search/?';
+            const params = new URLSearchParams();
+            
+            if (bloodGroup) {
+                params.append('blood_group', bloodGroup);
+            }
+            
+            if (location) {
+                // Try to detect if it's a pincode (6 digits)
+                const pincodeMatch = location.match(/\b\d{6}\b/);
+                if (pincodeMatch) {
+                    params.append('pincode', pincodeMatch[0]);
+                } else {
+                    params.append('city', location);
+                }
+            }
+            
+            searchUrl += params.toString();
+            
+            console.log('🚀 Redirecting to:', searchUrl);
+            
+            // Redirect to search page with parameters
+            window.location.href = searchUrl;
+        });
+    }
+});
+</script>
 {% endblock %}

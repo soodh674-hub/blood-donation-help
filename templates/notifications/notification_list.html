@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - BloodHelp{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-bell"></i> Notifications</h2>
+            <hr>
+            
+            {% if notifications %}
+                <!-- Mark All as Read Button -->
+                <div class="mb-3">
+                    <button id="markAllReadBtn" class="btn btn-outline-primary" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i> Mark All as Read
+                    </button>
+                    <span class="badge bg-danger ms-2">{{ unread_count }} Unread</span>
+                </div>
+                
+                <!-- Notification List -->
+                <div class="list-group">
+                    {% for notification in notifications %}
+                    <div class="list-group-item notification-item {% if not notification.is_read %}unread{% endif %}" 
+                         data-notification-id="{{ notification.id }}">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <!-- Icon -->
+                            <div class="notification-icon me-3">
+                                {% if notification.notification_type == 'blood_request' %}
+                                    <i class="fas fa-hand-holding-medical text-danger"></i>
+                                {% elif notification.notification_type == 'donation_reminder' %}
+                                    <i class="fas fa-clock text-primary"></i>
+                                {% elif notification.notification_type == 'eligibility' %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle text-info"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">
+                                    {{ notification.title }}
+                                    {% if not notification.is_read %}
+                                        <span class="badge bg-danger badge-sm">New</span>
+                                    {% endif %}
+                                </h5>
+                                <p class="mb-2">{{ notification.message }}</p>
+                                <small class="text-muted">
+                                    <i class="far fa-clock"></i> {{ notification.created_at|timesince }} ago
+                                </small>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="ms-3">
+                                <button class="btn btn-sm btn-outline-secondary mark-read-btn" 
+                                        onclick="markAsRead('{{ notification.id }}')">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination Info -->
+                <div class="mt-3 text-center text-muted">
+                    <small>Showing {{ notifications.count }} notification(s)</small>
+                </div>
+                
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                    <h4>No Notifications</h4>
+                    <p class="text-muted">You don't have any notifications yet.</p>
+                    <p class="text-muted">We'll notify you when there are updates!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    .notification-item {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .notification-item:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: translateX(5px);
+    }
+    
+    .notification-item.unread {
+        border-left-color: #dc3545;
+        background-color: #fff5f5;
+    }
+    
+    .notification-item.read {
+        opacity: 0.7;
+    }
+    
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .mark-read-btn {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .notification-item:hover .mark-read-btn {
+        opacity: 1;
+    }
+    
+    @media (max-width: 768px) {
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .mark-read-btn {
+            opacity: 1; /* Always show on mobile */
+        }
+    }
+</style>
+
+<!-- JavaScript for Interactions -->
+<script>
+    /**
+     * Mark a single notification as read
+     */
+    function markAsRead(notificationId) {
+        fetch(`/notifications/${notificationId}/mark-read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the 'unread' styling
+                const notificationEl = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                notificationEl.classList.remove('unread');
+                notificationEl.classList.add('read');
+                
+                // Remove the 'New' badge
+                const badge = notificationEl.querySelector('.badge.bg-danger');
+                if (badge) badge.remove();
+                
+                // Update unread count
+                updateUnreadCount(-1);
+                
+                // Show toast notification
+                showToast('Notification marked as read');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error marking notification as read', 'error');
+        });
+    }
+    
+    /**
+     * Mark all notifications as read
+     */
+    function markAllAsRead() {
+        fetch('{% url "notifications:mark-all-read" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove all 'unread' styling
+                document.querySelectorAll('.notification-item.unread').forEach(el => {
+                    el.classList.remove('unread');
+                    el.classList.add('read');
+                    
+                    const badge = el.querySelector('.badge.bg-danger');
+                    if (badge) badge.remove();
+                });
+                
+                // Update unread count to 0
+                updateUnreadCount(0, true);
+                
+                // Hide mark all button
+                document.getElementById('markAllReadBtn').style.display = 'none';
+                
+                // Show success message
+                showToast('All notifications marked as read');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error marking all notifications as read', 'error');
+        });
+    }
+    
+    /**
+     * Update unread count display
+     */
+    function updateUnreadCount(newCount, setAbsolute = false) {
+        const badge = document.querySelector('#notification-badge');
+        if (badge) {
+            if (setAbsolute) {
+                badge.textContent = newCount;
+            } else {
+                const currentCount = parseInt(badge.textContent) || 0;
+                const updated = Math.max(0, currentCount + newCount);
+                badge.textContent = updated > 9 ? '9+' : updated;
+            }
+            
+            if (parseInt(badge.textContent) === 0) {
+                badge.style.display = 'none';
+            } else {
+                badge.style.display = 'inline-block';
+            }
+        }
+    }
+    
+    /**
+     * Show toast notification
+     */
+    function showToast(message, type = 'success') {
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease';
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    /**
+     * Get CSRF token from cookie
+     */
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

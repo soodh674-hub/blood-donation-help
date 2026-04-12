@@ -1,0 +1,1891 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Settings - BloodLife{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --border-color: rgba(255, 255, 255, 0.08);
+        --neon-red: #ff3b3b;
+        --neon-coral: #ff6b6b;
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+    }
+
+    .settings-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* Settings content max-width for large screens */
+    .settings-content-wrapper {
+        max-width: 1024px;
+        margin: 0 auto;
+    }
+
+    .settings-header {
+        margin-bottom: 2rem;
+    }
+
+    .settings-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .settings-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Settings Layout */
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
+    }
+
+    /* Sidebar Navigation */
+    .settings-sidebar {
+        background: var(--bg-card);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+        height: fit-content;
+        position: sticky;
+        top: 2rem;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--text-secondary);
+        border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+        background: rgba(255, 59, 59, 0.1);
+        color: var(--text-primary);
+        border-color: var(--neon-red);
+    }
+
+    .nav-item.active {
+        background: linear-gradient(135deg, rgba(255, 59, 59, 0.2), rgba(255, 107, 107, 0.2));
+        color: var(--text-primary);
+        border-color: var(--neon-red);
+        box-shadow: 0 0 20px rgba(255, 59, 59, 0.3);
+    }
+
+    .nav-icon {
+        font-size: 1.3rem;
+    }
+
+    .nav-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* Content Area */
+    .settings-content {
+        background: var(--bg-card);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2.5rem;
+        min-height: 600px;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .tab-description {
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    /* Form Sections */
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .form-input, .form-select {
+        padding: 0.875rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--neon-red);
+        box-shadow: 0 0 0 3px rgba(255, 59, 59, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Toggle Switches */
+    .toggle-group {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .toggle-info h4 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .toggle-info p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 60px;
+        height: 32px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        transition: 0.3s;
+        border-radius: 32px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 24px;
+        width: 24px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(28px);
+    }
+
+    /* Buttons */
+    .btn-save {
+        padding: 1rem 2.5rem;
+        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(255, 59, 59, 0.5);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-available {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+        border: 1px solid #10b981;
+    }
+
+    .status-not-available {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+
+    /* Info Box */
+    .info-box {
+        background: rgba(255, 149, 0, 0.1);
+        border: 1px solid rgba(255, 149, 0, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-box p {
+        color: #ff9500;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .settings-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .settings-sidebar {
+            position: static;
+        }
+
+        .sidebar-nav {
+            flex-direction: row;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-item {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 1rem;
+        }
+
+        .settings-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 2rem;
+        }
+
+        .settings-subtitle {
+            font-size: 1rem;
+        }
+
+        .settings-content {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn-save {
+            width: 100%;
+        }
+
+        .tab-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .settings-container {
+            padding: 0.75rem;
+        }
+
+        .settings-content {
+            padding: 1rem;
+        }
+
+        .settings-title {
+            font-size: 1.75rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+        }
+
+        .form-input,
+        .form-select {
+            padding: 0.75rem 0.875rem;
+            font-size: 0.95rem;
+        }
+
+        .toggle-group {
+            padding: 0.875rem;
+        }
+
+        .nav-item {
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* =========================================
+       COMPREHENSIVE RESPONSIVE DESIGN
+       ========================================= */
+
+    /* Tablet Landscape (1024px and below) */
+    @media (max-width: 1024px) {
+        .settings-container {
+            padding: 1.5rem;
+        }
+
+        .settings-layout {
+            grid-template-columns: 240px 1fr;
+            gap: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 2.25rem;
+        }
+
+        .settings-sidebar {
+            padding: 1.25rem;
+        }
+    }
+
+    /* Tablet Portrait (768px and below) */
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 1rem;
+        }
+
+        .settings-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-title {
+            font-size: 2rem;
+        }
+
+        .settings-subtitle {
+            font-size: 1rem;
+        }
+
+        /* Stack sidebar on top */
+        .settings-layout {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .settings-sidebar {
+            position: relative;
+            top: 0;
+            padding: 1rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Horizontal scrollable tabs */
+        .sidebar-nav {
+            flex-direction: row;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neon-red) transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--neon-red);
+            border-radius: 3px;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .nav-label {
+            font-size: 0.85rem;
+        }
+
+        /* Adjust form grids */
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-section {
+            padding: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Profile header adjustments */
+        .profile-header .flex {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn-save,
+        .btn-cancel,
+        .btn-secondary {
+            width: 100%;
+        }
+
+        /* Toggle groups */
+        .toggle-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .toggle-label {
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    /* Mobile (480px and below) */
+    @media (max-width: 480px) {
+        .settings-container {
+            padding: 0.75rem;
+        }
+
+        .settings-header {
+            margin-bottom: 1rem;
+        }
+
+        .settings-title {
+            font-size: 1.75rem;
+        }
+
+        .settings-subtitle {
+            font-size: 0.9rem;
+        }
+
+        /* Smaller sidebar */
+        .settings-sidebar {
+            padding: 0.75rem;
+            border-radius: 12px;
+        }
+
+        .nav-item {
+            padding: 0.625rem 0.875rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+        }
+
+        /* Compact form sections */
+        .form-section {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            margin-bottom: 0.875rem;
+        }
+
+        .tab-title {
+            font-size: 1.5rem;
+        }
+
+        .tab-description {
+            font-size: 0.9rem;
+        }
+
+        /* Smaller form inputs */
+        .form-label {
+            font-size: 0.85rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.625rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        /* Profile adjustments */
+        .profile-avatar {
+            width: 80px !important;
+            height: 80px !important;
+        }
+
+        .profile-avatar span {
+            font-size: 1.75rem !important;
+        }
+
+        .profile-name {
+            font-size: 1.5rem !important;
+        }
+
+        .profile-username {
+            font-size: 0.9rem !important;
+        }
+
+        /* Buttons */
+        .btn-save,
+        .btn-cancel,
+        .btn-secondary {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Toggle switches */
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch::before {
+            width: 18px;
+            height: 18px;
+        }
+
+        .toggle-switch.active::before {
+            transform: translateX(20px);
+        }
+
+        /* Cards and lists */
+        .connected-account,
+        .privacy-item,
+        .danger-item {
+            padding: 0.875rem;
+        }
+
+        .connected-account-info h4,
+        .privacy-info h4,
+        .danger-info h4 {
+            font-size: 0.95rem;
+        }
+
+        .connected-account-info p,
+        .privacy-info p,
+        .danger-info p {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Small Mobile (360px and below) */
+    @media (max-width: 360px) {
+        .settings-container {
+            padding: 0.5rem;
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+        }
+
+        .settings-subtitle {
+            font-size: 0.85rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+        }
+
+        .form-section {
+            padding: 0.875rem;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.5rem 0.625rem;
+            font-size: 0.85rem;
+        }
+
+        .tab-title {
+            font-size: 1.25rem;
+        }
+
+        .profile-avatar {
+            width: 70px !important;
+            height: 70px !important;
+        }
+
+        .profile-avatar span {
+            font-size: 1.5rem !important;
+        }
+
+        .profile-name {
+            font-size: 1.25rem !important;
+        }
+    }
+
+    /* Large Desktop (1440px and above) */
+    @media (min-width: 1440px) {
+        .settings-container {
+            max-width: 1600px;
+            padding: 3rem;
+        }
+
+        .settings-layout {
+            grid-template-columns: 320px 1fr;
+            gap: 3rem;
+        }
+
+        .settings-title {
+            font-size: 3rem;
+        }
+
+        .settings-sidebar {
+            padding: 2rem;
+        }
+
+        .nav-item {
+            padding: 1.25rem 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .form-section {
+            padding: 2rem;
+        }
+
+        .form-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Extra Large Desktop (1920px and above) */
+    @media (min-width: 1920px) {
+        .settings-container {
+            max-width: 1800px;
+            padding: 4rem;
+        }
+
+        .settings-layout {
+            grid-template-columns: 360px 1fr;
+            gap: 4rem;
+        }
+
+        html {
+            font-size: 18px;
+        }
+    }
+
+    /* Landscape orientation on mobile */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .settings-container {
+            padding: 0.5rem;
+        }
+
+        .settings-header {
+            margin-bottom: 0.75rem;
+        }
+
+        .settings-title {
+            font-size: 1.5rem;
+        }
+
+        .form-section {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .nav-item {
+            min-height: 44px;
+        }
+
+        .btn-save,
+        .btn-cancel,
+        .btn-secondary {
+            min-height: 44px;
+        }
+
+        .toggle-switch {
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            min-height: 44px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-10 settings-content-wrapper">
+    <!-- Header -->
+    <div class="settings-header">
+        <h1 class="settings-title">⚙️ Settings</h1>
+        <p class="settings-subtitle">Manage your account, preferences, and privacy</p>
+    </div>
+
+    <!-- Settings Layout -->
+    <div class="settings-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="settings-sidebar">
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-tab="profile">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-label">Profile</span>
+                </div>
+                <div class="nav-item" data-tab="account">
+                    <span class="nav-icon">�</span>
+                    <span class="nav-label">Account</span>
+                </div>
+                <div class="nav-item" data-tab="donor">
+                    <span class="nav-icon">🩸</span>
+                    <span class="nav-label">Donor Settings</span>
+                </div>
+                <div class="nav-item" data-tab="notifications">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-label">Notifications</span>
+                </div>
+                <div class="nav-item" data-tab="privacy">
+                    <span class="nav-icon">🔒</span>
+                    <span class="nav-label">Privacy</span>
+                </div>
+                <div class="nav-item" data-tab="security">
+                    <span class="nav-icon">🛡️</span>
+                    <span class="nav-label">Security</span>
+                </div>
+                <div class="nav-item" data-tab="location">
+                    <span class="nav-icon">📍</span>
+                    <span class="nav-label">Location</span>
+                </div>
+                <div class="nav-item" data-tab="ui">
+                    <span class="nav-icon">🎨</span>
+                    <span class="nav-label">UI Preferences</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="settings-content">
+            <!-- Profile Tab -->
+            <div id="profile" class="tab-content active">
+                <h2 class="tab-title">My Profile</h2>
+                <p class="tab-description">View and manage your profile information</p>
+
+                <!-- Profile Header -->
+                <div class="form-section profile-header">
+                    <div class="flex items-center gap-6 mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center profile-avatar">
+                            <span class="text-3xl font-bold text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold text-white profile-name">{{ user.first_name }} {{ user.last_name }}</h3>
+                            <p class="text-red-400 font-medium profile-username">@{{ user.username }}</p>
+                            <p class="text-gray-400 text-sm">{{ user.get_user_type_display }}</p>
+                            {% if user.is_verified %}
+                            <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                Verified
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3 class="section-title">👤 Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <p class="text-white view-field">{{ user.first_name|default:"Not provided" }}</p>
+                            <input type="text" name="first_name" value="{{ user.first_name|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <p class="text-white view-field">{{ user.last_name|default:"Not provided" }}</p>
+                            <input type="text" name="last_name" value="{{ user.last_name|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <p class="text-white">{{ user.email }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <p class="text-white view-field">{{ user.phone_number|default:"Not provided" }}</p>
+                            <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth</label>
+                            <p class="text-white view-field">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
+                            <input type="date" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blood Donation Info -->
+                <div class="form-section">
+                    <h3 class="section-title">🩸 Blood Donation Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Blood Group</label>
+                            <p class="text-red-400 font-medium text-lg view-field">{{ user.blood_group|default:"Not specified" }}</p>
+                            <select name="blood_group" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                                <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                                <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                                <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                                <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                                <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                                <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                                <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Donation Date</label>
+                            <p class="text-white view-field">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
+                            <input type="date" name="last_donation_date" value="{{ user.last_donation_date|date:'Y-m-d'|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Days Since Last Donation</label>
+                            <p class="text-white">{{ user.days_since_last_donation|default:"N/A" }} days</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Availability Status</label>
+                            <p class="text-white view-field">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
+                            <select name="is_available" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                                <option value="true" {% if user.is_available %}selected{% endif %}>Available for donation</option>
+                                <option value="false" {% if not user.is_available %}selected{% endif %}>Not available</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Information -->
+                <div class="form-section">
+                    <h3 class="section-title">📍 Location Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <p class="text-white view-field">{{ user.city|default:"Not provided" }}</p>
+                            <input type="text" name="city" value="{{ user.city|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <p class="text-white view-field">{{ user.state|default:"Not provided" }}</p>
+                            <input type="text" name="state" value="{{ user.state|default:'' }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Country</label>
+                            <p class="text-white view-field">{{ user.country }}</p>
+                            <input type="text" name="country" value="{{ user.country }}"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode</label>
+                            <p class="text-white view-field">{{ user.pincode|default:"Not provided" }}</p>
+                            <input type="text" name="pincode" value="{{ user.pincode|default:'' }}" maxlength="6"
+                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="toggleEditMode()">✏️ Edit Profile</button>
+                    <button class="btn-save" onclick="saveProfile()" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Account Settings Tab -->
+            <div id="account" class="tab-content">
+                <h2 class="tab-title">Account Settings</h2>
+                <p class="tab-description">Update your personal information and contact details</p>
+
+                <!-- Basic Info -->
+                <div class="form-section">
+                    <h3 class="section-title">👤 Personal Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-input" id="firstName" value="{{ user.first_name }}" placeholder="Enter first name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-input" id="lastName" value="{{ user.last_name }}" placeholder="Enter last name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-input" id="email" value="{{ email }}" placeholder="Enter email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-input" id="phone" value="{{ phone }}" placeholder="Enter phone number">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="saveAccountSettings()">💾 Save Changes</button>
+                </div>
+            </div>
+
+            <!-- Donor Settings Tab -->
+            <div id="donor" class="tab-content">
+                <h2 class="tab-title">Donor Settings</h2>
+                <p class="tab-description">Manage your donation availability and health information</p>
+
+                <!-- Availability Status -->
+                <div class="form-section">
+                    <h3 class="section-title">🩸 Availability Status</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Current Status</label>
+                            <select class="form-select" id="availabilityStatus">
+                                <option value="available">Available to Donate ✅</option>
+                                <option value="not_available">Not Available ❌</option>
+                                <option value="busy">Busy ⏳</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Blood Group</label>
+                            <select class="form-select" id="bloodGroup">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+" {% if blood_group == "A+" %}selected{% endif %}>A+</option>
+                                <option value="A-" {% if blood_group == "A-" %}selected{% endif %}>A-</option>
+                                <option value="B+" {% if blood_group == "B+" %}selected{% endif %}>B+</option>
+                                <option value="B-" {% if blood_group == "B-" %}selected{% endif %}>B-</option>
+                                <option value="AB+" {% if blood_group == "AB+" %}selected{% endif %}>AB+</option>
+                                <option value="AB-" {% if blood_group == "AB-" %}selected{% endif %}>AB-</option>
+                                <option value="O+" {% if blood_group == "O+" %}selected{% endif %}>O+</option>
+                                <option value="O-" {% if blood_group == "O-" %}selected{% endif %}>O-</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donation History -->
+                <div class="form-section">
+                    <h3 class="section-title">📊 Donation Tracking</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Last Donation Date</label>
+                            <input type="date" class="form-input" id="lastDonationDate" value="{{ last_donation_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Next Eligible Date (Auto-calculated)</label>
+                            <input type="date" class="form-input" id="nextEligibleDate" readonly style="opacity: 0.6;">
+                        </div>
+                    </div>
+                    
+                    <div class="info-box" style="margin-top: 1.5rem;">
+                        <p>ℹ️ After donating, you must wait 90 days before your next donation to ensure your health and safety.</p>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="saveDonorSettings()">💾 Save Donor Settings</button>
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications" class="tab-content">
+                <h2 class="tab-title">Notification Settings</h2>
+                <p class="tab-description">Control how and when you receive alerts</p>
+
+                <!-- Alert Types -->
+                <div class="form-section">
+                    <h3 class="section-title">🔔 Alert Types</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Blood Request Alerts</h4>
+                            <p>Get notified when someone needs your blood type</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="bloodRequestAlerts" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Emergency Alerts</h4>
+                            <p>Immediate notifications for critical emergencies nearby</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emergencyAlerts" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Donation Reminders</h4>
+                            <p>Reminders when you're eligible to donate again</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="donationReminders" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Chat Messages</h4>
+                            <p>Notifications for new messages from requesters</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="chatNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notification Channels -->
+                <div class="form-section">
+                    <h3 class="section-title">📱 Notification Channels</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Email Notifications</h4>
+                            <p>Receive alerts via email</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>SMS Notifications</h4>
+                            <p>Get text message alerts (may incur charges)</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="smsNotifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Quiet Hours -->
+                <div class="form-section">
+                    <h3 class="section-title">🌙 Quiet Hours</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Enable Quiet Hours</h4>
+                            <p>Don't disturb during specific hours</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="quietHoursEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" class="form-input" id="quietHoursStart" value="23:00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">End Time</label>
+                            <input type="time" class="form-input" id="quietHoursEnd" value="06:00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="saveNotificationSettings()">💾 Save Preferences</button>
+                </div>
+            </div>
+
+            <!-- Privacy Tab -->
+            <div id="privacy" class="tab-content">
+                <h2 class="tab-title">Privacy Settings</h2>
+                <p class="tab-description">Control what information others can see</p>
+
+                <!-- Profile Visibility -->
+                <div class="form-section">
+                    <h3 class="section-title">👁️ Profile Visibility</h3>
+                    <div class="form-group">
+                        <label class="form-label">Who can see your profile?</label>
+                        <select class="form-select" id="profileVisibility">
+                            <option value="public">Public - Everyone can see</option>
+                            <option value="donors_only">Donors Only</option>
+                            <option value="private">Private - Hidden</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="form-section">
+                    <h3 class="section-title">📞 Contact Information</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Show Phone Number</h4>
+                            <p>Allow others to see your phone number</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showPhone">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Show Email Address</h4>
+                            <p>Display your email on your profile</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showEmail">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Show Location</h4>
+                            <p>Display your city and state</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showLocation" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Anonymous Mode -->
+                <div class="form-section">
+                    <h3 class="section-title">🎭 Anonymous Mode</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Enable Anonymous Mode</h4>
+                            <p>Hide your identity until you accept a request</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="anonymousMode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="savePrivacySettings()">💾 Save Privacy Settings</button>
+                </div>
+            </div>
+
+            <!-- Security Tab -->
+            <div id="security" class="tab-content">
+                <h2 class="tab-title">Security Settings</h2>
+                <p class="tab-description">Protect your account with advanced security</p>
+
+                <!-- Change Password -->
+                <div class="form-section">
+                    <h3 class="section-title">🔐 Change Password</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="changePassword()">🔐 Update Password</button>
+                </div>
+            </div>
+
+            <!-- Location Tab -->
+            <div id="location" class="tab-content">
+                <h2 class="tab-title">Location Settings</h2>
+                <p class="tab-description">Manage your location for better donor matching</p>
+
+                <!-- Location Info -->
+                <div class="form-section">
+                    <h3 class="section-title">📍 Current Location</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-input" id="city" value="{{ city }}" placeholder="Enter your city">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-input" id="state" value="{{ state }}" placeholder="Enter your state">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pincode</label>
+                            <input type="text" class="form-input" id="pincode" value="{{ pincode }}" placeholder="Enter pincode" maxlength="6">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Radius -->
+                <div class="form-section">
+                    <h3 class="section-title">🎯 Search Radius</h3>
+                    <div class="form-group">
+                        <label class="form-label">Default search radius for nearby donors/requests</label>
+                        <select class="form-select" id="searchRadius">
+                            <option value="5">5 km - Very Local</option>
+                            <option value="10">10 km - Local</option>
+                            <option value="25" selected>25 km - Recommended</option>
+                            <option value="50">50 km - Regional</option>
+                            <option value="100">100 km - Wide Area</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Location Sharing -->
+                <div class="form-section">
+                    <h3 class="section-title">🛰️ Location Sharing</h3>
+                    
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Enable Location Sharing</h4>
+                            <p>Allow the system to use your location for matching</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="locationSharing" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-info">
+                            <h4>Live Location During Emergencies</h4>
+                            <p>Share real-time location only during active emergency requests</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="liveLocationEmergency" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="saveLocationSettings()">💾 Save Location</button>
+                    <button class="btn-save" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);" onclick="detectLocation()">📍 Auto-Detect Location</button>
+                </div>
+            </div>
+
+            <!-- UI Preferences Tab -->
+            <div id="ui" class="tab-content">
+                <h2 class="tab-title">UI Preferences</h2>
+                <p class="tab-description">Customize your interface appearance and experience</p>
+
+                <!-- Theme Selection -->
+                <div class="form-section">
+                    <h3 class="section-title">🎨 Theme</h3>
+                    <div class="form-group">
+                        <label class="form-label">Select your preferred theme</label>
+                        <select class="form-select" id="themeSelect">
+                            <option value="dark" {% if user.theme == 'dark' %}selected{% endif %}>🌙 Dark Mode</option>
+                            <option value="light" {% if user.theme == 'light' %}selected{% endif %}>☀️ Light Mode</option>
+                        </select>
+                        <p class="text-gray-400 text-sm mt-2">Dark mode is easier on the eyes in low light. Light mode is better for bright environments.</p>
+                    </div>
+                </div>
+
+                <!-- Font Size -->
+                <div class="form-section">
+                    <h3 class="section-title">📝 Font Size</h3>
+                    <div class="form-group">
+                        <label class="form-label">Text size preference</label>
+                        <select class="form-select" id="fontSize">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium (Default)</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-save" onclick="saveUISettings()">💾 Save UI Preferences</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tab Navigation
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        // Remove active class from all items
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+
+        // Add active class to clicked item
+        this.classList.add('active');
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+
+// Profile Edit Mode Toggle
+let isEditMode = false;
+function toggleEditMode() {
+    isEditMode = !isEditMode;
+    const viewFields = document.querySelectorAll('#profile .view-field');
+    const editFields = document.querySelectorAll('#profile .edit-field');
+
+    viewFields.forEach(field => {
+        field.classList.toggle('hidden', isEditMode);
+    });
+
+    editFields.forEach(field => {
+        field.classList.toggle('hidden', !isEditMode);
+    });
+
+    const editButton = document.querySelector('#profile button[onclick="toggleEditMode()"]');
+    if (editButton) {
+        editButton.textContent = isEditMode ? '❌ Cancel' : '✏️ Edit Profile';
+    }
+}
+
+// Save Profile
+async function saveProfile() {
+    const form = document.querySelector('#profile');
+    const formData = new FormData(form);
+    const data = {};
+
+    // Collect all input values
+    form.querySelectorAll('input, select').forEach(input => {
+        if (input.name) {
+            data[input.name] = input.value;
+        }
+    });
+
+    try {
+        const response = await fetch('/api/accounts/profile/update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Profile updated successfully!', 'success');
+            toggleEditMode(); // Exit edit mode
+            // Reload page to show updated data
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update profile', 'error');
+    }
+}
+
+// Save Account Settings
+async function saveAccountSettings() {
+    const data = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Account settings updated successfully!', 'success');
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update settings', 'error');
+    }
+}
+
+// Save Donor Settings
+async function saveDonorSettings() {
+    const data = {
+        availability_status: document.getElementById('availabilityStatus').value,
+        blood_group: document.getElementById('bloodGroup').value,
+        last_donation_date: document.getElementById('lastDonationDate').value
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Donor settings updated!', 'success');
+            calculateNextEligibleDate();
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update donor settings', 'error');
+    }
+}
+
+// Save Notification Settings
+async function saveNotificationSettings() {
+    const data = {
+        blood_request_alerts: document.getElementById('bloodRequestAlerts').checked,
+        emergency_alerts: document.getElementById('emergencyAlerts').checked,
+        donation_reminders: document.getElementById('donationReminders').checked,
+        chat_notifications: document.getElementById('chatNotifications').checked,
+        email_notifications: document.getElementById('emailNotifications').checked,
+        sms_notifications: document.getElementById('smsNotifications').checked,
+        quiet_hours_enabled: document.getElementById('quietHoursEnabled').checked,
+        quiet_hours_start: document.getElementById('quietHoursStart').value,
+        quiet_hours_end: document.getElementById('quietHoursEnd').value
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Notification preferences saved!', 'success');
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update notifications', 'error');
+    }
+}
+
+// Save Privacy Settings
+async function savePrivacySettings() {
+    const data = {
+        profile_visibility: document.getElementById('profileVisibility').value,
+        show_phone: document.getElementById('showPhone').checked,
+        show_email: document.getElementById('showEmail').checked,
+        show_location: document.getElementById('showLocation').checked,
+        anonymous_mode: document.getElementById('anonymousMode').checked
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Privacy settings updated!', 'success');
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update privacy settings', 'error');
+    }
+}
+
+// Change Password
+async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        showNotification('❌ All fields are required', 'error');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        showNotification('❌ New passwords do not match', 'error');
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        showNotification('❌ Password must be at least 8 characters', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/accounts/settings/change-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Password changed successfully!', 'success');
+            // Clear fields
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to change password', 'error');
+    }
+}
+
+// Save Location Settings
+async function saveLocationSettings() {
+    const data = {
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        pincode: document.getElementById('pincode').value,
+        search_radius_km: parseInt(document.getElementById('searchRadius').value),
+        location_sharing_enabled: document.getElementById('locationSharing').checked,
+        live_location_during_emergency: document.getElementById('liveLocationEmergency').checked
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ Location settings saved!', 'success');
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update location', 'error');
+    }
+}
+
+// Auto-detect Location
+function detectLocation() {
+    if (navigator.geolocation) {
+        showNotification('📍 Detecting your location...', 'info');
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // Use reverse geocoding API (you can use OpenStreetMap or Google Maps)
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                    const data = await response.json();
+                    
+                    if (data.address) {
+                        document.getElementById('city').value = data.address.city || data.address.town || data.address.village || '';
+                        document.getElementById('state').value = data.address.state || '';
+                        document.getElementById('pincode').value = data.address.postcode || '';
+                        
+                        showNotification('✅ Location detected successfully!', 'success');
+                    }
+                } catch (error) {
+                    showNotification('❌ Could not fetch location details', 'error');
+                }
+            },
+            (error) => {
+                showNotification('❌ Location access denied', 'error');
+            }
+        );
+    } else {
+        showNotification('❌ Geolocation is not supported by your browser', 'error');
+    }
+}
+
+// Calculate Next Eligible Date
+function calculateNextEligibleDate() {
+    const lastDonation = document.getElementById('lastDonationDate').value;
+    if (lastDonation) {
+        const date = new Date(lastDonation);
+        date.setDate(date.getDate() + 90); // 90 days gap
+        const nextDate = date.toISOString().split('T')[0];
+        document.getElementById('nextEligibleDate').value = nextDate;
+    }
+}
+
+// Save UI Settings
+async function saveUISettings() {
+    const data = {
+        theme: document.getElementById('themeSelect').value,
+        font_size: document.getElementById('fontSize').value
+    };
+
+    try {
+        const response = await fetch('/api/accounts/settings/update/', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('✅ UI preferences saved! Reloading page...', 'success');
+            // Reload page to apply theme changes
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification('❌ ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Failed to update UI preferences', 'error');
+    }
+}
+
+// Show Notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? 'rgba(16, 185, 129, 0.9)' : type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 'rgba(59, 130, 246, 0.9)'};
+        color: white;
+        border-radius: 12px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Get CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    calculateNextEligibleDate();
+});
+</script>
+
+<style>
+@keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(400px); opacity: 0; }
+}
+</style>
+{% endblock %}

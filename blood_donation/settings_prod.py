@@ -74,15 +74,34 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Whitenoise configuration for serving static files
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Email configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+# Use modern STORAGES configuration (Django 4.2+)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "blood_donation.storage.WhiteNoiseStaticFilesStorage",
+    },
+}
+
+# Email configuration - Brevo HTTP API for production (NOT SMTP)
+# IMPORTANT: Use BrevoAPIEmailBackend to avoid SMTP port blocking on Render
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='blood_donation.email_backend.BrevoAPIEmailBackend')
+BREVO_API_KEY = config('BREVO_API_KEY', default='')  # Must start with 'xkeysib-'
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@yourdomain.com')
+DEFAULT_FROM_EMAIL_NAME = config('DEFAULT_FROM_EMAIL_NAME', default='Your Project Name')
+
+# No SMTP settings needed - using HTTP API instead
+# This avoids port 587 blocking on Render free tier
+
+# Log email configuration status
+import logging
+logger = logging.getLogger(__name__)
+if not BREVO_API_KEY or BREVO_API_KEY == '':
+    logger.error("BREVO_API_KEY not configured! Email sending will FAIL!")
+else:
+    logger.info(f"✅ Brevo HTTP API configured for production (key length: {len(BREVO_API_KEY)})")
 
 # Update CORS settings for production
 if 'FRONTEND_URL' in os.environ:

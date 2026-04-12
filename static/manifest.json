@@ -1,0 +1,10 @@
+{
+  "name": "BloodLife - Blood Donation Platform",
+  "short_name": "BloodLife",
+  "description": "Connect donors with those in need. Making blood donation easier, safer, and more efficient.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f87171",
+  "orientation": "portrait"
+}

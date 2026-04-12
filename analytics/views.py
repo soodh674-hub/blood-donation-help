@@ -9,7 +9,7 @@ import logging
 
 from accounts.models import User
 from donors.models import DonorHistory
-from requests.models import BloodRequest
+from blood_requests_app.models import BloodRequest
 
 # Setup logging
 logger = logging.getLogger(__name__)

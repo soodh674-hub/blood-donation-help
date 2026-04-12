@@ -1,0 +1,1044 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Blood Request - BloodLife{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Map Container */
+    #tracking-map {
+        height: 400px;
+        width: 100%;
+        border-radius: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        z-index: 1;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(239, 68, 68, 0.5);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(239, 68, 68, 0.7);
+    }
+    
+    /* Card hover effects */
+    .tracking-card {
+        transition: all 0.3s ease;
+    }
+    
+    .tracking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Pulse animation for emergency */
+    @keyframes pulse-red {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    }
+    
+    .emergency-pulse {
+        animation: pulse-red 2s infinite;
+    }
+    
+    /* Pulse animation for timeline dots */
+    @keyframes pulse-dot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+    }
+    
+    .pulse-animation {
+        animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    
+    /* Status badge colors */
+    .status-interested { 
+        background-color: rgba(59, 130, 246, 0.2); 
+        color: #60a5fa; 
+        border-color: #3b82f6; 
+    }
+    .status-en_route { 
+        background-color: rgba(245, 158, 11, 0.2); 
+        color: #fbbf24; 
+        border-color: #f59e0b; 
+    }
+    .status-arrived { 
+        background-color: rgba(16, 185, 129, 0.2); 
+        color: #34d399; 
+        border-color: #10b981; 
+    }
+    .status-donated { 
+        background-color: rgba(139, 92, 246, 0.2); 
+        color: #a78bfa; 
+        border-color: #8b5cf6; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-8" data-user-id="{{ user.id|default:0 }}">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                Track Blood Request
+            </h1>
+            <p class="text-gray-400">Real-time donor tracking and management</p>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- LEFT SIDE: Live Requests & Donor List -->
+            <div class="space-y-6">
+                
+                <!-- Live Blood Requests Section -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-white flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Live Blood Requests
+                        </h2>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-semibold" id="request-count">0 Active</span>
+                    </div>
+                    
+                    <div id="live-requests-container" class="space-y-3 max-h-96 overflow-y-auto">
+                        <!-- Loading State -->
+                        <div class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                            <p class="text-gray-400 mt-2">Loading requests...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interested Donors Section -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-white flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Interested Donors
+                        </h2>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold" id="donor-count">0 Donors</span>
+                    </div>
+                    
+                    <div id="donor-list-container" class="space-y-3 max-h-96 overflow-y-auto">
+                        <div class="text-center py-8 text-gray-400">
+                            <p>Select a request to see donors</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: Track Request & Map -->
+            <div class="space-y-6">
+                
+                <!-- Track Request Panel -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+                    <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        Track Request
+                    </h2>
+                    
+                    <!-- Request Details (Dynamic) -->
+                    <div id="track-request-details" class="mb-4 hidden">
+                        <div class="bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-xl p-4 border border-red-500/30">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span id="track-blood-group" class="px-3 py-1 bg-red-500 text-white rounded-lg font-bold text-lg">A+</span>
+                                        <span id="track-urgency" class="px-3 py-1 bg-red-500 text-white rounded text-sm font-semibold">EMERGENCY</span>
+                                    </div>
+                                    <h3 id="track-hospital" class="text-white font-semibold text-lg">Hospital Name</h3>
+                                    <p id="track-location" class="text-gray-400 text-sm mt-1">📍 Location</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-gray-400 text-sm">ETA</p>
+                                    <p id="track-eta" class="text-green-400 font-bold text-xl">-- min</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Map -->
+                    <div id="tracking-map" class="mb-4"></div>
+                    
+                    <!-- Action Buttons -->
+                    <div id="track-actions" class="hidden space-y-3">
+                        <button onclick="openNavigation()" class="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                            </svg>
+                            <span>Open Navigation</span>
+                        </button>
+                        
+                        <button onclick="refreshLocations()" class="w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition-all flex items-center justify-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span>Refresh Locations</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="track-empty-state" class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        <p class="text-gray-400">Select a request to start tracking</p>
+                    </div>
+                </div>
+
+                <!-- ENHANCED: Status Timeline Section -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Request Status
+                    </h2>
+                    
+                    <div id="status-timeline" class="space-y-4">
+                        <!-- Timeline will be populated by JavaScript -->
+                        <div class="text-center py-8 text-gray-400">
+                            <p>Select a request to view status timeline</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Countdown Timer -->
+                    <div id="countdown-container" class="mt-6 hidden">
+                        <div class="bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-xl p-4 border border-red-500/30">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-300 text-sm mb-1">Time Remaining</p>
+                                    <p id="countdown-timer" class="text-3xl font-bold text-white font-mono">--:--:--</p>
+                                </div>
+                                <div class="text-right">
+                                    <span id="urgency-badge" class="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">URGENT</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 w-full bg-gray-700 rounded-full h-2">
+                                <div id="time-progress-bar" class="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-1000" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ENHANCED: Integrated Chat System -->
+                <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-white flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            Live Chat
+                        </h2>
+                        <span id="chat-status" class="px-2 py-1 bg-gray-600 text-gray-300 rounded text-xs">Offline</span>
+                    </div>
+                    
+                    <!-- Chat Messages Container -->
+                    <div id="chat-messages" class="h-64 overflow-y-auto space-y-3 mb-4 p-3 bg-black/20 rounded-xl">
+                        <div class="text-center py-8 text-gray-500">
+                            <p>Select a request to start chatting</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div id="chat-input-container" class="hidden">
+                        <div class="flex gap-2">
+                            <input type="text" id="chat-message-input" 
+                                   placeholder="Type your message..." 
+                                   class="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-red-500 transition-colors"
+                                   onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                            <button onclick="sendChatMessage()" 
+                                    class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                Send
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">💡 Tip: Press Enter to send quickly</p>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 text-center">
+                        <p class="text-gray-400 text-sm mb-1">Total Requests</p>
+                        <p id="stat-total" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 text-center">
+                        <p class="text-gray-400 text-sm mb-1">Active Donors</p>
+                        <p id="stat-donors" class="text-2xl font-bold text-green-400">0</p>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 text-center">
+                        <p class="text-gray-400 text-sm mb-1">Completed</p>
+                        <p id="stat-completed" class="text-2xl font-bold text-purple-400">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- live-map.js already loaded in base.html - removing duplicate to prevent 'requestMap already declared' error -->
+<script src="{% static 'js/notification-manager.js' %}"></script>
+<script>
+// Global variables
+let trackingMap = null;
+let selectedRequestId = null;
+let requestMarkers = [];
+let donorMarkers = [];
+let updateInterval = null;
+let lastDonorCount = 0;
+let currentUserId = 0;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get user ID safely
+    const userIdElement = document.querySelector('[data-user-id]');
+    if (userIdElement) {
+        currentUserId = parseInt(userIdElement.dataset.userId) || 0;
+    }
+    
+    initializeTrackingMap();
+    loadLiveRequests();
+    startAutoRefresh();
+    
+    // Show welcome notification
+    setTimeout(() => {
+        window.notificationManager.add({
+            type: 'default',
+            title: 'Welcome to Tracking Dashboard',
+            message: 'Real-time blood request tracking is now active',
+            urgency: 'normal',
+            sound: 'soft-chime',
+            duration: 5
+        });
+    }, 1000);
+});
+
+// Initialize tracking map
+function initializeTrackingMap() {
+    trackingMap = L.map('tracking-map').setView([20.5937, 78.9629], 5);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(trackingMap);
+}
+
+// Load live blood requests
+async function loadLiveRequests() {
+    try {
+        const response = await fetch('/api/requests/live/');
+        const requests = await response.json();
+        
+        // Check for new emergency requests
+        const previousRequests = window.previousRequests || [];
+        const newEmergencyRequests = requests.filter(req => 
+            req.urgency === 'emergency' && 
+            !previousRequests.find(prev => prev.id === req.id)
+        );
+        
+        // Show notifications for new emergency requests
+        newEmergencyRequests.forEach(req => {
+            window.notificationManager.add({
+                type: 'emergency_request',
+                title: '🚨 EMERGENCY Blood Request!',
+                message: `${req.blood_group} needed at ${req.hospital}. ${req.location}`,
+                urgency: 'critical',
+                sound: 'emergency-alarm',
+                vibration: [200, 100, 200, 100, 200],
+                action_text: 'View Request',
+                action_url: '#',
+                data: req,
+                duration: 10
+            });
+        });
+        
+        window.previousRequests = requests;
+        
+        displayLiveRequests(requests);
+        updateStats(requests);
+    } catch (error) {
+        console.error('Error loading requests:', error);
+        document.getElementById('live-requests-container').innerHTML = `
+            <div class="text-center py-8 text-red-400">
+                <p>Failed to load requests</p>
+                <button onclick="loadLiveRequests()" class="mt-2 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm">Retry</button>
+            </div>
+        `;
+    }
+}
+
+// Display live requests
+function displayLiveRequests(requests) {
+    const container = document.getElementById('live-requests-container');
+    
+    if (requests.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-400">
+                <p>No active requests at the moment</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = requests.map(request => {
+        const urgencyColors = {
+            'emergency': 'bg-red-500 emergency-pulse',
+            'urgent': 'bg-orange-500',
+            'normal': 'bg-blue-500'
+        };
+        
+        // Safe access with fallback to prevent TypeError
+        const urgency = (request.urgency || request.priority || 'normal').toLowerCase();
+        const colorClass = urgencyColors[urgency] || urgencyColors.normal;
+        const bloodGroup = request.blood_group || request.patient_blood_group || 'N/A';
+        const hospital = request.hospital || request.hospital_name || 'Unknown Hospital';
+        const location = request.location || (request.city && request.state ? `${request.city}, ${request.state}` : 'Location N/A');
+        const timeAgo = request.time_ago || 'Just now';
+        
+        return `
+            <div class="tracking-card bg-white/5 hover:bg-white/10 rounded-xl p-4 border border-white/10 cursor-pointer" 
+                 onclick="selectRequest(${request.id})">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="${colorClass} text-white px-3 py-1 rounded-lg text-sm font-semibold">
+                                ${urgency.toUpperCase()}
+                            </span>
+                            <span class="text-white font-bold text-lg">${bloodGroup}</span>
+                        </div>
+                        <h3 class="text-white font-semibold">${hospital}</h3>
+                        <p class="text-gray-400 text-sm mt-1">📍 ${location}</p>
+                        <p class="text-gray-500 text-xs mt-1">⏰ ${timeAgo}</p>
+                    </div>
+                    <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold text-sm transition-all">
+                        View
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Select a request to track
+async function selectRequest(requestId) {
+    selectedRequestId = requestId;
+    
+    try {
+        // Fetch request details
+        const response = await fetch(`/api/requests/${requestId}/`);
+        const request = await response.json();
+        
+        // Update tracking panel
+        document.getElementById('track-request-details').classList.remove('hidden');
+        document.getElementById('track-actions').classList.remove('hidden');
+        document.getElementById('track-empty-state').classList.add('hidden');
+        
+        // Safe access with fallback
+        document.getElementById('track-blood-group').textContent = request.patient_blood_group || 'N/A';
+        const priority = (request.priority || 'normal').toUpperCase();
+        document.getElementById('track-urgency').textContent = priority;
+        document.getElementById('track-hospital').textContent = request.hospital_name || 'Unknown';
+        document.getElementById('track-location').textContent = `📍 ${request.city || 'Unknown'}, ${request.state || ''}`;
+        
+        // Center map on request location
+        const lat = parseFloat(request.latitude);
+        const lng = parseFloat(request.longitude);
+        trackingMap.setView([lat, lng], 14);
+        
+        // Clear old markers
+        clearMarkers();
+        
+        // Add request marker
+        const requestMarker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background: #ef4444; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">🏥</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
+        }).addTo(trackingMap);
+        
+        requestMarker.bindPopup(`<b>${request.hospital_name}</b><br>${request.patient_blood_group} needed`);
+        requestMarkers.push(requestMarker);
+        
+        // Load donors for this request
+        loadDonorsForRequest(requestId);
+        
+    } catch (error) {
+        console.error('Error selecting request:', error);
+        alert('Failed to load request details');
+    }
+}
+
+// Load donors for selected request
+async function loadDonorsForRequest(requestId) {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/responses/`);
+        const data = await response.json();
+        
+        displayDonors(data.responses);
+        updateDonorMarkers(data.responses);
+    } catch (error) {
+        console.error('Error loading donors:', error);
+    }
+}
+
+// Display donors list
+function displayDonors(donors) {
+    const container = document.getElementById('donor-list-container');
+    document.getElementById('donor-count').textContent = `${donors.length} Donors`;
+    
+    // Check for new donors and show notification
+    if (donors.length > lastDonorCount && selectedRequestId) {
+        const newDonors = donors.slice(0, donors.length - lastDonorCount);
+        newDonors.forEach(donor => {
+            window.notificationManager.add({
+                type: 'donor_response',
+                title: 'New Donor Responded!',
+                message: `${donor.donor_name} is interested in donating`,
+                urgency: 'normal',
+                sound: 'soft-chime',
+                action_text: 'View Details',
+                action_url: '#',
+                data: donor,
+                duration: 6
+            });
+        });
+    }
+    lastDonorCount = donors.length;
+    
+    if (donors.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-400">
+                <p>No donors yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = donors.map(donor => {
+        const statusClasses = {
+            'interested': 'status-interested',
+            'en_route': 'status-en_route',
+            'arrived': 'status-arrived',
+            'donated': 'status-donated'
+        };
+        
+        const statusLabels = {
+            'interested': 'Interested',
+            'en_route': 'On the way',
+            'arrived': 'Arrived',
+            'donated': 'Donated'
+        };
+        
+        const statusClass = statusClasses[donor.status] || 'status-interested';
+        const statusLabel = statusLabels[donor.status] || donor.status;
+        
+        return `
+            <div class="tracking-card bg-white/5 hover:bg-white/10 rounded-xl p-4 border border-white/10">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-lg">
+                            ${donor.donor_name.charAt(0)}
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold">${donor.donor_name}</h3>
+                            <p class="text-gray-400 text-sm">
+                                ${donor.distance_km ? donor.distance_km.toFixed(1) + ' km' : 'Distance N/A'} • 
+                                ⭐ 4.8
+                            </p>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold border ${statusClass}">
+                                ${statusLabel}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        ${donor.phone ? `
+                        <a href="tel:${donor.phone}" class="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm transition-all">
+                            Call
+                        </a>
+                        ` : ''}
+                        <button onclick="selectDonor(${donor.id})" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-all">
+                            Select
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Update donor markers on map
+function updateDonorMarkers(donors) {
+    // Clear old donor markers
+    donorMarkers.forEach(marker => trackingMap.removeLayer(marker));
+    donorMarkers = [];
+    
+    // Add new markers
+    donors.forEach(donor => {
+        if (!donor.latitude || !donor.longitude) return;
+        
+        const iconColors = {
+            'interested': '#3b82f6',
+            'en_route': '#f59e0b',
+            'arrived': '#10b981',
+            'donated': '#8b5cf6'
+        };
+        
+        const color = iconColors[donor.status] || '#3b82f6';
+        
+        const marker = L.marker([donor.latitude, donor.longitude], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(trackingMap);
+        
+        marker.bindPopup(`
+            <b>${donor.donor_name}</b><br>
+            Status: ${donor.status}<br>
+            Distance: ${donor.distance_km ? donor.distance_km.toFixed(1) + ' km' : 'N/A'}
+        `);
+        
+        donorMarkers.push(marker);
+        
+        // Draw line from donor to hospital if en route or arrived
+        if (['en_route', 'arrived'].includes(donor.status)) {
+            const requestMarker = requestMarkers[0];
+            if (requestMarker) {
+                const polyline = L.polyline(
+                    [[donor.latitude, donor.longitude], requestMarker.getLatLng()],
+                    {
+                        color: donor.is_selected ? '#10b981' : '#f59e0b',
+                        weight: 3,
+                        opacity: 0.7,
+                        dashArray: donor.status === 'en_route' ? '10, 10' : null
+                    }
+                ).addTo(trackingMap);
+                donorMarkers.push(polyline);
+            }
+        }
+    });
+}
+
+// Clear all markers
+function clearMarkers() {
+    requestMarkers.forEach(marker => trackingMap.removeLayer(marker));
+    donorMarkers.forEach(marker => trackingMap.removeLayer(marker));
+    requestMarkers = [];
+    donorMarkers = [];
+}
+
+// Select a donor
+async function selectDonor(responseId) {
+    if (!confirm('Are you sure you want to select this donor?')) return;
+    
+    try {
+        const response = await fetch(`/api/requests/select-donor/${responseId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Show success notification with celebration sound
+            window.notificationManager.add({
+                type: 'donor_selected',
+                title: 'Donor Selected! 🎉',
+                message: data.message || 'Donor has been notified and will proceed to hospital',
+                urgency: 'high',
+                sound: 'celebration',
+                action_text: 'Track Donor',
+                action_url: '#',
+                duration: 8
+            });
+            
+            // Reload donors to update UI
+            if (selectedRequestId) {
+                loadDonorsForRequest(selectedRequestId);
+            }
+        } else {
+            alert(data.error || 'Failed to select donor');
+        }
+    } catch (error) {
+        console.error('Error selecting donor:', error);
+        alert('Failed to select donor');
+    }
+}
+
+// Open navigation
+function openNavigation() {
+    if (!selectedRequestId) return;
+    
+    // Get hospital location from first marker
+    if (requestMarkers.length > 0) {
+        const hospitalLatLng = requestMarkers[0].getLatLng();
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${hospitalLatLng.lat},${hospitalLatLng.lng}&travelmode=driving`;
+        window.open(url, '_blank');
+    }
+}
+
+// Refresh locations
+function refreshLocations() {
+    if (selectedRequestId) {
+        loadDonorsForRequest(selectedRequestId);
+    }
+}
+
+// Update statistics
+function updateStats(requests) {
+    document.getElementById('stat-total').textContent = requests.length;
+    document.getElementById('request-count').textContent = `${requests.length} Active`;
+    
+    // Count unique donors (would need additional API call in real implementation)
+    document.getElementById('stat-donors').textContent = '0';
+    document.getElementById('stat-completed').textContent = '0';
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    // Refresh every 10 seconds
+    updateInterval = setInterval(() => {
+        loadLiveRequests();
+        if (selectedRequestId) {
+            loadDonorsForRequest(selectedRequestId);
+        }
+    }, 10000);
+}
+
+// Get CSRF token
+function getCSRFToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+
+// ==================== ENHANCED FEATURES (Phase 5) ====================
+
+// Update Status Timeline
+function updateStatusTimeline(request) {
+    const timelineContainer = document.getElementById('status-timeline');
+    if (!timelineContainer) return;
+    
+    const statusSteps = [
+        { key: 'SUBMITTED', label: 'Request Submitted', icon: '✓' },
+        { key: 'VERIFIED', label: 'Verified by Admin', icon: '✓' },
+        { key: 'SEARCHING', label: 'Searching for Donors', icon: '●' },
+        { key: 'MATCHED', label: 'Donor Matched', icon: '○' },
+        { key: 'SCHEDULED', label: 'Donation Scheduled', icon: '○' },
+        { key: 'COMPLETED', label: 'Completed', icon: '○' }
+    ];
+    
+    // Use loose equality to handle potential type differences
+    const currentStatusIndex = statusSteps.findIndex(step => step.key == request.status);
+    
+    let timelineHTML = '<div class="relative">';
+    
+    statusSteps.forEach((step, index) => {
+        const isCompleted = index < currentStatusIndex;
+        const isCurrent = index === currentStatusIndex;
+        const isPending = index > currentStatusIndex;
+        
+        let dotClass = 'bg-gray-600';
+        let textClass = 'text-gray-500';
+        let pulseClass = '';
+        
+        if (isCompleted) {
+            dotClass = 'bg-green-500';
+            textClass = 'text-green-400';
+        } else if (isCurrent) {
+            dotClass = 'bg-red-500';
+            textClass = 'text-white font-semibold';
+            pulseClass = 'pulse-animation';
+        }
+        
+        const lineClass = index < statusSteps.length - 1 ? 
+            (isCompleted ? 'bg-green-500' : 'bg-gray-700') : '';
+        
+        timelineHTML += `
+            <div class="flex items-start gap-4 pb-6 relative">
+                ${index < statusSteps.length - 1 ? `<div class="absolute left-3 top-8 w-0.5 h-full ${lineClass}"></div>` : ''}
+                <div class="w-6 h-6 rounded-full ${dotClass} ${pulseClass} flex items-center justify-center flex-shrink-0 z-10 border-2 border-white">
+                    <span class="text-xs text-white">${isCompleted ? '✓' : (isCurrent ? '●' : index + 1)}</span>
+                </div>
+                <div class="flex-1">
+                    <p class="${textClass} text-sm">${step.label}</p>
+                    ${isCurrent ? `<p class="text-gray-400 text-xs mt-1">${getCurrentStatusMessage(request)}</p>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    timelineHTML += '</div>';
+    timelineContainer.innerHTML = timelineHTML;
+}
+
+// Get status message based on current status
+function getCurrentStatusMessage(request) {
+    const messages = {
+        'SUBMITTED': 'Waiting for admin verification...',
+        'VERIFIED': 'Broadcasting to nearby donors...',
+        'SEARCHING': `${request.interested_donors || 0} donors interested`,
+        'MATCHED': 'Donor is on the way to hospital',
+        'SCHEDULED': 'Donation appointment confirmed',
+        'COMPLETED': 'Thank you for saving a life! ❤️'
+    };
+    return messages[request.status] || 'Processing...';
+}
+
+// Start Countdown Timer
+let countdownInterval = null;
+
+function startCountdownTimer(requiredByDate) {
+    const countdownContainer = document.getElementById('countdown-container');
+    const timerElement = document.getElementById('countdown-timer');
+    const progressBar = document.getElementById('time-progress-bar');
+    const urgencyBadge = document.getElementById('urgency-badge');
+    
+    if (!requiredByDate) {
+        countdownContainer.classList.add('hidden');
+        return;
+    }
+    
+    countdownContainer.classList.remove('hidden');
+    
+    const deadline = new Date(requiredByDate).getTime();
+    const totalDuration = deadline - Date.now();
+    
+    function updateTimer() {
+        const now = Date.now();
+        const remaining = deadline - now;
+        
+        if (remaining <= 0) {
+            timerElement.textContent = 'EXPIRED';
+            timerElement.classList.add('text-red-500');
+            progressBar.style.width = '0%';
+            urgencyBadge.textContent = 'EXPIRED';
+            clearInterval(countdownInterval);
+            return;
+        }
+        
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+        
+        timerElement.textContent = 
+            `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        // Update progress bar
+        const progressPercent = (remaining / totalDuration) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+        
+        // Update urgency badge
+        if (hours < 1) {
+            urgencyBadge.textContent = 'CRITICAL';
+            urgencyBadge.className = 'px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold animate-pulse';
+        } else if (hours < 3) {
+            urgencyBadge.textContent = 'URGENT';
+            urgencyBadge.className = 'px-3 py-1 bg-orange-500 text-white rounded-full text-sm font-semibold';
+        } else {
+            urgencyBadge.textContent = 'NORMAL';
+            urgencyBadge.className = 'px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold';
+        }
+    }
+    
+    updateTimer();
+    countdownInterval = setInterval(updateTimer, 1000);
+}
+
+// Chat System
+let chatPollingInterval = null;
+let lastMessageId = 0;
+
+function initializeChat(requestId) {
+    const chatInputContainer = document.getElementById('chat-input-container');
+    const chatStatus = document.getElementById('chat-status');
+    
+    if (!requestId) {
+        chatInputContainer.classList.add('hidden');
+        chatStatus.textContent = 'Offline';
+        chatStatus.className = 'px-2 py-1 bg-gray-600 text-gray-300 rounded text-xs';
+        return;
+    }
+    
+    chatInputContainer.classList.remove('hidden');
+    chatStatus.textContent = 'Online';
+    chatStatus.className = 'px-2 py-1 bg-green-500 text-white rounded text-xs';
+    
+    // Load chat history
+    loadChatHistory(requestId);
+    
+    // Start polling for new messages
+    if (chatPollingInterval) clearInterval(chatPollingInterval);
+    chatPollingInterval = setInterval(() => loadChatHistory(requestId), 5000);
+}
+
+async function loadChatHistory(requestId) {
+    try {
+        const response = await fetch(`/api/requests/${requestId}/chat/`);
+        const data = await response.json();
+        
+        if (response.ok && data.messages) {
+            renderChatMessages(data.messages);
+        }
+    } catch (error) {
+        console.error('Error loading chat:', error);
+    }
+}
+
+function renderChatMessages(messages) {
+    const chatContainer = document.getElementById('chat-messages');
+    if (!chatContainer || messages.length === 0) return;
+    
+    // Only update if there are new messages
+    if (messages.length > 0 && messages[messages.length - 1].id === lastMessageId) {
+        return; // No new messages
+    }
+    
+    let html = '';
+    messages.forEach(msg => {
+        const isCurrentUser = msg.sender_id === currentUserId;
+        const isSystem = msg.message_type === 'system';
+        
+        if (isSystem) {
+            html += `
+                <div class="text-center my-2">
+                    <span class="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-full">${msg.message}</span>
+                </div>
+            `;
+        } else {
+            const bubbleClass = isCurrentUser ? 
+                'bg-gradient-to-r from-red-500 to-red-600 ml-auto' : 
+                'bg-white/10 mr-auto';
+            const alignClass = isCurrentUser ? 'text-right' : 'text-left';
+            
+            html += `
+                <div class="${alignClass}">
+                    <div class="inline-block max-w-[80%]">
+                        <div class="${bubbleClass} px-4 py-2 rounded-2xl text-white text-sm">
+                            ${msg.message}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 px-1">${formatTime(msg.created_at)}</p>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    chatContainer.innerHTML = html;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    if (messages.length > 0) {
+        lastMessageId = messages[messages.length - 1].id;
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-message-input');
+    const message = input.value.trim();
+    
+    if (!message || !selectedRequestId) return;
+    
+    try {
+        const response = await fetch(`/api/requests/${selectedRequestId}/chat/send/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        if (response.ok) {
+            input.value = '';
+            loadChatHistory(selectedRequestId); // Reload to show sent message
+        } else {
+            alert('Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message');
+    }
+}
+
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Enhanced selectRequest function to include new features
+const originalSelectRequest = window.selectRequest || function() {};
+window.selectRequest = async function(requestId) {
+    // Call original function
+    if (typeof originalSelectRequest === 'function') {
+        await originalSelectRequest(requestId);
+    }
+    
+    // Fetch full request details for enhanced features
+    try {
+        const response = await fetch(`/api/requests/${requestId}/detail/`);
+        const request = await response.json();
+        
+        if (response.ok) {
+            // Update status timeline
+            updateStatusTimeline(request);
+            
+            // Start countdown timer
+            if (countdownInterval) clearInterval(countdownInterval);
+            startCountdownTimer(request.required_by);
+            
+            // Initialize chat
+            initializeChat(requestId);
+        }
+    } catch (error) {
+        console.error('Error loading request details:', error);
+    }
+};
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    if (chatPollingInterval) {
+        clearInterval(chatPollingInterval);
+    }
+});
+</script>
+{% endblock %}

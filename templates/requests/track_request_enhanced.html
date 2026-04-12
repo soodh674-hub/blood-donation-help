@@ -1,0 +1,992 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .track-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .track-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .track-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #dc2626;
+        margin-bottom: 10px;
+    }
+    
+    .track-subtitle {
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    /* Management Section */
+    .management-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .management-buttons {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .manage-btn {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .manage-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .manage-btn.create {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .manage-btn.manage {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .manage-btn.delete {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-icon {
+        font-size: 18px;
+    }
+
+    .btn-text {
+        font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+        .management-buttons {
+            flex-direction: column;
+        }
+
+        .manage-btn {
+            min-width: 100%;
+        }
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+    
+    .panel {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+    
+    .panel-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    .map-section {
+        grid-column: span 2;
+    }
+    
+    .map-container {
+        height: 400px;
+        background: #e5e7eb;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .map-placeholder {
+        text-align: center;
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .request-details {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .request-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
+    
+    .info-value {
+        color: #1f2937;
+        font-size: 16px;
+    }
+    
+    .urgency-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .urgency-indicator.emergency {
+        background: #dc2626;
+        color: white;
+    }
+    
+    .urgency-indicator.urgent {
+        background: #f59e0b;
+        color: white;
+    }
+    
+    .urgency-indicator.normal {
+        background: #10b981;
+        color: white;
+    }
+    
+    .donor-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .donor-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        border-left: 3px solid #10b981;
+    }
+    
+    .donor-card.en-route {
+        border-left-color: #f59e0b;
+        background: #fffbeb;
+    }
+    
+    .donor-card.selected {
+        border-left-color: #10b981;
+        background: #f0fdf4;
+    }
+    
+    .donor-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .donor-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .donor-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #6b7280;
+        font-size: 16px;
+    }
+    
+    .donor-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .donor-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 16px;
+    }
+    
+    .donor-status {
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+    
+    .status-dot.en-route {
+        background: #f59e0b;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-dot.available {
+        background: #10b981;
+    }
+    
+    .donor-distance {
+        font-size: 14px;
+        color: #6b7280;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-call {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-call:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+    }
+    
+    .btn-select {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-select:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+    
+    .btn-select:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .timeline-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-item {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 40px;
+        bottom: -20px;
+        width: 2px;
+        background: #e5e7eb;
+    }
+    
+    .timeline-item:last-child::before {
+        display: none;
+    }
+    
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #3b82f6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+    
+    .timeline-marker.completed {
+        background: #10b981;
+    }
+    
+    .timeline-content {
+        flex: 1;
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    
+    .timeline-time {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+    
+    .timeline-text {
+        font-size: 14px;
+        color: #1f2937;
+        line-height: 1.5;
+    }
+    
+    .contact-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-top: 25px;
+    }
+    
+    .contact-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .contact-item {
+        text-align: center;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+    
+    .contact-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+    
+    .contact-value {
+        font-size: 18px;
+        color: #1f2937;
+        font-weight: 600;
+    }
+    
+    .contact-action {
+        margin-top: 10px;
+    }
+    
+    .btn-contact {
+        background: linear-gradient(45deg, #dc2626, #ef4444);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-contact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .map-section {
+            grid-column: span 1;
+        }
+        
+        .contact-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="track-container" data-request-id="{{ request.id }}" data-user-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+    <!-- Track Request Header -->
+    <div class="track-header">
+        <div class="track-title">📍 Track Blood Request</div>
+        <div class="track-subtitle">Real-time donor tracking and coordination</div>
+    </div>
+
+    <!-- Request Management Options -->
+    <div class="management-section">
+        <div class="management-buttons">
+            <button onclick="showCreateRequestModal()" class="manage-btn create">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Create New Request</span>
+            </button>
+            <button onclick="showManageRequestsModal()" class="manage-btn manage">
+                <span class="btn-icon">📋</span>
+                <span class="btn-text">Manage My Requests</span>
+            </button>
+            {% if user.is_authenticated and request.created_by == user %}
+            <button onclick="confirmDeleteRequest()" class="manage-btn delete">
+                <span class="btn-icon">🗑️</span>
+                <span class="btn-text">Delete This Request</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+        <!-- Map Section -->
+        <div class="panel map-section">
+            <div class="panel-header">
+                <h2 class="panel-title">Live Tracking Map</h2>
+                <span style="color: #10b981; font-size: 14px;">● Real-time</span>
+            </div>
+            
+            <div class="map-container">
+                <div class="map-placeholder">
+                    🗺 Interactive map showing donor and recipient locations
+                    <br><small>Map integration will be available here</small>
+                </div>
+            </div>
+            
+            <div class="request-details">
+                <div class="urgency-indicator emergency">
+                    🚨 URGENT REQUEST
+                </div>
+                
+                <div class="request-info">
+                    <div class="info-item">
+                        <div class="info-label">Patient Name</div>
+                        <div class="info-value">{{ request.patient_name|default:"Unknown" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Blood Group</div>
+                        <div class="info-value">{{ request.patient_blood_group|default:"A+" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Hospital</div>
+                        <div class="info-value">{{ request.hospital_name|default:"City Hospital" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Contact Person</div>
+                        <div class="info-value">{{ request.contact_person|default:"Satish Kumar" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Units Required</div>
+                        <div class="info-value">{{ request.required_units|default:"2" }} units</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Estimated Arrival</div>
+                        <div class="info-value">2-5 mins</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donors Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Interested Donors</h2>
+                <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ donors|length|default:"2" }} Available</span>
+            </div>
+            
+            <div class="donor-list">
+                <!-- Donor 1 - En Route -->
+                <div class="donor-card en-route">
+                    <div class="donor-info">
+                        <div class="donor-avatar">RS</div>
+                        <div class="donor-details">
+                            <div class="donor-name">Rahul Sharma</div>
+                            <div class="donor-status">
+                                <div class="status-dot en-route"></div>
+                                En route • 2.8 km away
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="tel:+91987654321" class="btn-call">
+                            📞 Call
+                        </a>
+                        <button class="btn-select" onclick="selectDonor(1)">
+                            ✓ Select
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Donor 2 - Available -->
+                <div class="donor-card">
+                    <div class="donor-info">
+                        <div class="donor-avatar">AV</div>
+                        <div class="donor-details">
+                            <div class="donor-name">Aman Verma</div>
+                            <div class="donor-status">
+                                <div class="status-dot available"></div>
+                                Available • 4.5 km away
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="tel:+91987654322" class="btn-call">
+                            📞 Call
+                        </a>
+                        <button class="btn-select" onclick="selectDonor(2)">
+                            ✓ Select
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Donor 3 - Available -->
+                <div class="donor-card">
+                    <div class="donor-info">
+                        <div class="donor-avatar">SK</div>
+                        <div class="donor-details">
+                            <div class="donor-name">Satish Kumar</div>
+                            <div class="donor-status">
+                                <div class="status-dot available"></div>
+                                Available • 6.2 km away
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="tel:+91987654323" class="btn-call">
+                            📞 Call
+                        </a>
+                        <button class="btn-select" onclick="selectDonor(3)">
+                            ✓ Select
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Section -->
+    <div class="timeline-section">
+        <div class="panel-header">
+            <h2 class="panel-title">Request Timeline</h2>
+            <span style="color: #6b7280; font-size: 14px;">Live updates</span>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-marker">1</div>
+            <div class="timeline-content">
+                <div class="timeline-time">2 minutes ago</div>
+                <div class="timeline-text">
+                    <strong>Request Created</strong><br>
+                    Blood request created for A+ blood at City Hospital. 2 units required urgently.
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-marker completed">2</div>
+            <div class="timeline-content">
+                <div class="timeline-time">1 minute ago</div>
+                <div class="timeline-text">
+                    <strong>Donor Responded</strong><br>
+                    Rahul Sharma accepted the request and is now en route to the hospital.
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-marker">3</div>
+            <div class="timeline-content">
+                <div class="timeline-time">Just now</div>
+                <div class="timeline-text">
+                    <strong>Donor Selected</strong><br>
+                    Requester has confirmed Rahul Sharma as the donor for this request.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+        <div class="panel-header">
+            <h2 class="panel-title">Emergency Contact</h2>
+            <span style="color: #dc2626; font-size: 14px;">24/7 Available</span>
+        </div>
+        
+        <div class="contact-info">
+            <div class="contact-item">
+                <div class="contact-label">📞 Call Hospital</div>
+                <div class="contact-value">+91 98765 43210</div>
+                <div class="contact-action">
+                    <a href="tel:+919876543210" class="btn-contact">
+                        📞 Call Now
+                    </a>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="contact-label">📱 Contact Requester</div>
+                <div class="contact-value">{{ request.contact_phone|default:"+91 98765 43211" }}</div>
+                <div class="contact-action">
+                    <a href="tel:+919876543211" class="btn-contact">
+                        📱 Message
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select donor function
+function selectDonor(donorId) {
+    if (confirm('Are you sure you want to select this donor?')) {
+        // Make API call to select donor
+        fetch('/api/requests/select-donor/' + donorId + '/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'donor_id': donorId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Donor selected successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error selecting donor:', error);
+            alert('Error selecting donor. Please try again.');
+        });
+    }
+}
+
+// Real-time updates simulation
+function startRealTimeUpdates() {
+    // Simulate real-time updates
+    setInterval(function() {
+        // Update donor positions
+        updateDonorPositions();
+        
+        // Update estimated arrival times
+        updateArrivalTimes();
+    }, 5000); // Update every 5 seconds
+}
+
+function updateDonorPositions() {
+    // This would integrate with real GPS tracking
+    console.log('Updating donor positions...');
+}
+
+function updateArrivalTimes() {
+    // Update estimated arrival times
+    console.log('Updating arrival times...');
+}
+
+// Request Management Functions
+function showCreateRequestModal() {
+    window.location.href = '/requests/create/';
+}
+
+function showManageRequestsModal() {
+    window.location.href = '/requests/my-requests/';
+}
+
+function confirmDeleteRequest() {
+    const requestId = document.querySelector('.track-container').dataset.requestId;
+    if (confirm('Are you sure you want to delete this blood request? This action cannot be undone.')) {
+        deleteRequest(requestId);
+    }
+}
+
+function deleteRequest(requestId) {
+    fetch(`/api/requests/${requestId}/delete/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Request deleted successfully!');
+            window.location.href = '/requests/my-requests/';
+        } else {
+            alert('❌ Error: ' + (data.message || 'Failed to delete request'));
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting request:', error);
+        alert('❌ Error deleting request. Please try again.');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function updateArrivalTimes() {
+    const arrivalElement = document.querySelector('.info-value');
+    if (arrivalElement && arrivalElement.textContent.includes('mins')) {
+        // Simulate countdown
+        const currentTime = arrivalElement.textContent;
+        // Update with real-time data
+    }
+}
+
+// Initialize real-time updates
+document.addEventListener('DOMContentLoaded', function() {
+    startRealTimeUpdates();
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // ESC key to go back
+            window.history.back();
+        }
+    });
+});
+
+// Read Django variables from data attributes
+const trackContainer = document.querySelector('.track-container');
+const REQUEST_ID = trackContainer ? trackContainer.dataset.requestId : null;
+const USER_AUTHENTICATED = trackContainer ? trackContainer.dataset.userAuthenticated === 'true' : false;
+
+// WebSocket for real-time tracking with graceful fallback
+if (USER_AUTHENTICATED && REQUEST_ID) {
+    let trackingSocket = null;
+    let trackingPollingInterval = null;
+
+    function connectTrackingWebSocket() {
+        // Check if WebSocket is supported
+        if (!('WebSocket' in window)) {
+            console.warn('WebSocket not supported, using HTTP polling for tracking');
+            startTrackingPolling();
+            return;
+        }
+
+        try {
+            trackingSocket = new WebSocket(
+                (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' +
+                window.location.host + '/ws/request/' + REQUEST_ID + '/'
+            );
+
+            trackingSocket.onopen = function() {
+                console.log('✅ Tracking WebSocket connected');
+                // Stop polling if WebSocket is successful
+                if (trackingPollingInterval) {
+                    clearInterval(trackingPollingInterval);
+                    trackingPollingInterval = null;
+                }
+            };
+
+            trackingSocket.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'location_update') {
+                        updateDonorLocation(data.donor_id, data.latitude, data.longitude);
+                    } else if (data.type === 'donor_status') {
+                        updateDonorStatus(data.donor_id, data.status);
+                    }
+                } catch (error) {
+                    console.error('Error parsing tracking message:', error);
+                }
+            };
+
+            trackingSocket.onclose = function() {
+                console.log('⚠️ Tracking WebSocket disconnected');
+                // Attempt to reconnect after 5 seconds
+                setTimeout(connectTrackingWebSocket, 5000);
+            };
+
+            trackingSocket.onerror = function(e) {
+                console.error('❌ Tracking WebSocket error:', e);
+                console.log('Falling back to HTTP polling for tracking');
+                startTrackingPolling();
+            };
+        } catch (error) {
+            console.error('Failed to create tracking WebSocket:', error);
+            console.log('Using HTTP polling instead');
+            startTrackingPolling();
+        }
+    }
+
+    function startTrackingPolling() {
+        if (trackingPollingInterval) return; // Already polling
+
+        console.log('Starting HTTP polling for tracking');
+        trackingPollingInterval = setInterval(() => {
+            fetch('/api/requests/' + REQUEST_ID + '/tracking/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.donors) {
+                        data.donors.forEach(donor => {
+                            if (donor.latitude && donor.longitude) {
+                                updateDonorLocation(donor.id, donor.latitude, donor.longitude);
+                            }
+                            updateDonorStatus(donor.id, donor.status);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('HTTP polling error:', error);
+                });
+        }, 10000); // Poll every 10 seconds
+
+        // Initial fetch
+        fetch('/api/requests/' + REQUEST_ID + '/tracking/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.donors) {
+                    data.donors.forEach(donor => {
+                        if (donor.latitude && donor.longitude) {
+                            updateDonorLocation(donor.id, donor.latitude, donor.longitude);
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Initial tracking fetch error:', error);
+            });
+    }
+
+    // Initialize tracking connection
+    connectTrackingWebSocket();
+}
+
+function updateDonorLocation(donorId, latitude, longitude) {
+    // Update donor position on map
+    console.log('Updating location for donor', donorId, latitude, longitude);
+}
+
+function updateDonorStatus(donorId, status) {
+    // Update donor status in the list
+    const donorCards = document.querySelectorAll('.donor-card');
+    donorCards.forEach((card, index) => {
+        if (index + 1 === donorId) {
+            const statusElement = card.querySelector('.donor-status');
+            if (statusElement) {
+                statusElement.innerHTML = getStatusDisplay(status);
+            }
+        }
+    });
+}
+
+function getStatusDisplay(status) {
+    const statusConfig = {
+        'en_route': '<div class="status-dot en-route"></div>En route',
+        'available': '<div class="status-dot available"></div>Available',
+        'selected': '<div class="status-dot"></div>Selected',
+        'arrived': '<div class="status-dot"></div>Arrived'
+    };
+    
+    return statusConfig[status] || '<div class="status-dot"></div>Unknown';
+}
+</script>
+{% endblock %}

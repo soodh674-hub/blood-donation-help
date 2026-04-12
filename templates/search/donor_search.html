@@ -5,12 +5,14 @@
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header Section -->
-        <div class="text-center mb-12 animate-on-scroll">
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-                <span class="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">Find Blood Donors</span>
-            </h1>
+    <!-- Header Section -->
+    <div class="text-center mb-12 animate-on-scroll">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+            <span class="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">Find Blood Donors</span>
+        </h1>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+            Search for blood donors near you by blood group, location, or pincode
+        </p>
             <p class="text-xl text-gray-300 max-w-2xl mx-auto">
                 Search for blood donors near you by blood group, location, or pincode
             </p>
@@ -19,51 +21,54 @@
         <!-- Search Form -->
         <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl mb-8 animate-on-scroll" style="animation-delay: 0.1s;">
             <form id="donor-search-form" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <!-- Blood Group -->
                     <div>
                         <label for="blood_group" class="block text-sm font-medium text-gray-300 mb-2">Blood Group *</label>
                         <select id="blood_group" name="blood_group" required
-                                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                            <option value="">Select Blood Group</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
+                                class="w-full px-4 py-3 bg-gray-900 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer"
+                                style="-webkit-appearance: none; -moz-appearance: none; appearance: none; text-indent: 1px; text-overflow: '';">
+                            <option value="" class="bg-gray-800">Select Blood Group</option>
+                            <option value="A+" class="bg-gray-800 text-gray-900">A+</option>
+                            <option value="A-" class="bg-gray-800 text-gray-900">A-</option>
+                            <option value="B+" class="bg-gray-800 text-gray-900">B+</option>
+                            <option value="B-" class="bg-gray-800 text-gray-900">B-</option>
+                            <option value="AB+" class="bg-gray-800 text-gray-900">AB+</option>
+                            <option value="AB-" class="bg-gray-800 text-gray-900">AB-</option>
+                            <option value="O+" class="bg-gray-800 text-gray-900">O+</option>
+                            <option value="O-" class="bg-gray-800 text-gray-900">O-</option>
                         </select>
+                        <div id="blood-group-error" class="text-red-400 text-sm mt-1 hidden">Please select a blood group</div>
                     </div>
 
-                    <!-- Location -->
+                    <!-- City/Area -->
                     <div>
-                        <label for="location" class="block text-sm font-medium text-gray-300 mb-2">City/Area</label>
-                        <input type="text" id="location" name="location" 
-                               placeholder="Enter city or area"
+                        <label for="city" class="block text-sm font-medium text-gray-300 mb-2">City (Optional)</label>
+                        <input type="text" id="city" name="city" 
+                               placeholder="Enter city name (optional)"
                                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
                     </div>
 
                     <!-- Pincode -->
                     <div>
-                        <label for="pincode" class="block text-sm font-medium text-gray-300 mb-2">Pincode</label>
+                        <label for="pincode" class="block text-sm font-medium text-gray-300 mb-2">Pincode (Optional)</label>
                         <input type="text" id="pincode" name="pincode" 
-                               placeholder="Enter pincode"
+                               placeholder="Enter pincode (optional)"
                                maxlength="6"
                                class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div id="pincode-error" class="text-red-400 text-sm mt-1 hidden">Please enter a valid 6-digit pincode</div>
                     </div>
 
                     <!-- Distance -->
                     <div>
-                        <label for="max_distance" class="block text-sm font-medium text-gray-300 mb-2">Max Distance (km)</label>
-                        <select id="max_distance" name="max_distance"
+                        <label for="distance" class="block text-sm font-medium text-gray-300 mb-2">Distance (km)</label>
+                        <select id="distance" name="distance"
                                 class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                            <option value="5">5 km</option>
-                            <option value="10" selected>10 km</option>
-                            <option value="25">25 km</option>
-                            <option value="50">50 km</option>
-                            <option value="100">100 km</option>
+                            <option value="5">Within 5 km</option>
+                            <option value="10" selected>Within 10 km</option>
+                            <option value="25">Within 25 km</option>
+                            <option value="50">Within 50 km</option>
+                            <option value="100">Within 100 km</option>
                         </select>
                     </div>
                 </div>
@@ -111,6 +116,32 @@
     </div>
 </div>
 
+<!-- Donor Profile Modal -->
+<div id="donor-profile-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDonorProfile()"></div>
+
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <div class="relative inline-block align-bottom bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-red-500/30">
+            <!-- Close button -->
+            <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none" onclick="closeDonorProfile()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Profile content -->
+            <div id="modal-content" class="p-8">
+                <!-- Content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('donor-search-form');
@@ -120,6 +151,65 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchResults = document.getElementById('search-results');
     const resultCount = document.getElementById('result-count');
     const loadingSpinner = document.getElementById('loading-spinner');
+    const bloodGroupSelect = document.getElementById('blood_group');
+    const pincodeInput = document.getElementById('pincode');
+    const cityInput = document.getElementById('city');
+    const bloodGroupError = document.getElementById('blood-group-error');
+    const pincodeError = document.getElementById('pincode-error');
+    
+    // ===== AUTO-EXECUTE SEARCH FROM URL PARAMETERS =====
+    // Check if URL has search parameters (from home page search)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlBloodGroup = urlParams.get('blood_group');
+    const urlCity = urlParams.get('city');
+    const urlPincode = urlParams.get('pincode');
+    
+    if (urlBloodGroup || urlCity || urlPincode) {
+        console.log('🔍 Auto-executing search from URL parameters:', {
+            bloodGroup: urlBloodGroup,
+            city: urlCity,
+            pincode: urlPincode
+        });
+        
+        // Fill form fields from URL parameters
+        if (urlBloodGroup && bloodGroupSelect) {
+            bloodGroupSelect.value = urlBloodGroup;
+        }
+        if (urlCity && cityInput) {
+            cityInput.value = urlCity;
+        }
+        if (urlPincode && pincodeInput) {
+            pincodeInput.value = urlPincode;
+        }
+        
+        // Auto-execute search after a short delay
+        setTimeout(() => {
+            executeSearch();
+        }, 500);
+    }
+
+    // Validate pincode input
+    if (pincodeInput) {
+        pincodeInput.addEventListener('input', function() {
+            const value = this.value;
+            if (value && !/^[0-9]{6}$/.test(value)) {
+                pincodeError.classList.remove('hidden');
+            } else {
+                pincodeError.classList.add('hidden');
+            }
+        });
+
+        pincodeInput.addEventListener('focus', function() {
+            pincodeError.classList.add('hidden');
+        });
+    }
+
+    // Validate blood group selection
+    if (bloodGroupSelect) {
+        bloodGroupSelect.addEventListener('change', function() {
+            bloodGroupError.classList.add('hidden');
+        });
+    }
 
     // Get user's current location
     function getCurrentLocation() {
@@ -151,20 +241,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Create donor card
-    function createDonorCard(donor) {
+    function createDonorCard(donor, details = null) {
         const card = document.createElement('div');
-        card.className = 'bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-red-500/50 transition-all duration-300 transform hover:scale-105';
+        card.className = 'bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-red-500/50 transition-all duration-300 transform hover:scale-105 cursor-pointer';
+        card.onclick = () => {
+            // Redirect to donor profile page
+            window.location.href = `/donors/profile/${donor.id}/`;
+        };
+        
+        // Check if this is a public search result (no distance)
+        const isPublicSearch = !donor.distance_km;
         
         card.innerHTML = `
             <div class="flex items-start justify-between mb-4">
                 <div>
                     <h3 class="text-lg font-semibold text-white">${donor.first_name} ${donor.last_name}</h3>
                     <p class="text-red-400 font-medium">${donor.blood_group}</p>
+                    ${isPublicSearch ? '<span class="text-xs text-gray-400">Public Profile</span>' : ''}
                 </div>
+                ${!isPublicSearch ? `
                 <div class="text-right">
                     <div class="text-sm text-gray-400">Distance</div>
                     <div class="text-white font-semibold">${formatDistance(donor.distance_km)}</div>
                 </div>
+                ` : ''}
             </div>
             
             <div class="space-y-2 mb-4">
@@ -182,14 +282,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     </svg>
                     <span>${donor.phone_number || 'Not available'}</span>
                 </div>
+                
+                ${details && details.score ? `
+                <div class="flex items-center text-gray-300">
+                    <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Match Score: ${Math.round(details.score)}%</span>
+                </div>
+                ` : ''}
             </div>
             
-            <div class="pt-4 border-t border-white/10">
-                <button onclick="contactDonor('${donor.id}')" 
-                        class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
-                    Contact Donor
+            <div class="pt-4 border-t border-white/10 flex gap-2">
+                <button onclick="event.stopPropagation(); openDonorProfile('${donor.id}')" 
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+                    View Profile
+                </button>
+                <button onclick="event.stopPropagation(); contactDonor('${donor.id}', '${donor.first_name} ${donor.last_name}', '${donor.phone_number || 'Not available'}', '${donor.email || 'Not available'}')" 
+                        class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+                    Contact
                 </button>
             </div>
+            ${isPublicSearch ? `
+            <p class="text-xs text-gray-400 text-center mt-2">Showing all ${donor.blood_group} donors in system</p>
+            ` : ''}
         `;
         
         return card;
@@ -203,39 +319,73 @@ document.addEventListener('DOMContentLoaded', function() {
             loadingSpinner.classList.remove('hidden');
             noResults.classList.add('hidden');
             
-            // Get current location if not provided
+            // Validate required fields
+            const bloodGroup = formData.get('blood_group');
+            const city = formData.get('city');
+            const pincode = formData.get('pincode');
+            const distance = formData.get('distance') || 25;
+            
+            if (!bloodGroup) {
+                bloodGroupError.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                return;
+            }
+            
+            if (pincode && !/^[0-9]{6}$/.test(pincode)) {
+                pincodeError.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                return;
+            }
+            
+            // Get current location if city is provided
             let latitude, longitude;
-            if (formData.get('location')) {
+            if (city) {
                 // In a real app, you'd use a geocoding service here
                 // For now, we'll use a default location (Delhi coordinates)
                 latitude = 28.6139;
                 longitude = 77.2090;
             } else {
-                const location = await getCurrentLocation();
-                latitude = location.latitude;
-                longitude = location.longitude;
+                // If no city provided, set location to null for blood group only search
+                latitude = null;
+                longitude = null;
             }
             
             // Prepare search parameters
             const params = new URLSearchParams({
-                blood_group: formData.get('blood_group'),
-                latitude: latitude,
-                longitude: longitude,
-                max_distance: formData.get('max_distance') || 25
+                blood_group: bloodGroup,
+                max_distance: distance
             });
             
+            // Add location parameters if available
+            if (latitude && longitude) {
+                params.append('latitude', latitude);
+                params.append('longitude', longitude);
+            }
+            
             // Add pincode filter if provided
-            if (formData.get('pincode')) {
-                params.append('pincode', formData.get('pincode'));
+            if (pincode) {
+                params.append('pincode', pincode);
+            }
+            
+            // Add city filter
+            if (city) {
+                params.append('city', city);
             }
             
             // Make API request
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Add authorization header if user is logged in
+            const accessToken = localStorage.getItem('access_token');
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            
             const response = await fetch(`/api/donors/search/?${params.toString()}`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: headers
             });
             
             if (!response.ok) {
@@ -266,15 +416,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (results && results.length > 0) {
             resultCount.textContent = `${results.length} donor${results.length > 1 ? 's' : ''} found`;
             results.forEach((result, index) => {
-                const donorCard = createDonorCard(result.donor);
-                donorCard.dataset.distance = result.donor.distance_km;
+                const donorData = result.donor;
+                const details = result.details || null;
+                const donorCard = createDonorCard(donorData, details);
+                
+                // Store distance for sorting if available
+                if (donorData.distance_km) {
+                    donorCard.dataset.distance = donorData.distance_km;
+                }
+                
                 resultsContainer.appendChild(donorCard);
                 
                 // Add entrance animation
                 setTimeout(() => {
-                    if (typeof window.animateDonorCardEntrance === 'function') {
-                        window.animateDonorCardEntrance(donorCard);
-                    }
+                    donorCard.style.opacity = '0';
+                    donorCard.style.transform = 'translateY(20px)';
+                    donorCard.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        donorCard.style.opacity = '1';
+                        donorCard.style.transform = 'translateY(0)';
+                    }, 50);
                 }, index * 100);
             });
             noResults.classList.add('hidden');
@@ -284,31 +446,283 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         searchResults.classList.remove('hidden');
-        
-        // Trigger custom event for animations
-        document.dispatchEvent(new CustomEvent('searchResultsLoaded'));
     }
 
-    // Form submission handler
-    searchForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    // ===== EXECUTE SEARCH FUNCTION (reusable) =====
+    async function executeSearch() {
+        console.log('🔍 Executing donor search...');
         
         const formData = new FormData(searchForm);
         
         // Validate required fields
-        if (!formData.get('blood_group')) {
-            alert('Please select a blood group');
+        const bloodGroup = formData.get('blood_group');
+        const city = formData.get('city');
+        const pincode = formData.get('pincode');
+        
+        if (!bloodGroup) {
+            console.warn('⚠️ Blood group is required');
+            document.getElementById('blood-group-error').classList.remove('hidden');
+            return;
+        }
+        
+        if (pincode && !/^[0-9]{6}$/.test(pincode)) {
+            console.warn('⚠️ Invalid pincode format');
+            document.getElementById('pincode-error').classList.remove('hidden');
             return;
         }
         
         await searchDonors(formData);
+    }
+    
+    // Form submission handler
+    searchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await executeSearch();
     });
 
     // Contact donor function
-    window.contactDonor = function(donorId) {
+    window.contactDonor = function(donorId, donorName, phoneNumber, email) {
+        // Show donor contact information in an alert
+        let contactInfo = `Donor Information:\n\n`;
+        contactInfo += `Name: ${donorName}\n`;
+        contactInfo += `Phone: ${phoneNumber}\n`;
+        contactInfo += `Email: ${email}\n`;
+        contactInfo += `\nYou can contact this donor directly using the information above.`;
+        
+        alert(contactInfo);
+        
         // In a real app, this would open a contact modal or redirect to messaging
-        alert(`Contact functionality for donor ${donorId} would be implemented here.`);
+        // console.log(`Contact requested for donor ${donorId}`);
     };
+
+    // Open donor profile modal - Instagram Style
+    window.openDonorProfile = function(donorId) {
+        // Fetch donor details from API
+        fetch(`/api/users/${donorId}/`)
+            .then(res => res.json())
+            .then(donorData => {
+                const modal = document.getElementById('donor-profile-modal');
+                const modalContent = document.getElementById('modal-content');
+                
+                // Calculate initials
+                const initials = `${donorData.first_name?.charAt(0) || ''}${donorData.last_name?.charAt(0) || ''}`.toUpperCase();
+                
+                // Get compatibility info
+                const canDonateTo = getCompatibleRecipients(donorData.blood_group);
+                
+                // Populate modal with enhanced Instagram-style donor information
+                modalContent.innerHTML = `
+                    <div class="space-y-6">
+                        <!-- Profile Header with Gradient Background -->
+                        <div class="bg-gradient-to-br from-red-600 via-red-700 to-red-800 p-6 md:p-8 rounded-t-2xl -mx-8 -mt-8 mb-6">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                                <!-- Avatar with Blood Group Badge -->
+                                <div class="relative">
+                                    <div class="w-24 h-24 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center text-4xl md:text-5xl font-bold text-red-600 shadow-xl border-4 border-white/20">
+                                        ${initials}
+                                    </div>
+                                    <div class="absolute -bottom-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg border-2 border-white">
+                                        ${donorData.blood_group}
+                                    </div>
+                                </div>
+                                
+                                <!-- Donor Info -->
+                                <div class="text-white text-center md:text-left flex-1">
+                                    <h2 class="text-2xl md:text-3xl font-bold mb-2">${donorData.first_name} ${donorData.last_name}</h2>
+                                    <p class="text-red-100 text-sm md:text-base mb-3 flex items-center justify-center md:justify-start gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        </svg>
+                                        ${donorData.city || 'Location not specified'}, ${donorData.state || ''}
+                                    </p>
+                                    
+                                    <!-- Availability Status -->
+                                    <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+                                        <span class="relative flex h-3 w-3">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${donorData.is_available ? 'bg-green-400' : 'bg-gray-400'} opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-3 w-3 ${donorData.is_available ? 'bg-green-500' : 'bg-gray-500'}"></span>
+                                        </span>
+                                        <span class="text-sm font-medium">${donorData.is_available ? 'Available to Donate' : 'Currently Unavailable'}</span>
+                                    </div>
+                                    
+                                    <!-- Quick Action Buttons -->
+                                    <div class="flex flex-wrap gap-3 justify-center md:justify-start">
+                                        <a href="tel:${donorData.phone_number}" class="px-4 py-2 bg-white text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                            </svg>
+                                            Call
+                                        </a>
+                                        <a href="mailto:${donorData.email}" class="px-4 py-2 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-colors flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                            Email
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-gradient-to-br from-blue-500/10 to-blue-600/10 backdrop-blur-sm rounded-xl p-4 border border-blue-500/20 text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-blue-400 mb-1">
+                                    ${donorData.total_donations || 0}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-400">Total Donations</div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-500/10 to-green-600/10 backdrop-blur-sm rounded-xl p-4 border border-green-500/20 text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-green-400 mb-1">
+                                    ${canDonateTo.length}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-400">Can Donate To</div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-purple-500/10 to-purple-600/10 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20 text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-purple-400 mb-1">
+                                    ${donorData.days_since_last !== null ? donorData.days_since_last : 'N/A'}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-400">Days Since Last</div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-orange-500/10 to-orange-600/10 backdrop-blur-sm rounded-xl p-4 border border-orange-500/20 text-center">
+                                <div class="text-2xl md:text-3xl font-bold text-orange-400 mb-1">
+                                    ${donorData.user_type === 'donor' ? '✓' : '○'}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-400">Verified Donor</div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <div class="space-y-3">
+                            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Contact Information
+                            </h3>
+                            
+                            <div class="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-400">Phone Number</p>
+                                        <p class="text-white font-medium">${donorData.phone_number || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-400">Email Address</p>
+                                        <p class="text-white font-medium truncate">${donorData.email || 'Not provided'}</p>
+                                    </div>
+                                </div>
+                                
+                                ${donorData.date_of_birth ? `
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-400">Date of Birth</p>
+                                        <p class="text-white font-medium">${new Date(donorData.date_of_birth).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Blood Compatibility -->
+                        <div class="space-y-3">
+                            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                </svg>
+                                Can Donate To
+                            </h3>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                ${canDonateTo.map(bg => `
+                                    <span class="px-3 py-1.5 bg-gradient-to-r from-red-500/20 to-red-600/20 border border-red-500/30 rounded-lg text-red-300 font-semibold text-sm">
+                                        ${bg}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Close Button -->
+                        <div class="pt-4 border-t border-white/10">
+                            <button onclick="closeDonorProfile()" 
+                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Close Profile
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Show modal with animation
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                
+                // Animate modal entrance
+                gsap.fromTo(modal.querySelector('.relative'), 
+                    { opacity: 0, scale: 0.9, y: 20 },
+                    { opacity: 1, scale: 1, y: 0, duration: 0.3, ease: 'back.out(1.7)' }
+                );
+            })
+            .catch(error => {
+                console.error('Error fetching donor profile:', error);
+                showMessage('Failed to load donor profile', 'error');
+            });
+    };
+    
+    // Helper function to get compatible recipients
+    function getCompatibleRecipients(bloodGroup) {
+        const compatibility = {
+            'O-': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
+            'O+': ['O+', 'A+', 'B+', 'AB+'],
+            'A-': ['A-', 'A+', 'AB-', 'AB+'],
+            'A+': ['A+', 'AB+'],
+            'B-': ['B-', 'B+', 'AB-', 'AB+'],
+            'B+': ['B+', 'AB+'],
+            'AB-': ['AB-', 'AB+'],
+            'AB+': ['AB+']
+        };
+        return compatibility[bloodGroup] || [];
+    }
+
+    // Close donor profile modal
+    window.closeDonorProfile = function() {
+        const modal = document.getElementById('donor-profile-modal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    };
+
+    // Add keyboard event listener for ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('donor-profile-modal');
+            if (!modal.classList.contains('hidden')) {
+                closeDonorProfile();
+            }
+        }
+    });
 
     // GSAP Animations
     gsap.utils.toArray('.animate-on-scroll').forEach((element, i) => {

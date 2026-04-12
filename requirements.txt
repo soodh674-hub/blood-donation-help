@@ -3,12 +3,14 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 celery==5.3.4
 redis==5.0.1
+django-redis==5.2.0
+channels==4.0.0
+channels-redis==4.2.0
+daphne==4.0.0
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
 django-filter==23.3
 django-cors-headers==4.3.1
-django-environ==0.11.2
-django-redis==5.4.0
 python-decouple==3.8
 gunicorn==21.2.0
 whitenoise==6.6.0
@@ -17,5 +19,10 @@ django-admin-rangefilter==0.11.0
 django-ratelimit==4.1.0
 django-auditlog==2.3.0
 django-captcha==1.0.0
+django-axes==6.1.0  # Login rate limiting and brute force protection
+django-allauth==0.60.0  # Email verification and authentication
 dj-database-url==2.1.0
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.9  # For emergency scripts and compatibility
+psycopg[binary]==3.2.13  # For Django ORM (preferred)
+setuptools==70.0.0
+requests==2.31.0

@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Blood Requests - BloodLife{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 animate-on-scroll">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">My Blood Requests</h1>
+                    <p class="text-gray-400">Track and manage your blood donation requests</p>
+                </div>
+                <a href="/accounts/profile/" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white/20">
+                    ← Back to Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-on-scroll">
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Requests</p>
+                        <p class="text-3xl font-bold text-white mt-1" id="total-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Active</p>
+                        <p class="text-3xl font-bold text-green-400 mt-1" id="active-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Pending</p>
+                        <p class="text-3xl font-bold text-yellow-400 mt-1" id="pending-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Fulfilled</p>
+                        <p class="text-3xl font-bold text-purple-400 mt-1" id="fulfilled-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="bg-white/5 backdrop-blur-lg rounded-xl p-4 mb-6 border border-white/10 animate-on-scroll">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterRequests('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-red-500 text-white" data-filter="all">
+                    All Requests
+                </button>
+                <button onclick="filterRequests('active')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="active">
+                    Active
+                </button>
+                <button onclick="filterRequests('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="pending">
+                    Pending
+                </button>
+                <button onclick="filterRequests('fulfilled')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="fulfilled">
+                    Fulfilled
+                </button>
+                <button onclick="filterRequests('cancelled')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="cancelled">
+                    Cancelled
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+            <p class="text-gray-400 mt-4">Loading your requests...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16 bg-white/5 backdrop-blur-lg rounded-xl border border-white/10">
+            <svg class="w-24 h-24 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-white mb-2">No Blood Requests Found</h3>
+            <p class="text-gray-400">You haven't created any blood requests yet.</p>
+        </div>
+
+        <!-- Requests List -->
+        <div id="requests-list" class="space-y-4 hidden">
+            <!-- Request cards will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
+
+<script>
+let allRequests = [];
+let currentFilter = 'all';
+
+// Load user requests on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadUserRequests();
+});
+
+async function loadUserRequests() {
+    const loadingState = document.getElementById('loading-state');
+    const emptyState = document.getElementById('empty-state');
+    const requestsList = document.getElementById('requests-list');
+
+    try {
+        // Get CSRF token and access token
+        const csrfToken = getCSRFToken();
+        const accessToken = localStorage.getItem('access_token');
+        
+        console.log('🔄 Loading user requests...');
+        console.log('Access token exists:', !!accessToken);
+
+        const response = await fetch('/api/requests/user-requests/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || '',
+                ...(accessToken && { 'Authorization': `Bearer ${accessToken}` })
+            },
+            credentials: 'same-origin'  // Include cookies for session authentication
+        });
+        
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error('Failed to load requests');
+        }
+
+        const data = await response.json();
+        allRequests = data.requests || [];
+        
+        updateStats();
+        renderRequests();
+        
+        loadingState.classList.add('hidden');
+        
+        if (allRequests.length === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            requestsList.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading requests:', error);
+        loadingState.innerHTML = `
+            <div class="text-red-400">
+                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p>Failed to load requests. Please refresh the page.</p>
+            </div>
+        `;
+    }
+}
+
+function updateStats() {
+    const total = allRequests.length;
+    const active = allRequests.filter(r => r.status === 'active' || r.status === 'approved').length;
+    const pending = allRequests.filter(r => r.status === 'pending').length;
+    const fulfilled = allRequests.filter(r => r.status === 'fulfilled' || r.status === 'completed').length;
+
+    document.getElementById('total-count').textContent = total;
+    document.getElementById('active-count').textContent = active;
+    document.getElementById('pending-count').textContent = pending;
+    document.getElementById('fulfilled-count').textContent = fulfilled;
+}
+
+function filterRequests(filter) {
+    currentFilter = filter;
+    
+    // Update button styles
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.filter === filter) {
+            btn.classList.remove('bg-white/10', 'text-gray-300');
+            btn.classList.add('bg-red-500', 'text-white');
+        } else {
+            btn.classList.remove('bg-red-500', 'text-white');
+            btn.classList.add('bg-white/10', 'text-gray-300');
+        }
+    });
+    
+    renderRequests();
+}
+
+function renderRequests() {
+    const requestsList = document.getElementById('requests-list');
+    
+    let filteredRequests = allRequests;
+    if (currentFilter !== 'all') {
+        filteredRequests = allRequests.filter(request => {
+            if (currentFilter === 'active') {
+                return request.status === 'active' || request.status === 'approved';
+            }
+            return request.status === currentFilter;
+        });
+    }
+
+    if (filteredRequests.length === 0) {
+        requestsList.innerHTML = `
+            <div class="text-center py-12 bg-white/5 rounded-xl border border-white/10">
+                <p class="text-gray-400">No ${currentFilter} requests found</p>
+            </div>
+        `;
+        return;
+    }
+
+    requestsList.innerHTML = filteredRequests.map(request => createRequestCard(request)).join('');
+}
+
+function createRequestCard(request) {
+    const statusColors = {
+        'pending': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        'active': 'bg-green-500/20 text-green-400 border-green-500/30',
+        'approved': 'bg-green-500/20 text-green-400 border-green-500/30',
+        'fulfilled': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        'completed': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        'cancelled': 'bg-red-500/20 text-red-400 border-red-500/30',
+        'rejected': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    };
+
+    const priorityColors = {
+        'emergency': 'bg-red-600 text-white',
+        'urgent': 'bg-orange-500 text-white',
+        'normal': 'bg-blue-500 text-white'
+    };
+
+    const statusClass = statusColors[request.status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    const priorityClass = priorityColors[request.priority] || 'bg-blue-500 text-white';
+
+    const createdDate = new Date(request.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    const requiredByDate = request.required_by ? new Date(request.required_by).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    }) : 'Not specified';
+
+    return `
+        <div onclick="window.location.href='/requests/track/${request.id}/'" 
+             class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-200 animate-on-scroll cursor-pointer group">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <!-- Left Section: Patient Info -->
+                <div class="flex-1">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">${request.patient_name}</h3>
+                            <p class="text-gray-400 text-sm">Request #${request.id} • Click to view details →</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium border ${statusClass}">
+                                ${request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${priorityClass}">
+                                ${request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Blood Group</p>
+                            <p class="text-red-400 font-semibold text-lg">${request.patient_blood_group}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Units Needed</p>
+                            <p class="text-white font-semibold">${request.required_units}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Patient Age</p>
+                            <p class="text-white font-semibold">${request.patient_age} years</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Required By</p>
+                            <p class="text-white font-semibold text-sm">${requiredByDate}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500 text-xs">Hospital</p>
+                                <p class="text-white text-sm">${request.hospital_name || 'Not specified'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-gray-500 text-xs">Location</p>
+                                <p class="text-white text-sm">${request.city || 'Not specified'}, ${request.state || ''}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Section: Contact & Timeline -->
+                <div class="lg:w-80 space-y-4">
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Contact Person</p>
+                        <p class="text-white font-medium">${request.contact_person || 'Not provided'}</p>
+                        <p class="text-gray-400 text-sm">${request.contact_phone || 'No phone'}</p>
+                        ${request.contact_email ? `<p class="text-gray-400 text-sm">${request.contact_email}</p>` : ''}
+                    </div>
+
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Created On</p>
+                        <p class="text-white text-sm">${createdDate}</p>
+                    </div>
+
+                    ${request.reason ? `
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Reason</p>
+                        <p class="text-white text-sm">${request.reason}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Get CSRF token from cookies
+function getCSRFToken() {
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+    return cookieValue || '';
+}
+</script>
+{% endblock %}

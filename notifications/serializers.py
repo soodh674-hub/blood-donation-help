@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.serializers import UserPublicSerializer
-from requests.serializers import BloodRequestSerializer
+from blood_requests_app.serializers import BloodRequestSerializer
 from .models import Notification
 
 
