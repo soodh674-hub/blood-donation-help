@@ -51,5 +51,13 @@ urlpatterns = [
     # Settings API endpoints
     path('api/settings/update/', views.update_user_settings, name='update-settings-api'),
     path('api/settings/change-password/', views.change_password, name='change-password-api'),
-    
+
+    # Phase 2: Profile editing
+    path('edit-profile/', views.edit_profile, name='edit_profile'),
+    path('remove-profile-photo/', views.remove_profile_photo, name='remove_profile_photo'),
+
+    # Phase 2: Favorites
+    path('favorites/', views.favorites_list, name='favorites_list'),
+    path('toggle-favorite/<int:donor_id>/', views.toggle_favorite_donor, name='toggle_favorite'),
+
 ]

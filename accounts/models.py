@@ -460,6 +460,23 @@ class UserActivityLog(models.Model):
         return f"{self.user.username} - {self.get_action_display()} at {self.timestamp}"
 
 
+class FavoriteDonor(models.Model):
+    """Track donors saved/favorited by users"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite_donors')
+    favorite_donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, help_text="Personal notes about this donor")
+
+    class Meta:
+        unique_together = ['user', 'favorite_donor']
+        ordering = ['-created_at']
+        verbose_name = 'Favorite Donor'
+        verbose_name_plural = 'Favorite Donors'
+
+    def __str__(self):
+        return f"{self.user.username} → {self.favorite_donor.username}"
+
+
 # Auto-create settings when user is created
 from django.db.models.signals import post_save
 from django.dispatch import receiver

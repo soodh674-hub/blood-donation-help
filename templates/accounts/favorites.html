@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Favorite Donors - BloodLife{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-8">
+    <div class="max-w-6xl mx-auto px-4">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">My Favorite Donors</h1>
+            <p class="text-gray-400">Quick access to your saved donors</p>
+        </div>
+
+        {% if favorites %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for favorite in favorites %}
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-red-500/50 transition-all duration-300 transform hover:scale-105">
+                <!-- Donor Card -->
+                <div class="flex items-center gap-4 mb-4">
+                    {% if favorite.favorite_donor.donor_profile.profile_photo %}
+                    <img src="{{ favorite.favorite_donor.donor_profile.profile_photo.url }}" alt="{{ favorite.favorite_donor.first_name }}" class="w-16 h-16 rounded-full object-cover border-2 border-red-500">
+                    {% else %}
+                    <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white text-xl font-bold border-2 border-red-500">
+                        {{ favorite.favorite_donor.first_name|first|upper }}{{ favorite.favorite_donor.last_name|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="text-white font-semibold text-lg">{{ favorite.favorite_donor.first_name }} {{ favorite.favorite_donor.last_name }}</h3>
+                        <span class="inline-flex items-center px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs font-medium">
+                            {{ favorite.favorite_donor.blood_group }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Donor Info -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center gap-2 text-gray-300 text-sm">
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        </svg>
+                        <span>{{ favorite.favorite_donor.city }}, {{ favorite.favorite_donor.state }}</span>
+                    </div>
+                    {% if favorite.favorite_donor.is_available %}
+                    <div class="flex items-center gap-2 text-green-400 text-sm">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span>Available to donate</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Notes -->
+                {% if favorite.notes %}
+                <div class="bg-white/5 rounded-lg p-3 mb-4">
+                    <p class="text-gray-400 text-sm">{{ favorite.notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="flex gap-2">
+                    <a href="/donors/{{ favorite.favorite_donor.id }}/profile/" class="flex-1 text-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-medium transition-all duration-300">
+                        View Profile
+                    </a>
+                    <button onclick="removeFavorite({{ favorite.favorite_donor.id }})" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-all duration-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Added Date -->
+                <p class="text-gray-500 text-xs mt-3">Added {{ favorite.created_at|date:"M d, Y" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white/5 backdrop-blur-lg rounded-xl p-12 border border-white/10 text-center">
+            <svg class="w-20 h-20 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-white mb-2">No favorites yet</h3>
+            <p class="text-gray-400 mb-6">Start adding donors to your favorites for quick access</p>
+            <a href="/accounts/search/users/" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-medium transition-all duration-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Find Donors
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function removeFavorite(donorId) {
+    if (confirm('Are you sure you want to remove this donor from favorites?')) {
+        fetch(`/accounts/toggle-favorite/${donorId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to remove favorite: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error removing favorite');
+            console.error(error);
+        });
+    }
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+</script>
+{% endblock %}

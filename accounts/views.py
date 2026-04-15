@@ -1107,10 +1107,176 @@ def change_password(request):
             'success': True,
             'message': 'Password changed successfully'
         }, status=status.HTTP_200_OK)
-        
+
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.core.files.storage import default_storage
+
+
+@login_required
+def edit_profile(request):
+    """
+    Profile editing page - allows photo upload and location update
+    Phase 2 Feature
+    """
+    try:
+        # Get or create donor profile
+        from .models import DonorProfile
+        donor_profile, created = DonorProfile.objects.get_or_create(
+            user=request.user
+        )
+
+        if request.method == 'POST':
+            # Handle profile photo upload
+            if 'profile_photo' in request.FILES:
+                profile_photo = request.FILES['profile_photo']
+                # Validate file size (max 5MB)
+                if profile_photo.size > 5 * 1024 * 1024:
+                    messages.error(request, 'Photo must be less than 5MB')
+                    return redirect('edit_profile')
+
+                # Validate file type
+                allowed_types = ['image/jpeg', 'image/png', 'image/jpg']
+                if profile_photo.content_type not in allowed_types:
+                    messages.error(request, 'Only JPEG and PNG images are allowed')
+                    return redirect('edit_profile')
+
+                # Delete old photo if exists
+                if donor_profile.profile_photo:
+                    if default_storage.exists(donor_profile.profile_photo.name):
+                        default_storage.delete(donor_profile.profile_photo.name)
+
+                # Save new photo
+                donor_profile.profile_photo = profile_photo
+                donor_profile.save()
+                messages.success(request, 'Profile photo updated successfully')
+
+            # Handle location update
+            if 'city' in request.POST or 'state' in request.POST:
+                if request.POST.get('city'):
+                    request.user.city = request.POST['city']
+                if request.POST.get('state'):
+                    request.user.state = request.POST['state']
+                if request.POST.get('pincode'):
+                    request.user.pincode = request.POST['pincode']
+                request.user.save()
+                messages.success(request, 'Location updated successfully')
+
+            return redirect('edit_profile')
+
+        context = {
+            'user': request.user,
+            'donor_profile': donor_profile,
+        }
+        return render(request, 'accounts/edit_profile.html', context)
+
     except Exception as e:
-        logger.error(f'Error changing password: {str(e)}')
-        return Response({
+        logger.error(f'Error in edit_profile: {str(e)}', exc_info=True)
+        messages.error(request, 'An error occurred while updating your profile')
+        return redirect('edit_profile')
+
+
+@login_required
+@require_POST
+def remove_profile_photo(request):
+    """
+    Remove profile photo - AJAX endpoint
+    Phase 2 Feature
+    """
+    try:
+        from .models import DonorProfile
+        donor_profile = request.user.donor_profile
+
+        if donor_profile.profile_photo:
+            if default_storage.exists(donor_profile.profile_photo.name):
+                default_storage.delete(donor_profile.profile_photo.name)
+            donor_profile.profile_photo = None
+            donor_profile.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Profile photo removed successfully'
+        })
+
+    except Exception as e:
+        logger.error(f'Error removing profile photo: {str(e)}', exc_info=True)
+        return JsonResponse({
             'success': False,
-            'message': f'Failed to change password: {str(e)}'
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'message': 'Failed to remove profile photo'
+        }, status=400)
+
+
+@login_required
+def toggle_favorite_donor(request, donor_id):
+    """
+    Toggle donor as favorite - AJAX endpoint
+    Phase 2 Feature
+    """
+    try:
+        from .models import FavoriteDonor, User
+
+        favorite_donor = get_object_or_404(User, id=donor_id, user_type='donor')
+
+        # Prevent users from favoriting themselves
+        if favorite_donor == request.user:
+            return JsonResponse({
+                'success': False,
+                'message': 'You cannot favorite yourself'
+            }, status=400)
+
+        # Check if already favorited
+        favorite = FavoriteDonor.objects.filter(
+            user=request.user,
+            favorite_donor=favorite_donor
+        ).first()
+
+        if favorite:
+            # Remove from favorites
+            favorite.delete()
+            return JsonResponse({
+                'success': True,
+                'is_favorite': False,
+                'message': 'Removed from favorites'
+            })
+        else:
+            # Add to favorites
+            FavoriteDonor.objects.create(
+                user=request.user,
+                favorite_donor=favorite_donor
+            )
+            return JsonResponse({
+                'success': True,
+                'is_favorite': True,
+                'message': 'Added to favorites'
+            })
+
+    except Exception as e:
+        logger.error(f'Error toggling favorite donor: {str(e)}', exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'message': 'Failed to toggle favorite'
+        }, status=400)
+
+
+@login_required
+def favorites_list(request):
+    """
+    Display list of favorite donors
+    Phase 2 Feature
+    """
+    try:
+        from .models import FavoriteDonor
+
+        favorites = FavoriteDonor.objects.filter(
+            user=request.user
+        ).select_related('favorite_donor')
+
+        context = {
+            'favorites': favorites,
+        }
+        return render(request, 'accounts/favorites.html', context)
+
+    except Exception as e:
+        logger.error(f'Error loading favorites: {str(e)}', exc_info=True)
+        return render(request, 'accounts/favorites.html', {'error': 'Failed to load favorites'})
