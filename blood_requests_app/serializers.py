@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from django.utils import timezone
+from datetime import timedelta
 
 from accounts.serializers import UserPublicSerializer
 from .models import BloodRequest, RequestMatch, ChatMessage, DonorRating
@@ -152,6 +154,35 @@ class BloodRequestCreateSerializer(serializers.ModelSerializer):
         if value and len(str(value)) < 10:
             raise serializers.ValidationError("Phone number must be at least 10 digits.")
         return value
+
+    def create(self, validated_data):
+        """Override create to properly set expires_at based on priority"""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        # Get priority
+        priority = validated_data.get('priority', 'normal')
+        required_by = validated_data.get('required_by')
+
+        # Set expires_at based on priority
+        now = timezone.now()
+        if priority == 'emergency':
+            # Emergency requests expire in 6 hours
+            validated_data['expires_at'] = now + timedelta(hours=6)
+        elif priority == 'urgent':
+            # Urgent requests expire in 24 hours
+            validated_data['expires_at'] = now + timedelta(hours=24)
+        else:
+            # Normal requests expire in 72 hours (3 days)
+            validated_data['expires_at'] = now + timedelta(hours=72)
+
+        # If required_by is not provided or is in the past, set it to expires_at
+        if not required_by or required_by < now:
+            validated_data['required_by'] = validated_data['expires_at']
+
+        # Create the request
+        blood_request = BloodRequest.objects.create(**validated_data)
+        return blood_request
 
 
 class RequestMatchDonorSerializer(UserPublicSerializer):

@@ -147,6 +147,7 @@ urlpatterns = [
     
     # Direct API routes for easier access
     path('api/profile/update/', accounts_views.update_profile, name='api-profile-update'),
+    path('api/users/<int:user_id>/', accounts_views.user_detail_api, name='api-user-detail'),
     
     # Frontend pages
     path('auth/', include('allauth.urls')),  # Django allauth for email verification

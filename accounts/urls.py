@@ -35,6 +35,7 @@ urlpatterns = [
     # API endpoints (these will be under api/accounts/ due to main urls.py configuration)
     path('api/register/', views.RegisterView.as_view(), name='register-api'),
     path('api/users/search/', views.user_search_api, name='user-search-api'),
+    path('api/users/<int:user_id>/', views.user_detail_api, name='user-detail-api'),
     path('api/profile/', views.ProfileView.as_view(), name='profile-api'),
     path('api/profile/<int:pk>/', views.PublicProfileView.as_view(), name='public-profile-api'),
     path('api/profile/update/', views.update_profile, name='update-profile-api'),

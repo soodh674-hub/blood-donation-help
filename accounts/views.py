@@ -914,6 +914,46 @@ def user_search_api(request):
         )
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def user_detail_api(request, user_id):
+    """API endpoint to get user details by ID"""
+    try:
+        user = get_object_or_404(User, id=user_id, is_active=True)
+
+        # Apply privacy filtering
+        if not request.user.is_authenticated or not request.user.is_staff:
+            # Non-admin users can only see public profiles
+            if user.privacy_level != 'public':
+                return Response(
+                    {'error': 'User profile is private'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            serializer_class = UserPublicSerializer
+        else:
+            # Admin users can see all user details
+            from .serializers import UserSerializer
+            serializer_class = UserSerializer
+
+        serializer = serializer_class(user, context={'request': request})
+
+        logger.info(f'User detail retrieved for user ID: {user_id}')
+
+        return Response(serializer.data)
+
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        logger.error(f'User detail error: {str(e)}', exc_info=True)
+        return Response(
+            {'error': 'An error occurred while fetching user details'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
 def terms_of_service_page(request):
     """Render Terms of Service page"""
     from django.utils import timezone
