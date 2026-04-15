@@ -25,7 +25,11 @@ pip install -r requirements.txt
 echo "\n✅ Verifying Django installation..."
 python -c "import django; print(f'Django {django.VERSION} installed successfully')" || echo "⚠️  Django verification skipped"
 
+# Collect static files during build phase
+echo "\n📦 Collecting static files..."
+python manage.py collectstatic --noinput --verbosity=2
+
 echo "\n" + "=" * 60
 echo "✅ BUILD COMPLETED SUCCESSFULLY!"
-echo "Note: Render will automatically run migrations and collect static files during deployment"
+echo "Static files collected and ready for deployment"
 echo "=" * 60
