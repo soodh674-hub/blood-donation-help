@@ -10,6 +10,7 @@ urlpatterns = [
         name="donor-compatibility",
     ),
     path("profile/<int:user_id>/", views.donor_profile, name="donor-profile"),
+    path("recommended/", views.recommended_donors, name="recommended-donors"),
 ]
 
 
