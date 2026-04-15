@@ -18,10 +18,11 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="BloodLife - Find Blood Donors & Request Blood Online">
     <meta name="twitter:description" content="Request blood online and find donors near you quickly. Save lives with our real-time donor network.">
-    <title>{% block title %}BloodLife – Donate Blood, Save Lives{% endblock %}</title>
     
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token }}">
+    <!-- Canonical URL for SEO -->
+    <link rel="canonical" href="https://bloodis-life.online{% block canonical_url %}{% endblock %}">
+    
+    <title>{% block title %}BloodLife – Donate Blood, Save Lives{% endblock %}</title>
     
     <!-- Favicon -->
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
@@ -184,15 +185,6 @@
         body {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        
-        /* Improved color palette with lighter red tones */
-        .bg-primary { background-color: #f87171; } /* Lighter red */
-        .bg-secondary { background-color: #fb7185; } /* Pinkish-red */
-        .text-primary { color: #f87171; }
-        .text-secondary { color: #fb7185; }
-        .border-primary { border-color: #0a0909; }
-        .bg-accent { background-color: #fef2f2; } /* Very light red/pink background */
-        .text-accent { color: #b91c1c; } /* Darker red for contrast */
         
         /* Animation utilities */
         .animate-on-scroll {
