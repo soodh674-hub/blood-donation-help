@@ -417,7 +417,7 @@
         }
     </style>
 </head>
-<body class="{% if user.is_authenticated %}{% if user.theme == 'light' %}bg-white text-gray-900{% else %}bg-gray-900 text-white{% endif %}{% else %}bg-gray-900 text-white{% endif %} overflow-x-hidden" data-theme="{% if user.is_authenticated %}{{ user.theme }}{% else %}dark{% endif %}" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+<body class="{% if user.is_authenticated %}{% if user.theme == 'light' %}bg-white text-gray-900{% else %}bg-gray-900 text-white{% endif %}{% else %}bg-gray-900 text-white{% endif %} overflow-x-hidden" data-theme="{% if user.is_authenticated %}{{ user.theme }}{% else %}dark{% endif %}" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-user-id="{% if user.is_authenticated %}{{ user.id }}{% endif %}" data-user-username="{% if user.is_authenticated %}{{ user.username|escapejs }}{% endif %}">
     <!-- Loading Indicator -->
     <div id="page-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: #1f2937; z-index: 9999;">
         <div id="loader-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f87171, #fb7185); transition: width 0.3s;"></div>
@@ -425,9 +425,13 @@
     
     <script>
         // Global authentication status for JavaScript
-        window.isUserLoggedIn = {{ request.user.is_authenticated|yesno:"true,false" }};
-        window.currentUserId = {% if request.user.is_authenticated %}{{ request.user.id }}{% else %}null{% endif %};
-        window.currentUserName = {% if request.user.is_authenticated %}"{{ request.user.username|escapejs }}"{% else %}null{% endif %};
+        // Read from data attributes to avoid Django template syntax in JavaScript
+        (function() {
+            const body = document.body;
+            window.isUserLoggedIn = body.getAttribute('data-authenticated') === 'true';
+            window.currentUserId = body.getAttribute('data-user-id') || null;
+            window.currentUserName = body.getAttribute('data-user-username') || null;
+        })();
 
         // Start loading animation immediately
         (function() {
