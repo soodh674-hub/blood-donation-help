@@ -18,6 +18,7 @@ echo "✅ Directories created"
 
 # Install dependencies
 echo "\n📦 Installing Python dependencies..."
+pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
 # Verify Django installation
