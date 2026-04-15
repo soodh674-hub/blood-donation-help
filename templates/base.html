@@ -32,22 +32,66 @@
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#f87171">
     
-    <!-- Tailwind CSS -->
-    <!-- Local fallback CSS (loaded first) -->
-    <link href="{% static 'css/tailwind-fallback.css' %}" rel="stylesheet" onerror="console.warn('⚠️ Local Tailwind CSS failed to load')">
-    <!-- CDN (will override local if available) -->
-    <!-- Note: For production, consider installing Tailwind locally via npm -->
-    <script src="https://cdn.tailwindcss.com" onerror="console.warn('⚠️ Tailwind CDN failed to load, using local fallback')"></script>
-    <script>
-        // Suppress Tailwind CDN warning in production
-        if (typeof window !== 'undefined') {
-            window.tailwind = window.tailwind || {};
-            window.tailwind.suppressBuildNotice = true;
+    <!-- UIkit CSS Framework - Modern, Stable Alternative to Tailwind -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/css/uikit.min.css" />
+
+    <!-- UIkit JS -->
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit-icons.min.js"></script>
+
+    <!-- Custom CSS for UIkit customization -->
+    <style>
+        /* UIkit Dark Theme Customization */
+        :root {
+            --uk-background: #0a0a0f;
+            --uk-text: #ffffff;
+            --uk-primary: #f87171;
+            --uk-secondary: #fb7185;
         }
-    </script>
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" 
+
+        body {
+            background-color: var(--uk-background);
+            color: var(--uk-text);
+        }
+
+        /* Custom gradient utilities */
+        .uk-gradient-red {
+            background: linear-gradient(135deg, #f87171 0%, #fb7185 50%, #ff9500 100%);
+        }
+
+        .uk-gradient-dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        /* Glass morphism effect */
+        .uk-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom card styles */
+        .uk-card-custom {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+        }
+
+        /* Custom button styles */
+        .uk-button-red {
+            background: linear-gradient(135deg, #f87171, #fb7185);
+            color: white;
+            border: none;
+        }
+
+        .uk-button-red:hover {
+            background: linear-gradient(135deg, #ef4444, #f472b6);
+            color: white;
+        }
+    </style>
+
+    <!-- Alpine.js (kept for reactivity) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
             onerror="console.warn('⚠️ Alpine.js CDN failed to load')"></script>
     
     <!-- GSAP -->
@@ -59,21 +103,16 @@
     <!-- Leaflet.js for Maps - LOCAL FILES to prevent storage block warnings -->
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" />
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
-    
+
     <!-- Custom styles -->
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
-    <link rel="stylesheet" href="{% static 'css/tailwind-custom.css' %}">
-    
+
     <!-- DNS Prefetch & Preconnect for CDN resources -->
-    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="dns-prefetch" href="https://unpkg.com">
-    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
-    
+
     <!-- Extra CSS for specific pages -->
     {% block extra_css %}{% endblock %}
     
