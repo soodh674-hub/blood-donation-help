@@ -166,27 +166,31 @@ def donor_profile(request, user_id):
     """
     try:
         donor = get_object_or_404(User, id=user_id, user_type='donor', is_active=True)
-        
+
         # Get donation history stats
         total_donations = DonorHistory.objects.filter(donor=donor).count()
-        
+
+        # Get donation history for timeline
+        donation_history = DonorHistory.objects.filter(donor=donor).order_by('-donation_date')[:10]
+
         # Calculate days since last donation
         last_donation = DonorHistory.objects.filter(donor=donor).order_by('-donation_date').first()
         if last_donation:
             days_since_last = (timezone.now().date() - last_donation.donation_date.date()).days
         else:
             days_since_last = None
-        
+
         # Count compatible recipients (how many blood groups this donor can donate to)
         compatibility_count = len(BloodMatcher.get_compatibility_info(donor.blood_group)['can_donate_to'])
-        
+
         context = {
             'donor': donor,
             'total_donations': total_donations,
+            'donation_history': donation_history,
             'days_since_last': days_since_last,
             'compatibility_count': compatibility_count,
         }
-        
+
         return render(request, 'donors/donor_profile.html', context)
     except Exception as e:
         logger.error(f'Error loading donor profile: {str(e)}', exc_info=True)

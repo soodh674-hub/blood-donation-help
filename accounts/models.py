@@ -125,13 +125,52 @@ class User(AbstractUser):
                     last_donation = datetime.strptime(self.last_donation_date, '%Y-%m-%d').date()
                 else:
                     last_donation = self.last_donation_date
-                
+
                 return (timezone.now().date() - last_donation).days
             except (ValueError, TypeError) as e:
                 # If date parsing fails, return None
                 print(f"Warning: Could not parse last_donation_date '{self.last_donation_date}': {e}")
                 return None
         return None
+
+    @property
+    def last_active(self):
+        """Return last active timestamp from activity logs"""
+        try:
+            latest_activity = self.activity_logs.filter(action='login').first()
+            if latest_activity:
+                return latest_activity.timestamp
+        except:
+            pass
+        return None
+
+    @property
+    def last_active_ago(self):
+        """Return human-readable time since last active"""
+        if not self.last_active:
+            return "Never"
+
+        from datetime import timedelta
+        now = timezone.now()
+        diff = now - self.last_active
+
+        if diff < timedelta(minutes=1):
+            return "Just now"
+        elif diff < timedelta(hours=1):
+            minutes = int(diff.total_seconds() / 60)
+            return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        elif diff < timedelta(days=1):
+            hours = int(diff.total_seconds() / 3600)
+            return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif diff < timedelta(days=7):
+            days = diff.days
+            return f"{days} day{'s' if days > 1 else ''} ago"
+        elif diff < timedelta(days=30):
+            weeks = diff.days // 7
+            return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+        else:
+            months = diff.days // 30
+            return f"{months} month{'s' if months > 1 else ''} ago"
 
 class PasswordResetOTP(models.Model):
     """Model to store password reset OTP information"""
@@ -296,7 +335,15 @@ class PrivacySettings(models.Model):
 class DonorProfile(models.Model):
     """Extended donor profile with availability and health information"""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='donor_profile')
-    
+
+    # Profile photo
+    profile_photo = models.ImageField(
+        upload_to='profile_photos/',
+        blank=True,
+        null=True,
+        help_text="Upload your profile photo"
+    )
+
     # Availability status
     AVAILABILITY_CHOICES = [
         ('available', 'Available to Donate ✅'),
@@ -304,13 +351,13 @@ class DonorProfile(models.Model):
         ('busy', 'Busy ⏳'),
         ('temporarily_deferred', 'Temporarily Deferred 🚫'),
     ]
-    
+
     availability_status = models.CharField(
         max_length=25,
         choices=AVAILABILITY_CHOICES,
         default='available'
     )
-    
+
     # Donation tracking
     total_donations = models.IntegerField(default=0)
     last_donation_location = models.CharField(max_length=200, blank=True)
