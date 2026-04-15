@@ -557,7 +557,7 @@
                     }
                 } else if (response.status === 403) {
                     // User not authenticated or session expired
-                    console.log('User not authenticated, skipping notification fetch');
+                    // Silent skip for unauthenticated users
                 } else {
                     console.error('Error fetching notifications:', response.status, response.statusText);
                 }
@@ -763,48 +763,31 @@
         
         // Ensure page is ready
         (function() {
-            console.log('🚀 BloodLife Platform Initializing...');
-            console.log('📅 Time:', new Date().toLocaleString());
-            
             // Check if critical resources are loaded
             window.addEventListener('load', function() {
-                console.log('✅ Window fully loaded');
-                console.log('📊 Ready state:', document.readyState);
-                
                 // Add fade-in class to body for smooth appearance
                 document.body.classList.add('fade-in');
             });
             
             // DOM Content Loaded check
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('🔍 DOM Content Loaded');
-                console.log('📊 DOM ready state:', document.readyState);
-                
                 // Verify Alpine.js
                 if (typeof Alpine !== 'undefined') {
-                    console.log('✅ Alpine.js is loaded and ready');
+                    // Alpine.js loaded successfully
                 } else {
                     console.warn('⚠️ Alpine.js NOT loaded - navbar may not work');
                     // Try to load Alpine.js as fallback
-                    console.log('🔄 Attempting to load Alpine.js...');
                     const script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';
+                    script.src = '{% static "js/alpine.min.js" %}';
                     script.defer = true;
                     document.head.appendChild(script);
                 }
                 
                 // Verify GSAP
                 if (typeof gsap !== 'undefined') {
-                    console.log('✅ GSAP is loaded and ready');
+                    // GSAP loaded successfully
                 } else {
                     console.warn('⚠️ GSAP NOT loaded - animations disabled');
-                }
-                
-                // Verify Tailwind
-                if (document.querySelector('[data-tailwindcss]') || window.tailwind) {
-                    console.log('✅ Tailwind CSS is active');
-                } else {
-                    console.log('ℹ️ Tailwind CSS loaded via CDN');
                 }
             });
         })();
@@ -815,10 +798,10 @@
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/static/js/sw.js')
                     .then(function(registration) {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        // ServiceWorker registered successfully
                     })
                     .catch(function(error) {
-                        console.log('ServiceWorker registration failed: ', error);
+                        console.error('ServiceWorker registration failed: ', error);
                     });
             });
         }
@@ -1074,7 +1057,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const popup = document.getElementById('donationStatusPopup');
             if (popup) {
-                console.log('✅ Donation popup found in DOM');
                 // Make sure it's visible immediately with animation
                 popup.style.display = 'block';
                 popup.style.opacity = '0';
@@ -1082,21 +1064,15 @@
                 
                 // Fade in animation
                 setTimeout(() => {
-                    popup.style.transition = 'opacity 0.3s ease-out';
                     popup.style.opacity = '1';
                 }, 100);
                 
-                // Also try Bootstrap modal if available
-                if (typeof $ !== 'undefined' && typeof $.fn.modal !== 'undefined') {
-                    try {
-                        $('#donationStatusPopup').modal('show');
-                        console.log('✅ Popup modal shown via Bootstrap');
-                    } catch(e) {
-                        console.log('ℹ️ Bootstrap modal not available, using CSS display');
-                    }
+                // Try to show via Bootstrap modal if available
+                try {
+                    $('#donationStatusPopup').modal('show');
+                } catch(e) {
+                    // Bootstrap modal not available, using CSS display
                 }
-            } else {
-                console.log('ℹ️ No donation popup in DOM - will show on next visit after login');
             }
         });
     </script>
