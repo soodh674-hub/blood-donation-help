@@ -102,6 +102,9 @@
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" />
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
 
+    <!-- Tailwind CSS - Local File -->
+    <link rel="stylesheet" href="{% static 'css/tailwind-fallback.css' %}">
+
     <!-- Custom styles -->
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 
@@ -119,6 +122,16 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+        }
+        
+        /* Mobile button fix - prevents overflow on all pages */
+        @media (max-width: 768px) {
+            button, .btn, input[type="submit"], input[type="button"], a.btn,
+            .hero-btn, .cta-btn, .action-btn {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
         }
 
         /* === TAILWIND REPLACEMENT UTILITIES === */
