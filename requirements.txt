@@ -24,5 +24,6 @@ django-allauth==0.60.0  # Email verification and authentication
 dj-database-url==2.1.0
 psycopg2-binary==2.9.9  # For emergency scripts and compatibility
 psycopg[binary]==3.2.13  # For Django ORM (preferred)
+Pillow==10.3.0  # Image processing for profile photos and donor images
 setuptools==70.0.0
 requests==2.31.0

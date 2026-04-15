@@ -105,6 +105,12 @@ MIDDLEWARE = [
     'apps.core.middleware.RateLimitMiddleware',
 ]
 
+# Authentication Backends - Required for django-axes
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # Modern django-axes backend (replaces AxesModelBackend)
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 ROOT_URLCONF = 'blood_donation.urls'
 
 TEMPLATES = [
@@ -655,15 +661,14 @@ if os.environ.get('REDIS_URL'):
         },
     }
 
-# Django Axes Configuration - Login Rate Limiting
+# Django Axes Configuration - Login Rate Limiting (Modern Settings)
 AXES_FAILURE_LIMIT = 5  # Lock out after 5 failed attempts
-AXES_COOLOFF_TIME = 30  # Lock out for 30 minutes
+AXES_COOLOFF_TIME = 1  # Lock out for 1 hour (in hours, not minutes)
 AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True  # Lock by user+IP combination
-AXES_LOGGER = 'axes.watch_login'  # Logger to use
 AXES_LOCKOUT_TEMPLATE = 'axes/lockout.html'  # Custom lockout template
 AXES_VERBOSE = True  # Enable verbose logging for debugging
-DATA_RETENTION_PERIOD = 365  # days
+AXES_DISABLE_ACCESS_LOG = False  # Enable access logging
+AXES_ONLY_USER_FAILURES = False  # Track all failures, not just user-specific
 
 # Django Allauth Configuration - Email Verification
 SITE_ID = 1
