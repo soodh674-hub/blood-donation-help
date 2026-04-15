@@ -698,3 +698,51 @@ CAPTCHA_WIDTH = 200
 CAPTCHA_HEIGHT = 50
 CAPTCHA_TIMEOUT = 300  # 5 minutes
 CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'  # Use math challenge instead of text
+
+# ===========================================
+# SECURITY HEADERS - Production Hardening
+# ===========================================
+
+# Security Middleware Settings
+SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS filter
+SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME-type sniffing
+X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking attacks
+SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (only enable when HTTPS is confirmed)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = False  # Let reverse proxy handle this (Render/Cloudflare)
+
+# CSRF Security
+CSRF_COOKIE_SECURE = True  # Only send CSRF cookies over HTTPS
+CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookie
+CSRF_COOKIE_SAMESITE = 'Lax'  # Prevent CSRF from cross-site requests
+
+# Session Security
+SESSION_COOKIE_SECURE = True  # Only send session cookies over HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+SESSION_COOKIE_SAMESITE = 'Lax'  # Prevent session hijacking
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# Additional Security Settings
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'  # Control referrer information
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'  # Prevent cross-origin attacks
+
+# Password Validation (Stronger Passwords)
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]

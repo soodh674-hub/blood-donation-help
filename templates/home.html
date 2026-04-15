@@ -734,13 +734,13 @@
                 <div class="feed-urgency {% if request.priority == 'emergency' %}urgency-emergency{% elif request.priority == 'urgent' %}urgency-urgent{% else %}urgency-normal{% endif %}">{{ request.priority|title }}</div>
                 {% if user.is_authenticated %}
                 <div class="feed-actions">
-                    <button onclick="acceptRequest({{ request.id }})" class="btn-accept-request" title="Accept this request">
+                    <button data-request-id="{{ request.id }}" onclick="acceptRequest(this)" class="btn-accept-request" title="Accept this request">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Accept
                     </button>
-                    <button onclick="viewRequestDetails({{ request.id }})" class="btn-view-details" title="View details">
+                    <button data-request-id="{{ request.id }}" onclick="viewRequestDetails(this)" class="btn-view-details" title="View details">
                         Details
                     </button>
                 </div>
@@ -1115,7 +1115,8 @@ function getCookie(name) {
 }
 
 // Accept request function
-async function acceptRequest(requestId) {
+async function acceptRequest(button) {
+    const requestId = button.getAttribute('data-request-id');
     console.log('🔵 Accepting request:', requestId);
 
     try {

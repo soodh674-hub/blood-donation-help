@@ -54,12 +54,16 @@ class DonorSearchView(generics.ListAPIView):
             # For searches with only blood group (no location), return all donors with that blood group
             if not latitude or not longitude:
                 # Return all available donors with matching blood group regardless of location
-                # Optimized with select_related to reduce database queries
+                # Optimized with select_related and prefetch_related to reduce database queries
                 donors = User.objects.filter(
                     blood_group=blood_group,
                     is_available=True,
                     is_active=True
-                ).select_related('donor_profile')
+                ).select_related('donor_profile').only(
+                    'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+                    'phone', 'city', 'pincode', 'is_available', 'is_verified',
+                    'profile_photo', 'latitude', 'longitude', 'last_donation_date'
+                )
                 
                 # Apply additional filters
                 if pincode:
@@ -182,13 +186,22 @@ def donor_profile(request, user_id):
             }
             return render(request, 'donors/donor_profile.html', context)
 
-        donor = get_object_or_404(User, id=user_id, user_type='donor', is_active=True)
+        donor = get_object_or_404(
+            User.objects.select_related('donor_profile').only(
+                'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+                'phone', 'city', 'pincode', 'is_available', 'is_verified',
+                'profile_photo', 'bio', 'date_joined'
+            ),
+            id=user_id, user_type='donor', is_active=True
+        )
 
-        # Get donation history stats
+        # Get donation history stats - optimized with count()
         total_donations = DonorHistory.objects.filter(donor=donor).count()
 
-        # Get donation history for timeline
-        donation_history = DonorHistory.objects.filter(donor=donor).order_by('-donation_date')[:10]
+        # Get donation history for timeline - optimized with only()
+        donation_history = DonorHistory.objects.filter(donor=donor).order_by('-donation_date').only(
+            'donation_date', 'location', 'notes'
+        )[:10]
 
         # Calculate days since last donation
         last_donation = DonorHistory.objects.filter(donor=donor).order_by('-donation_date').first()
@@ -246,12 +259,17 @@ def recommended_donors(request):
         user_lng = getattr(request.user, 'longitude', None)
 
         # Base queryset: active donors with compatible blood groups
+        # Optimized with select_related and only() to reduce database queries
         recommended_donors = User.objects.filter(
             user_type='donor',
             is_active=True,
             is_available=True,
             blood_group__in=compatible_blood_groups
-        ).exclude(id=request.user.id)
+        ).exclude(id=request.user.id).select_related('donor_profile').only(
+            'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+            'phone', 'city', 'is_available', 'is_verified', 'profile_photo',
+            'latitude', 'longitude', 'last_donation_date'
+        )
 
         # Calculate recommendation scores
         scored_donors = []
