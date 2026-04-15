@@ -33,12 +33,31 @@
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#f87171">
     
-    <!-- UIkit CSS Framework - Local Files -->
-    <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}" />
+    <!-- UIkit CSS Framework - Local Files with CDN Fallback -->
+    <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}" 
+          onerror="this.href='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/css/uikit.min.css'" />
 
-    <!-- UIkit JS - Local Files -->
-    <script src="{% static 'js/uikit.min.js' %}"></script>
-    <script src="{% static 'js/uikit-icons.min.js' %}"></script>
+    <!-- UIkit JS - Local Files with CDN Fallback -->
+    <script src="{% static 'js/uikit.min.js' %}" 
+            onerror="this.src='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit.min.js'"></script>
+    <script src="{% static 'js/uikit-icons.min.js' %}" 
+            onerror="this.src='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit-icons.min.js'"></script>
+
+    <!-- Fallback check: Load from CDN if local files fail -->
+    <script>
+        (function() {
+            if (typeof UIkit === 'undefined') {
+                var script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit.min.js';
+                script.onload = function() {
+                    var iconScript = document.createElement('script');
+                    iconScript.src = 'https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit-icons.min.js';
+                    document.head.appendChild(iconScript);
+                };
+                document.head.appendChild(script);
+            }
+        })();
+    </script>
 
     <!-- Custom CSS for UIkit customization -->
     <style>
@@ -91,19 +110,45 @@
         }
     </style>
 
-    <!-- Alpine.js - Local File -->
-    <script defer src="{% static 'js/alpine.min.js' %}"></script>
+    <!-- Alpine.js - Local File with CDN Fallback -->
+    <script defer src="{% static 'js/alpine.min.js' %}" 
+            onerror="this.src='https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js'"></script>
 
-    <!-- GSAP - Local Files -->
-    <script defer src="{% static 'js/gsap.min.js' %}"></script>
-    <script defer src="{% static 'js/ScrollTrigger.min.js' %}"></script>
+    <!-- GSAP - Local Files with CDN Fallback -->
+    <script defer src="{% static 'js/gsap.min.js' %}" 
+            onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'"></script>
+    <script defer src="{% static 'js/ScrollTrigger.min.js' %}" 
+            onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'"></script>
+
+    <!-- Fallback check: Load from CDN if local files fail -->
+    <script>
+        (function() {
+            if (typeof Alpine === 'undefined') {
+                var script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js';
+                script.defer = true;
+                document.head.appendChild(script);
+            }
+            if (typeof gsap === 'undefined') {
+                var gsapScript = document.createElement('script');
+                gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
+                gsapScript.onload = function() {
+                    var triggerScript = document.createElement('script');
+                    triggerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
+                    document.head.appendChild(triggerScript);
+                };
+                document.head.appendChild(gsapScript);
+            }
+        })();
+    </script>
     
     <!-- Leaflet.js for Maps - LOCAL FILES to prevent storage block warnings -->
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" />
     <script src="{% static 'leaflet/leaflet.js' %}"></script>
 
-    <!-- Tailwind CSS - Local File -->
-    <link rel="stylesheet" href="{% static 'css/tailwind-fallback.css' %}">
+    <!-- Tailwind CSS - Local File with CDN Fallback -->
+    <link rel="stylesheet" href="{% static 'css/tailwind-fallback.css' %}" 
+          onerror="this.href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css'">
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
@@ -547,7 +592,7 @@
             }
             
             .text-mobile-responsive {
-                font-size: clamp(1rem, 2.5vw, 1.25rem);
+                font-size: 1rem;
             }
             
             .mobile-spacing {
@@ -638,6 +683,25 @@
             max-height: 600px !important;
             width: auto !important;
             height: auto !important;
+        }
+
+        /* SVG Icon Protection - Prevent icons from scaling incorrectly */
+        svg:not([width]):not([class*="w-"]) {
+            width: 1em;
+            height: 1em;
+            flex-shrink: 0;
+        }
+        
+        /* Ensure icons maintain proper size across all screen sizes */
+        svg {
+            max-width: none;
+            vertical-align: middle;
+        }
+        
+        /* Prevent icon scaling in buttons and links */
+        button svg, a svg, .icon {
+            flex-shrink: 0;
+            object-fit: contain;
         }
 
         /* Prevent viewport-based scaling on decorative elements */
