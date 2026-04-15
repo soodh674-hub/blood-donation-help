@@ -15,63 +15,65 @@
     
     if (homeSearchForm) {
       // Handle search type selection
-      searchTypeSelect.addEventListener('change', function() {
-        const searchType = this.value;
-        searchTypeError.classList.add('hidden');
-        
-        // Reset all fields
-        bloodGroupSelect.classList.add('hidden');
-        userQueryInput.classList.add('hidden');
-        bloodGroupError.classList.add('hidden');
-        userQueryError.classList.add('hidden');
-        
-        // Show appropriate fields based on search type
-        if (searchType === 'donor') {
-          bloodGroupSelect.classList.remove('hidden');
-          searchButtonText.textContent = 'Find Donors';
-        } else if (searchType === 'user') {
-          userQueryInput.classList.remove('hidden');
-          searchButtonText.textContent = 'Search Users';
-        } else if (searchType === 'request') {
-          searchButtonText.textContent = 'Create Request';
-        }
-      });
+      if (searchTypeSelect) {
+        searchTypeSelect.addEventListener('change', function() {
+          const searchType = this.value;
+          if (searchTypeError) searchTypeError.classList.add('hidden');
+
+          // Reset all fields
+          if (bloodGroupSelect) bloodGroupSelect.classList.add('hidden');
+          if (userQueryInput) userQueryInput.classList.add('hidden');
+          if (bloodGroupError) bloodGroupError.classList.add('hidden');
+          if (userQueryError) userQueryError.classList.add('hidden');
+
+          // Show appropriate fields based on search type
+          if (searchType === 'donor') {
+            if (bloodGroupSelect) bloodGroupSelect.classList.remove('hidden');
+            if (searchButtonText) searchButtonText.textContent = 'Find Donors';
+          } else if (searchType === 'user') {
+            if (userQueryInput) userQueryInput.classList.remove('hidden');
+            if (searchButtonText) searchButtonText.textContent = 'Search Users';
+          } else if (searchType === 'request') {
+            if (searchButtonText) searchButtonText.textContent = 'Create Request';
+          }
+        });
+      }
       
       homeSearchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         let isValid = true;
-        
+
         // Reset errors
-        searchTypeError.classList.add('hidden');
-        bloodGroupError.classList.add('hidden');
-        userQueryError.classList.add('hidden');
-        pincodeError.classList.add('hidden');
-        
-        const searchType = searchTypeSelect.value;
-        const bloodGroup = bloodGroupSelect.value;
-        const userQuery = userQueryInput.value;
-        const pincode = pincodeInput.value;
-        
+        if (searchTypeError) searchTypeError.classList.add('hidden');
+        if (bloodGroupError) bloodGroupError.classList.add('hidden');
+        if (userQueryError) userQueryError.classList.add('hidden');
+        if (pincodeError) pincodeError.classList.add('hidden');
+
+        const searchType = searchTypeSelect ? searchTypeSelect.value : '';
+        const bloodGroup = bloodGroupSelect ? bloodGroupSelect.value : '';
+        const userQuery = userQueryInput ? userQueryInput.value : '';
+        const pincode = pincodeInput ? pincodeInput.value : '';
+
         // Validate search type
         if (!searchType) {
-          searchTypeError.classList.remove('hidden');
+          if (searchTypeError) searchTypeError.classList.remove('hidden');
           isValid = false;
         }
-        
+
         // Validate based on search type
         if (searchType === 'donor' && !bloodGroup) {
-          bloodGroupError.classList.remove('hidden');
+          if (bloodGroupError) bloodGroupError.classList.remove('hidden');
           isValid = false;
         }
-        
+
         if (searchType === 'user' && !userQuery.trim()) {
-          userQueryError.classList.remove('hidden');
+          if (userQueryError) userQueryError.classList.remove('hidden');
           isValid = false;
         }
-        
+
         // Validate pincode if entered
         if (pincode && !/^[0-9]{6}$/.test(pincode)) {
-          pincodeError.classList.remove('hidden');
+          if (pincodeError) pincodeError.classList.remove('hidden');
           isValid = false;
         }
         
@@ -81,9 +83,11 @@
         
         // Show loading state
         const submitButton = homeSearchForm.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-        submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></svg> Processing...';
-        submitButton.disabled = true;
+        if (submitButton) {
+          const originalText = submitButton.innerHTML;
+          submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></svg> Processing...';
+          submitButton.disabled = true;
+        }
         
         // Handle different search types
         let url = '';

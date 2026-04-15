@@ -33,8 +33,11 @@
     <meta name="theme-color" content="#f87171">
     
     <!-- Tailwind CSS -->
+    <!-- Local fallback CSS (loaded first) -->
+    <link href="{% static 'css/tailwind-fallback.css' %}" rel="stylesheet" onerror="console.warn('⚠️ Local Tailwind CSS failed to load')">
+    <!-- CDN (will override local if available) -->
     <!-- Note: For production, consider installing Tailwind locally via npm -->
-    <script src="https://cdn.tailwindcss.com" onerror="console.warn('⚠️ Tailwind CDN failed to load')"></script>
+    <script src="https://cdn.tailwindcss.com" onerror="console.warn('⚠️ Tailwind CDN failed to load, using local fallback')"></script>
     <script>
         // Suppress Tailwind CDN warning in production
         if (typeof window !== 'undefined') {

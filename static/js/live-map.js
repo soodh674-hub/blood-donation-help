@@ -80,16 +80,28 @@ function initRequestMap(containerId, options = {}) {
     }).setView(center, zoom);
 
     // Add tile layer
-    L.tileLayer(MAP_CONFIG.tileLayer, {
+    const tileLayer = L.tileLayer(MAP_CONFIG.tileLayer, {
         attribution: MAP_CONFIG.attribution,
         maxZoom: MAP_CONFIG.maxZoom,
         minZoom: MAP_CONFIG.minZoom
     }).addTo(requestMap);
 
+    // Add tile error handling
+    tileLayer.on('tileerror', function() {
+        console.warn('⚠️ Map tiles failed to load');
+    });
+
     // Show user location if enabled
     if (showUserLocation) {
         showUserLocationOnMap(requestMap);
     }
+
+    // Add window resize handler
+    window.addEventListener('resize', function() {
+        setTimeout(() => {
+            requestMap.invalidateSize();
+        }, 100);
+    });
 
     console.log('✅ Request map initialized');
     return requestMap;
@@ -120,16 +132,28 @@ function initDonorTrackingMap(containerId, options = {}) {
     }).setView(center, zoom);
 
     // Add tile layer
-    L.tileLayer(MAP_CONFIG.tileLayer, {
+    const tileLayer = L.tileLayer(MAP_CONFIG.tileLayer, {
         attribution: MAP_CONFIG.attribution,
         maxZoom: MAP_CONFIG.maxZoom,
         minZoom: MAP_CONFIG.minZoom
     }).addTo(donorMap);
 
+    // Add tile error handling
+    tileLayer.on('tileerror', function() {
+        console.warn('⚠️ Map tiles failed to load');
+    });
+
     // Start location tracking if request ID provided
     if (requestId) {
         startLiveTracking(requestId);
     }
+
+    // Add window resize handler
+    window.addEventListener('resize', function() {
+        setTimeout(() => {
+            donorMap.invalidateSize();
+        }, 100);
+    });
 
     console.log('✅ Donor tracking map initialized');
     return donorMap;
