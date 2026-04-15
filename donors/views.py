@@ -54,11 +54,12 @@ class DonorSearchView(generics.ListAPIView):
             # For searches with only blood group (no location), return all donors with that blood group
             if not latitude or not longitude:
                 # Return all available donors with matching blood group regardless of location
+                # Optimized with select_related to reduce database queries
                 donors = User.objects.filter(
                     blood_group=blood_group,
                     is_available=True,
                     is_active=True
-                )
+                ).select_related('donor_profile')
                 
                 # Apply additional filters
                 if pincode:
