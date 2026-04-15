@@ -157,16 +157,18 @@
             if (data.success) {
                 // Remove the 'unread' styling
                 const notificationEl = document.querySelector(`[data-notification-id="${notificationId}"]`);
-                notificationEl.classList.remove('unread');
-                notificationEl.classList.add('read');
-                
-                // Remove the 'New' badge
-                const badge = notificationEl.querySelector('.badge.bg-danger');
-                if (badge) badge.remove();
-                
+                if (notificationEl) {
+                    notificationEl.classList.remove('unread');
+                    notificationEl.classList.add('read');
+
+                    // Remove the 'New' badge
+                    const badge = notificationEl.querySelector('.badge.bg-danger');
+                    if (badge) badge.remove();
+                }
+
                 // Update unread count
                 updateUnreadCount(-1);
-                
+
                 // Show toast notification
                 showToast('Notification marked as read');
             }
@@ -193,19 +195,24 @@
             if (data.success) {
                 // Remove all 'unread' styling
                 document.querySelectorAll('.notification-item.unread').forEach(el => {
-                    el.classList.remove('unread');
-                    el.classList.add('read');
-                    
-                    const badge = el.querySelector('.badge.bg-danger');
-                    if (badge) badge.remove();
+                    if (el) {
+                        el.classList.remove('unread');
+                        el.classList.add('read');
+
+                        const badge = el.querySelector('.badge.bg-danger');
+                        if (badge) badge.remove();
+                    }
                 });
-                
+
                 // Update unread count to 0
                 updateUnreadCount(0, true);
-                
+
                 // Hide mark all button
-                document.getElementById('markAllReadBtn').style.display = 'none';
-                
+                const markAllBtn = document.getElementById('markAllReadBtn');
+                if (markAllBtn) {
+                    markAllBtn.style.display = 'none';
+                }
+
                 // Show success message
                 showToast('All notifications marked as read');
             }

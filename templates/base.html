@@ -479,6 +479,8 @@
                 setTimeout(() => {
                     dismissFloatingNotification();
                 }, 5000);
+            } else {
+                console.warn('Floating notification elements not found');
             }
         }
 
@@ -836,7 +838,7 @@
                     // Only show badge if there are actual unread notifications
                     // This will be updated by the backend context
                     const unreadCount = parseInt(badge.textContent) || 0;
-                    
+
                     if (unreadCount > 0) {
                         badge.classList.remove('hidden');
                     } else {
@@ -844,9 +846,13 @@
                     }
                 }
             }
-            
+
             // Initial check
-            updateNotificationBadge();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', updateNotificationBadge);
+            } else {
+                updateNotificationBadge();
+            }
         });
     </script>
     
