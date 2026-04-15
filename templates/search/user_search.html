@@ -98,6 +98,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const queryError = document.getElementById('query-error');
     const pincodeError = document.getElementById('pincode-filter-error');
 
+    // Early return if critical elements are missing
+    if (!searchForm || !resultsContainer) {
+        console.warn('User search: Critical elements not found');
+        return;
+    }
+
     // Validate pincode input
     if (pincodeInput) {
         pincodeInput.addEventListener('input', function() {
@@ -188,13 +194,16 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="pt-4 border-t border-white/10">
                 <div class="text-xs text-gray-400 mb-2">User ID: ${user.id}</div>
                 ${user.is_available !== undefined ? `
-                <div class="flex items-center text-sm">
+                <div class="flex items-center text-sm mb-3">
                     <div class="w-2 h-2 rounded-full mr-2 ${user.is_available ? 'bg-green-500' : 'bg-red-500'}"></div>
                     <span class="${user.is_available ? 'text-green-400' : 'text-red-400'}">
                         ${user.is_available ? 'Available for donation' : 'Not available'}
                     </span>
                 </div>
                 ` : ''}
+                <a href="/donors/${user.id}/profile/" class="block w-full text-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105">
+                    View Profile
+                </a>
             </div>
             ` : `
             <div class="pt-4 border-t border-white/10 text-center">
