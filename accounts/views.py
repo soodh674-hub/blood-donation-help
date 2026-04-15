@@ -4,19 +4,22 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.db import connection, models
 from django.http import JsonResponse
+from django.core.files.storage import default_storage
 from .serializers import (
     UserSerializer, UserUpdateSerializer, UserPublicSerializer,
     CustomTokenObtainPairSerializer, EmailVerificationSerializer,
     PasswordResetRequestSerializer, OTPVerificationSerializer, PasswordResetSerializer
 )
-from .models import User, PasswordResetOTP
+from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor
 from . import services as otp_services
 from .tasks import send_password_reset_email_task
 import random
@@ -1068,50 +1071,52 @@ def change_password(request):
     try:
         user = request.user
         data = request.data
-        
+
         current_password = data.get('current_password')
         new_password = data.get('new_password')
         confirm_password = data.get('confirm_password')
-        
+
         # Validate inputs
         if not current_password or not new_password or not confirm_password:
             return Response({
                 'success': False,
                 'message': 'All fields are required'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if new_password != confirm_password:
             return Response({
                 'success': False,
                 'message': 'New passwords do not match'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if len(new_password) < 8:
             return Response({
                 'success': False,
                 'message': 'Password must be at least 8 characters long'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Verify current password
         if not user.check_password(current_password):
             return Response({
                 'success': False,
                 'message': 'Current password is incorrect'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Set new password
         user.set_password(new_password)
         user.save()
-        
+
         return Response({
             'success': True,
             'message': 'Password changed successfully'
         }, status=status.HTTP_200_OK)
 
-
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.core.files.storage import default_storage
+    except Exception as e:
+        logger.error(f'Error changing password: {str(e)}')
+        return Response({
+            'success': False,
+            'message': f'Failed to change password: {str(e)}'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required
@@ -1122,7 +1127,6 @@ def edit_profile(request):
     """
     try:
         # Get or create donor profile
-        from .models import DonorProfile
         donor_profile, created = DonorProfile.objects.get_or_create(
             user=request.user
         )
@@ -1185,7 +1189,6 @@ def remove_profile_photo(request):
     Phase 2 Feature
     """
     try:
-        from .models import DonorProfile
         donor_profile = request.user.donor_profile
 
         if donor_profile.profile_photo:
@@ -1214,8 +1217,6 @@ def toggle_favorite_donor(request, donor_id):
     Phase 2 Feature
     """
     try:
-        from .models import FavoriteDonor, User
-
         favorite_donor = get_object_or_404(User, id=donor_id, user_type='donor')
 
         # Prevent users from favoriting themselves
@@ -1266,8 +1267,6 @@ def favorites_list(request):
     Phase 2 Feature
     """
     try:
-        from .models import FavoriteDonor
-
         favorites = FavoriteDonor.objects.filter(
             user=request.user
         ).select_related('favorite_donor')
