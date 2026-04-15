@@ -60,6 +60,11 @@ def how_it_works_view(request):
     return render(request, 'pages/how_it_works.html')
 
 
+def about_view(request):
+    """About Us page"""
+    return render(request, 'pages/about.html')
+
+
 def favicon(request):
     """Serve favicon.ico to prevent 404 errors"""
     import os
@@ -120,6 +125,9 @@ urlpatterns = [
     
     # How It Works page
     path('how-it-works/', how_it_works_view, name='how-it-works'),
+    
+    # About Us page
+    path('about/', about_view, name='about'),
     
     # Sitemap for SEO
     path('sitemap.xml', TemplateView.as_view(template_name='sitemap.xml', content_type='text/xml'), name='sitemap'),
