@@ -506,7 +506,8 @@ document.addEventListener('DOMContentLoaded', function() {
             requestForm.classList.add('hidden');
             requestForm.style.display = 'none';
         }
-        const container = document.querySelector('.bg-white\/5');
+        // Use a more specific selector or ID instead of Tailwind class
+        const container = document.querySelector('[x-data]') || document.querySelector('main > div') || document.querySelector('.min-h-screen');
         if (container) {
             const loginRequiredHTML = `
                 <div class="text-center py-12">
