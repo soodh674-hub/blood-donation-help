@@ -1,0 +1,96 @@
+@startuml BloodDonationArchitecture
+
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1976D2
+}
+skinparam rectangle {
+  BackgroundColor #FFF3E0
+  BorderColor #F57C00
+}
+skinparam database {
+  BackgroundColor #FFEBEE
+  BorderColor #D32F2F
+}
+
+rectangle "Client Layer" {
+  (Web Browser) as WB
+  (Mobile Browser) as MB
+  (Admin Dashboard) as AD
+}
+
+rectangle "Frontend Layer" {
+  (Django Templates) as DT
+  (Bootstrap 5) as BS
+  (Custom CSS) as CS
+}
+
+rectangle "API Layer" {
+  (Donor Search API) as DSA
+  (Live Requests API) as LRA
+  (Chat API) as CA
+  (Notifications API) as NA
+}
+
+rectangle "Business Logic" {
+  (DonorSearchView) as DSV
+  (BloodRequestViews) as BRV
+  (ChatbotService) as CTS
+  (NotificationService) as NS
+  (BloodMatcher) as BM
+}
+
+database "PostgreSQL Database" {
+  (Users) as U
+  (DonorProfiles) as DP
+  (BloodRequests) as BR
+  (RequestResponses) as RR
+  (Notifications) as N
+}
+
+rectangle "External Services" {
+  (Leaflet Maps) as LM
+  (OpenStreetMap) as OSM
+  (Email Service) as ES
+}
+
+rectangle "Security" {
+  (JWT Tokens) as JWT
+  (Captcha) as CAP
+  (Rate Limiting) as RL
+}
+
+WB --> DT
+MB --> DT
+AD --> DT
+
+DT --> BS
+DT --> CS
+DT --> DSA
+DT --> LRA
+DT --> CA
+
+DSA --> DSV
+LRA --> BRV
+CA --> CTS
+NA --> NS
+
+DSV --> U
+DSV --> DP
+BRV --> BR
+BRV --> RR
+CTS --> N
+NS --> N
+
+BRV --> LM
+BRV --> OSM
+NS --> ES
+
+DT --> JWT
+DT --> CAP
+DT --> RL
+
+@enduml
