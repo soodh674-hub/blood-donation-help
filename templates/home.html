@@ -4,17 +4,22 @@
 {% block title %}BloodLife - Find Blood Donors Near You in India | Emergency Blood Request{% endblock %}
 
 {% block extra_css %}
+<meta name="csrf-token" content="{% csrf_token %}">
 <style>
     :root {
-        --bg-primary: #0a0a0f;
-        --bg-secondary: #12121a;
+        --bg-primary: #0f1419;
+        --bg-secondary: #1a1f2e;
+        --bg-tertiary: #252b3d;
         --neon-red: #ff3b3b;
         --neon-coral: #ff6b6b;
         --neon-orange: #ff9500;
+        --accent-blue: #3b82f6;
+        --accent-blue-light: #60a5fa;
         --text-primary: #ffffff;
-        --text-secondary: rgba(255, 255, 255, 0.7);
-        --glass-bg: rgba(255, 255, 255, 0.03);
-        --glass-border: rgba(255, 255, 255, 0.08);
+        --text-secondary: rgba(255, 255, 255, 0.75);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
     }
 
     * {
@@ -27,6 +32,7 @@
         background: var(--bg-primary);
         color: var(--text-primary);
         overflow-x: hidden;
+        padding-top: 76px !important; /* Ensure navbar space */
     }
 
     /* ===== PARTICLE CANVAS BACKGROUND ===== */
@@ -47,8 +53,20 @@
         align-items: center;
         justify-content: center;
         position: relative;
-        padding: 4rem 2rem;
-        z-index: 10;
+        padding: 3rem 1rem;
+        z-index: 1; /* Lower than navbar (1050) */
+    }
+    
+    @media (min-width: 768px) {
+        .hero-section {
+            padding: 4rem 2rem;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .hero-section {
+            padding: 4rem 2.5rem;
+        }
     }
 
     .hero-container {
@@ -71,11 +89,23 @@
     }
 
     .hero-title {
-        font-size: clamp(3rem, 8vw, 5rem);
+        font-size: clamp(2rem, 5vw, 3rem);
         font-weight: 900;
         line-height: 1.1;
         margin-bottom: 1.5rem;
         animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    @media (min-width: 768px) {
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5rem);
+        }
     }
 
     .hero-title .gradient-text {
@@ -93,7 +123,7 @@
     }
 
     .hero-subtitle {
-        font-size: 1.25rem;
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
         color: var(--text-secondary);
         max-width: 700px;
         margin: 0 auto 3rem;
@@ -110,12 +140,29 @@
 
     .search-container {
         display: flex;
+        flex-wrap: wrap;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
         border: 2px solid rgba(255, 59, 59, 0.3);
         border-radius: 50px;
         overflow: hidden;
         transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 576px) {
+        .search-container {
+            border-radius: 12px;
+            flex-direction: column;
+        }
+        
+        .search-input {
+            padding: 0.875rem 1.25rem;
+        }
+        
+        .search-button {
+            border-radius: 0 0 12px 12px;
+            justify-content: center;
+        }
     }
 
     .search-container:focus-within {
@@ -165,14 +212,21 @@
     }
 
     .btn-neon {
-        padding: 1rem 2.5rem;
+        padding: 0.875rem 2rem;
         border-radius: 50px;
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: clamp(0.9rem, 2vw, 1.1rem);
         text-decoration: none;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+    }
+    
+    @media (max-width: 576px) {
+        .btn-neon {
+            width: 100%;
+            text-align: center;
+        }
     }
 
     .btn-neon-primary {
@@ -203,7 +257,7 @@
     .live-feed-section {
         padding: 5rem 2rem;
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Lower than navbar */
     }
 
     .section-header {
@@ -350,7 +404,7 @@
         padding: 5rem 2rem;
         background: var(--bg-secondary);
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Lower than navbar */
     }
 
     .steps-container {
@@ -416,7 +470,7 @@
     .stats-section {
         padding: 5rem 2rem;
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Lower than navbar */
     }
 
     .stats-grid {
@@ -469,7 +523,7 @@
         padding: 5rem 2rem;
         background: var(--bg-secondary);
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Lower than navbar */
     }
 
     .features-grid {
@@ -547,7 +601,7 @@
     .cta-section {
         padding: 6rem 2rem;
         position: relative;
-        z-index: 10;
+        z-index: 1; /* Lower than navbar */
         overflow: hidden;
     }
 
@@ -581,6 +635,54 @@
         color: var(--text-secondary);
         margin-bottom: 3rem;
         line-height: 1.8;
+    }
+            
+    /* Quick Links Section */
+    .quick-link-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+        display: block;
+    }
+            
+    .quick-link-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--neon-red);
+        box-shadow: 0 15px 30px rgba(255, 59, 59, 0.2);
+        color: var(--text-primary);
+    }
+            
+    .quick-link-card-primary {
+        background: linear-gradient(135deg, rgba(255, 59, 59, 0.2), rgba(255, 107, 107, 0.2));
+        border-color: var(--neon-red);
+    }
+            
+    .quick-link-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+            
+    .quick-link-card:hover .quick-link-icon {
+        transform: scale(1.2);
+    }
+            
+    .quick-link-card h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+            
+    .quick-link-card p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin: 0;
     }
 
     /* ===== ANIMATIONS ===== */
@@ -670,6 +772,167 @@
             border-radius: 0 0 14px 14px;
         }
     }
+    /* ===== RESPONSIVE DESIGN - ALL SCREEN SIZES ===== */
+    
+    /* Large Desktops (1920px+) */
+    @media (min-width: 1920px) {
+        .hero-section {
+            padding: 6rem 4rem;
+        }
+        
+        .features-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    
+    /* Standard Desktops (1366px - 1919px) */
+    @media (min-width: 1366px) and (max-width: 1919px) {
+        .hero-section {
+            padding: 4rem 2rem;
+        }
+    }
+    
+    /* Laptops (1024px - 1365px) */
+    @media (min-width: 1024px) and (max-width: 1365px) {
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+        }
+        
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* Tablets (768px - 1023px) */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .features-grid,
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .steps-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    /* Mobile (320px - 767px) */
+    @media (max-width: 767px) {
+        .hero-section {
+            padding: 6rem 1rem 3rem;
+            min-height: auto;
+        }
+        
+        .hero-title {
+            font-size: clamp(2rem, 8vw, 3rem);
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem;
+            padding: 0 0.5rem;
+        }
+        
+        .hero-buttons {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn-neon {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .features-grid,
+        .stats-grid,
+        .steps-container,
+        .quick-links-grid,
+        .testimonials-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .live-feed-section,
+        .how-it-works-section,
+        .stats-section,
+        .features-section,
+        .cta-section,
+        .quick-links-section,
+        .testimonials-section {
+            padding: 3rem 1rem;
+        }
+    }
+    
+    /* Small Mobile (< 480px) */
+    @media (max-width: 480px) {
+        .hero-section {
+            padding: 5rem 0.75rem 2rem;
+        }
+        
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.9rem;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+        }
+        
+        .section-subtitle {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Container max-width */
+    .container {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    @media (min-width: 640px) {
+        .container {
+            max-width: 640px;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .container {
+            max-width: 768px;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .container {
+            max-width: 1024px;
+        }
+    }
+    
+    @media (min-width: 1280px) {
+        .container {
+            max-width: 1200px;
+        }
+    }
+    
+    @media (min-width: 1536px) {
+        .container {
+            max-width: 1400px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -686,8 +949,8 @@
 <canvas id="particle-canvas" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"></canvas>
 
 <!-- ===== HERO SECTION ===== -->
-<section class="hero-section">
-    <div class="hero-container container mx-auto">
+<section class="hero-section" data-aos="fade-in" data-aos-duration="1000">
+    <div class="hero-container container mx-auto" data-aos="fade-up" data-aos-delay="200">
         <div class="hero-badge">
             <span>⚡</span>
             <span>Real-Time Blood Donation Network</span>
@@ -713,7 +976,7 @@
                        placeholder="Search for blood donors by location or blood group (e.g., 'A+ Delhi' or 'O+ Mumbai')..."
                        required>
                 <button type="submit" class="search-button">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                     Search
@@ -742,9 +1005,9 @@
 </section>
 
 <!-- ===== LIVE ACTIVITY FEED ===== -->
-<section class="live-feed-section">
+<section class="live-feed-section" data-aos="fade-up" data-aos-duration="800">
     <div class="container mx-auto">
-        <div class="section-header">
+        <div class="section-header" data-aos="fade-down" data-aos-delay="100">
         <h2 class="section-title">Live Activity Feed</h2>
         <p class="section-subtitle">Real-time blood requests happening now</p>
     </div>
@@ -762,7 +1025,7 @@
                 {% if user.is_authenticated %}
                 <div class="feed-actions">
                     <button data-request-id="{{ request.id }}" onclick="acceptRequest(this)" class="btn-accept-request" title="Accept this request">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Accept
@@ -930,6 +1193,158 @@
     </div>
 </section>
 
+<!-- ===== QUICK NAVIGATION LINKS ===== -->
+<section class="quick-links-section" style="padding: 4rem 2rem; background: var(--bg-secondary); position: relative; z-index: 1;">
+    <div class="container mx-auto">
+        <div class="section-header">
+            <h2 class="section-title">Explore BloodLife</h2>
+            <p class="section-subtitle">Quick access to all features</p>
+        </div>
+        
+        <div class="quick-links-grid" style="max-width: 1200px; margin: 3rem auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            {% if user.is_authenticated %}
+            <a href="/requests/create/" class="quick-link-card quick-link-card-primary">
+                <div class="quick-link-icon">🩸</div>
+                <h3>Create Blood Request</h3>
+                <p>Request blood urgently</p>
+            </a>
+
+            <a href="/requests/my-requests/" class="quick-link-card">
+                <div class="quick-link-icon">📋</div>
+                <h3>My Requests</h3>
+                <p>View your blood requests</p>
+            </a>
+
+            <a href="/requests/track/" class="quick-link-card">
+                <div class="quick-link-icon">📊</div>
+                <h3>Track Requests</h3>
+                <p>Monitor your requests</p>
+            </a>
+
+            <a href="/accounts/search/" class="quick-link-card">
+                <div class="quick-link-icon">🔍</div>
+                <h3>Find Donors</h3>
+                <p>Search nearby donors</p>
+            </a>
+
+            <a href="/accounts/dashboard/" class="quick-link-card">
+                <div class="quick-link-icon">📈</div>
+                <h3>Dashboard</h3>
+                <p>View your activity</p>
+            </a>
+
+            <a href="/accounts/profile/" class="quick-link-card">
+                <div class="quick-link-icon">👤</div>
+                <h3>My Profile</h3>
+                <p>Manage your account</p>
+            </a>
+
+            <a href="/accounts/favorites/" class="quick-link-card">
+                <div class="quick-link-icon">❤️</div>
+                <h3>Favorites</h3>
+                <p>Saved donors</p>
+            </a>
+
+            <a href="/accounts/near-me/" class="quick-link-card">
+                <div class="quick-link-icon">📍</div>
+                <h3>Users Near Me</h3>
+                <p>Find local donors</p>
+            </a>
+
+            <a href="/notifications/" class="quick-link-card">
+                <div class="quick-link-icon">🔔</div>
+                <h3>Notifications</h3>
+                <p>View your alerts</p>
+            </a>
+            {% else %}
+            <a href="/accounts/register/" class="quick-link-card quick-link-card-primary">
+                <div class="quick-link-icon">🦸</div>
+                <h3>Join as Donor</h3>
+                <p>Register and save lives</p>
+            </a>
+
+            <a href="/accounts/login/" class="quick-link-card">
+                <div class="quick-link-icon">🔑</div>
+                <h3>Sign In</h3>
+                <p>Access your account</p>
+            </a>
+
+            <a href="/accounts/search/" class="quick-link-card">
+                <div class="quick-link-icon">🔍</div>
+                <h3>Find Donors</h3>
+                <p>Search donors publicly</p>
+            </a>
+
+            <a href="/how-it-works/" class="quick-link-card">
+                <div class="quick-link-icon">⚡</div>
+                <h3>How It Works</h3>
+                <p>Learn the process</p>
+            </a>
+
+            <a href="/about/" class="quick-link-card">
+                <div class="quick-link-icon">ℹ️</div>
+                <h3>About Us</h3>
+                <p>Learn our mission</p>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== TESTIMONIALS SECTION ===== -->
+<section class="testimonials-section" style="padding: 5rem 2rem; position: relative; z-index: 1;">
+    <div class="container mx-auto">
+        <div class="section-header">
+            <h2 class="section-title">Stories of Hope</h2>
+            <p class="section-subtitle">Real stories from our community of life-savers</p>
+        </div>
+
+        <div class="testimonials-grid" style="max-width: 1200px; margin: 3rem auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+            <div class="testimonial-card" style="background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2.5rem; position: relative;">
+                <div style="font-size: 3rem; color: var(--neon-red); margin-bottom: 1rem;">"</div>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1.5rem; font-style: italic;">
+                    BloodLife saved my father's life. Within 15 minutes of posting the request, we had 3 verified donors ready to help. The real-time tracking made all the difference.
+                </p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--neon-red), var(--neon-coral)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">RS</div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">Rahul Sharma</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Delhi • Emergency Request</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card" style="background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2.5rem; position: relative;">
+                <div style="font-size: 3rem; color: var(--neon-red); margin-bottom: 1rem;">"</div>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1.5rem; font-style: italic;">
+                    As a regular donor, the smart alert system is incredible. I get notified only when my blood type is needed nearby. It's efficient and saves time.
+                </p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--neon-red), var(--neon-coral)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">PK</div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">Priya Kumari</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Mumbai • Regular Donor</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card" style="background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2.5rem; position: relative;">
+                <div style="font-size: 3rem; color: var(--neon-red); margin-bottom: 1rem;">"</div>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1.5rem; font-style: italic;">
+                    The secure chat feature helped me coordinate with the donor privately. The entire process was smooth, safe, and professional. Highly recommended!
+                </p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--neon-red), var(--neon-coral)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white;">AV</div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">Ankit Verma</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Bangalore • Blood Recipient</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ===== FINAL CTA ===== -->
 <section class="cta-section">
     <div class="cta-background"></div>
@@ -1067,7 +1482,8 @@ function updateLiveFeed() {
             
             if (data && data.length > 0) {
                 console.log(`✅ Displaying ${data.length} requests`);
-                
+                console.log('First request:', data[0]);
+
                 // Check if user is authenticated
                 const isAuthenticated = document.getElementById('particle-canvas').dataset.authenticated === 'true';
                 
@@ -1081,7 +1497,7 @@ function updateLiveFeed() {
                     const actionButtons = isAuthenticated ? `
                         <div class="feed-actions">
                             <button onclick="acceptRequest(${request.id})" class="btn-accept-request" title="Accept this request">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
                                 Accept
@@ -1132,6 +1548,7 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
+            // Check for both 'csrftoken' and 'csrfmiddlewaretoken' variations
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -1141,9 +1558,29 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Get CSRF token from meta tag or cookie
+function getCSRFToken() {
+    // Try to get from meta tag first
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        return metaTag.getAttribute('content');
+    }
+
+    // Fall back to cookie
+    return getCookie('csrftoken') || getCookie('csrfmiddlewaretoken');
+}
+
 // Accept request function
-async function acceptRequest(button) {
-    const requestId = button.getAttribute('data-request-id');
+async function acceptRequest(buttonOrId) {
+    let requestId;
+    
+    // Handle both button element and direct requestId
+    if (typeof buttonOrId === 'object' && buttonOrId.getAttribute) {
+        requestId = buttonOrId.getAttribute('data-request-id');
+    } else {
+        requestId = buttonOrId;
+    }
+    
     console.log('🔵 Accepting request:', requestId);
 
     try {
@@ -1160,14 +1597,18 @@ async function acceptRequest(button) {
         }
 
         // Call API to respond to request
-        const response = await fetch(`/api/requests/${requestId}/respond/`, {
+        const csrfToken = getCSRFToken();
+        console.log('🔐 CSRF Token:', csrfToken ? csrfToken.substring(0, 10) + '...' : 'not found');
+
+        const response = await fetch(`/requests/${requestId}/respond/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': csrfToken
             },
-            credentials: 'include',
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                action: 'accept'
+            })
         });
         
         const data = await response.json();
@@ -1177,7 +1618,7 @@ async function acceptRequest(button) {
             // Reload the feed to update
             updateLiveFeed();
         } else {
-            throw new Error(data.error || data.detail || 'Failed to accept request');
+            throw new Error(data.error || data.detail || data.message || 'Failed to accept request');
         }
     } catch (error) {
         console.error('❌ Error accepting request:', error);
@@ -1195,7 +1636,7 @@ async function acceptRequest(button) {
 function viewRequestDetails(requestId) {
     console.log('👁️ Viewing request details:', requestId);
     // Navigate to track dashboard with specific request
-    window.location.href = `/requests/track/?request_id=${requestId}`;
+    window.location.href = `/requests/track/${requestId}/`;
 }
 
 // ===== INTERSECTION OBSERVER FOR ANIMATIONS =====
@@ -1218,6 +1659,25 @@ const observer = new IntersectionObserver((entries) => {
 
 // ===== INITIALIZE ON LOAD =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Set authentication status globally
+    const particleCanvas = document.getElementById('particle-canvas');
+    if (particleCanvas) {
+        window.isUserLoggedIn = particleCanvas.dataset.authenticated === 'true';
+        console.log('🔐 User authentication status:', window.isUserLoggedIn);
+    } else {
+        window.isUserLoggedIn = false;
+        console.log('🔐 Particle canvas not found, defaulting to not authenticated');
+    }
+
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+
     // Initialize particle system
     new ParticleSystem();
     
