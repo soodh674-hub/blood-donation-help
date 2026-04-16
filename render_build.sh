@@ -73,20 +73,9 @@ fi
 
 echo "✅ Environment check complete"
 
-# Run migrations
-echo "\n🗄️  Running database migrations..."
-echo "Skipping makemigrations in production (migrations should be pre-committed)"
-# python manage.py makemigrations --noinput  # Disabled: migrations must be committed to git
-
-echo "Running migrate..."
-python manage.py migrate --noinput --verbosity=2
-MIGRATE_EXIT_CODE=$?
-if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
-    echo "❌ ERROR: Migration failed with exit code: $MIGRATE_EXIT_CODE"
-    echo "This will be retried in the release phase"
-    exit $MIGRATE_EXIT_CODE
-fi
-echo "✅ Migrations complete"
+# Skip migrations in build phase - they run in release phase instead
+echo "\n⏭️  Skipping migrations in build phase (will run in release phase)..."
+# python manage.py migrate --noinput  # Disabled: migrations run in release phase via Procfile
 
 # Collect static files during build phase
 echo "\n📦 Collecting static files..."
