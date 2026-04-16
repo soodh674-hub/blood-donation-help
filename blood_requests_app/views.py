@@ -972,38 +972,32 @@ def get_live_requests(request):
     Returns requests with urgency levels and basic info
     """
     try:
-        # Get active, non-expired requests (more inclusive filter)
+        # Get active requests - remove expiry filter for debugging
+        # Show ALL requests regardless of expiry
         now = timezone.now()
-        
+
         # First, let's log what we're looking for
         total_requests = BloodRequest.objects.count()
         active_requests = BloodRequest.objects.filter(status__in=['active', 'approved', 'pending', 'partially_fulfilled']).count()
-        non_expired = BloodRequest.objects.filter(expires_at__gt=now).count()
-        
+
         logger.info(f'Total requests in DB: {total_requests}')
         logger.info(f'Active/approved/pending requests: {active_requests}')
-        logger.info(f'Non-expired requests: {non_expired}')
         logger.info(f'Current time: {now}')
-        
+
         requests = BloodRequest.objects.filter(
-            status__in=['active', 'approved', 'pending', 'partially_fulfilled'],
-            expires_at__gt=now
+            status__in=['active', 'approved', 'pending', 'partially_fulfilled', 'fulfilled', 'cancelled']
         ).order_by('-priority', '-created_at')[:20]  # Limit to 20
         
         logger.info(f'Found {requests.count()} live requests to display')
-        
+
         # Log details of each request for debugging
         for req in requests:
-            time_until_expiry = req.expires_at - now
-            hours_left = time_until_expiry.total_seconds() / 3600
             logger.info(
                 f'Request #{req.id}: '
                 f'status={req.status}, '
                 f'priority={req.priority}, '
                 f'blood_group={req.patient_blood_group}, '
                 f'city={req.city}, '
-                f'expires_at={req.expires_at}, '
-                f'hours_until_expiry={hours_left:.1f}, '
                 f'required_by={req.required_by}'
             )
         

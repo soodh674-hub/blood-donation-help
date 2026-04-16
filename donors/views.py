@@ -60,22 +60,14 @@ class DonorSearchView(generics.ListAPIView):
                         blood_group=blood_group,
                         is_available=True,
                         is_active=True
-                    ).select_related('donor_profile').only(
-                        'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
-                        'latitude', 'longitude', 'last_donation_date',
-                        'donor_profile__profile_photo'
-                    )
-                except Exception:
-                    # If donor_profile doesn't exist, query without it
-                    donors = User.objects.filter(
-                        blood_group=blood_group,
-                        is_available=True,
-                        is_active=True
                     ).only(
                         'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified'
+                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
+                        'latitude', 'longitude', 'last_donation_date'
                     )
+                except Exception as e:
+                    logger.error(f'Error querying donors: {str(e)}')
+                    donors = User.objects.none()
                 
                 # EXCLUDE donors with anonymous_mode enabled
                 try:
