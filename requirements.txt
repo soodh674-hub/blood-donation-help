@@ -18,7 +18,7 @@ django-extensions==3.2.3
 django-admin-rangefilter==0.11.0
 django-ratelimit==4.1.0
 django-auditlog==2.3.0
-django-captcha==1.0.0
+django-simple-captcha==0.5.20  # CAPTCHA for form protection
 django-axes==6.1.0  # Login rate limiting and brute force protection
 django-allauth==0.60.0  # Email verification and authentication
 dj-database-url==2.1.0
