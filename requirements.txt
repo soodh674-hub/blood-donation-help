@@ -22,7 +22,7 @@ django-captcha==1.0.0
 django-axes==6.1.0  # Login rate limiting and brute force protection
 django-allauth==0.60.0  # Email verification and authentication
 dj-database-url==2.1.0
-psycopg2-binary==2.9.9  # For PostgreSQL database
+psycopg[binary]==3.1.16  # PostgreSQL database adapter (modern psycopg for Python 3.13)
 Pillow==11.0.0  # Image processing for profile photos and donor images
 setuptools==70.0.0
 requests==2.31.0
