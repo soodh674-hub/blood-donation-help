@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        <!-- Mobile Toggle Button -->
+        <!-- Mobile Toggle Button (Only One) -->
         <button class="navbar-toggler d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation" style="color: #60a5fa;">
             <i class="bi bi-list" style="font-size: 1.5rem;"></i>
         </button>
@@ -109,7 +109,7 @@
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i>Home</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:chat-inbox' %}"><i class="bi bi-chat-dots me-2"></i>Messages</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:near_me' %}"><i class="bi bi-geo-alt me-2"></i>Find Users Near Me</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-users' %}"><i class="bi bi-geo-alt me-2"></i>Find Users Near Me</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart me-2"></i>Favorites</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2"></i>Search Donors</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
@@ -138,14 +138,7 @@
             {% endif %}
         </div>
 
-        <!-- Mobile menu button -->
-        <div class="d-flex d-md-none align-items-center">
-            <button id="mobileMenuToggle" type="button" class="btn-mobile-toggle" aria-controls="mobileMenu" aria-expanded="false">
-                <span class="sr-only">Open main menu</span>
-                <i class="bi bi-list mobile-icon-menu" style="width: 24px; height: 24px;"></i>
-                <i class="bi bi-x-lg mobile-icon-close d-none" style="width: 24px; height: 24px;"></i>
-            </button>
-        </div>
+
     </div>
 
     <!-- Mobile Menu -->
@@ -200,26 +193,34 @@
                         <i class="bi bi-house-door me-2"></i>
                         Home
                     </a>
-                    <a href="{% url 'accounts:profile' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-person me-2"></i>
-                        Profile
+                    <a href="#" class="mobile-nav-link dropdown-item-custom" data-bs-toggle="collapse" data-bs-target="#userSubMenu">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <span><i class="bi bi-person-circle me-2"></i>Account</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
                     </a>
-                    <a href="{% url 'requests:chat-inbox' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-chat-dots me-2"></i>
-                        Messages
-                    </a>
-                    <a href="{% url 'accounts:near_me' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-geo-alt me-2"></i>
-                        Find Users Near Me
-                    </a>
-                    <a href="{% url 'accounts:favorites_list' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-heart me-2"></i>
-                        Favorites
-                    </a>
-                    <a href="{% url 'accounts:search-donors' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-search me-2"></i>
-                        Search Donors
-                    </a>
+                    <div class="collapse" id="userSubMenu">
+                        <a href="{% url 'accounts:profile' %}" class="mobile-nav-link d-flex align-items-center">
+                            <i class="bi bi-person me-2"></i>
+                            Profile
+                        </a>
+                        <a href="{% url 'requests:chat-inbox' %}" class="mobile-nav-link d-flex align-items-center">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            Messages
+                        </a>
+                        <a href="{% url 'accounts:search-users' %}" class="mobile-nav-link d-flex align-items-center">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Find Users Near Me
+                        </a>
+                        <a href="{% url 'accounts:favorites_list' %}" class="mobile-nav-link d-flex align-items-center">
+                            <i class="bi bi-heart me-2"></i>
+                            Favorites
+                        </a>
+                        <a href="{% url 'accounts:search-donors' %}" class="mobile-nav-link d-flex align-items-center">
+                            <i class="bi bi-search me-2"></i>
+                            Search Donors
+                        </a>
+                    </div>
                     <a href="{% url 'accounts:settings' %}" class="mobile-nav-link d-flex align-items-center">
                         <i class="bi bi-gear me-2"></i>
                         Settings
@@ -454,12 +455,11 @@
     .mobile-menu {
         background: rgba(15, 20, 25, 0.98);
         backdrop-filter: blur(12px);
-        display: none;
         border-top: 1px solid rgba(59, 130, 246, 0.3);
     }
     
-    .mobile-menu.show {
-        display: block;
+    .mobile-menu.collapsing {
+        transition: height 0.35s ease;
     }
     
     .mobile-nav-link {
@@ -522,38 +522,6 @@
 <!-- Navbar Scripts -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const iconMenu = mobileMenuToggle.querySelector('.mobile-icon-menu');
-        const iconClose = mobileMenuToggle.querySelector('.mobile-icon-close');
-        
-        // Mobile menu toggle
-        mobileMenuToggle.addEventListener('click', function() {
-            const isOpen = mobileMenu.classList.contains('show');
-            
-            if (isOpen) {
-                mobileMenu.classList.remove('show');
-                iconMenu.classList.remove('d-none');
-                iconClose.classList.add('d-none');
-                mobileMenuToggle.setAttribute('aria-expanded', 'false');
-            } else {
-                mobileMenu.classList.add('show');
-                iconMenu.classList.add('d-none');
-                iconClose.classList.remove('d-none');
-                mobileMenuToggle.setAttribute('aria-expanded', 'true');
-            }
-        });
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-                mobileMenu.classList.remove('show');
-                iconMenu.classList.remove('d-none');
-                iconClose.classList.add('d-none');
-                mobileMenuToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-        
         // Navbar scroll effect
         const navbar = document.getElementById('mainNavbar');
         window.addEventListener('scroll', function() {
