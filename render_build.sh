@@ -75,8 +75,22 @@ echo "✅ Environment check complete"
 
 # Run migrations
 echo "\n🗄️  Running database migrations..."
-python manage.py makemigrations --noinput || echo "⚠️  makemigrations skipped"
-python manage.py migrate --noinput || echo "⚠️  migrations failed (will be retried in runtime)"
+echo "Running makemigrations..."
+python manage.py makemigrations --noinput
+MIGRATE_EXIT_CODE=$?
+if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
+    echo "⚠️  makemigrations failed with exit code: $MIGRATE_EXIT_CODE"
+    echo "This is OK if no new migrations are needed"
+fi
+
+echo "Running migrate..."
+python manage.py migrate --noinput --verbosity=2
+MIGRATE_EXIT_CODE=$?
+if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
+    echo "❌ ERROR: Migration failed with exit code: $MIGRATE_EXIT_CODE"
+    echo "This will be retried in the release phase"
+    exit $MIGRATE_EXIT_CODE
+fi
 echo "✅ Migrations complete"
 
 # Collect static files during build phase
