@@ -89,18 +89,23 @@ def create_request_unified_page(request):
                 captcha_hashkey = request.POST.get('captcha_0')
                 
                 if captcha_response and captcha_hashkey:
-                    captcha = CaptchaStore.objects.get(hashkey=captcha_hashkey)
-                    if not captcha.response == captcha_response:
-                        from django.contrib import messages
-                        messages.error(request, 'CAPTCHA verification failed. Please try again.')
-                        return render(request, 'requests/create_request_unified.html', context)
-                    captcha.delete()
+                    try:
+                        captcha = CaptchaStore.objects.get(hashkey=captcha_hashkey)
+                        if not captcha.response == captcha_response:
+                            from django.contrib import messages
+                            messages.error(request, 'CAPTCHA verification failed. Please try again.')
+                            return render(request, 'requests/create_request_unified.html', context)
+                        captcha.delete()
+                    except Exception as captcha_db_error:
+                        logger.warning(f'CAPTCHA database error: {str(captcha_db_error)}')
                 else:
                     from django.contrib import messages
                     messages.error(request, 'CAPTCHA verification required.')
                     return render(request, 'requests/create_request_unified.html', context)
             except Exception as captcha_error:
                 logger.warning(f'CAPTCHA verification skipped: {str(captcha_error)}')
+                # Continue without captcha if table doesn't exist
+                pass
 
             # Extract form data
             city = request.POST.get('city', '')
@@ -341,8 +346,7 @@ def track_request_dashboard(request):
 
     # Live requests that user can respond to (not their own, active, not expired)
     live_requests_qs = BloodRequest.objects.filter(
-        status__in=['pending', 'approved', 'active'],
-        expires_at__gt=now
+        status__in=['pending', 'approved', 'active', 'partially_fulfilled']
     ).exclude(
         requester=request.user
     ).order_by(

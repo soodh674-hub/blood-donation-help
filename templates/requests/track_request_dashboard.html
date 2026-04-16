@@ -804,7 +804,7 @@ function displayDonors(donors) {
     
     if (donors.length === 0) {
         container.innerHTML = `
-            <div class="text-center py-8 text-gray-400">
+            <div class="text-center py-5 text-secondary opacity-75">
                 <p>No donors yet</p>
             </div>
         `;
@@ -830,30 +830,30 @@ function displayDonors(donors) {
         const statusLabel = statusLabels[donor.status] || donor.status;
         
         return `
-            <div class="tracking-card bg-white/5 hover:bg-white/10 rounded-xl p-4 border border-white/10">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-3">
+            <div class="tracking-card rounded-4 p-4 border border-white border-opacity-10 transition-all mb-3" style="background: rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
                         <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-5" style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444, #dc2626);">
                             ${donor.donor_name.charAt(0)}
                         </div>
                         <div>
-                            <h3 class="text-white font-semibold">${donor.donor_name}</h3>
-                            <p class="text-gray-400 text-sm">
+                            <h3 class="text-white fw-semibold fs-6 mb-1">${donor.donor_name}</h3>
+                            <p class="small text-white opacity-50 mb-1">
                                 ${donor.distance_km ? donor.distance_km.toFixed(1) + ' km' : 'Distance N/A'} • 
                                 ⭐ 4.8
                             </p>
-                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold border ${statusClass}">
+                            <span class="d-inline-block mt-1 px-2 py-1 rounded-2 small fw-semibold border ${statusClass}">
                                 ${statusLabel}
                             </span>
                         </div>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="d-flex gap-2">
                         ${donor.phone ? `
-                        <a href="tel:${donor.phone}" class="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm transition-all">
+                        <a href="tel:${donor.phone}" class="btn btn-sm btn-success bg-opacity-25 text-success border-0 px-3 py-2 rounded-3 transition-all d-flex align-items-center">
                             Call
                         </a>
                         ` : ''}
-                        <button onclick="selectDonor(${donor.id})" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-all">
+                        <button onclick="selectDonor(${donor.id})" class="btn btn-sm btn-primary border-0 px-3 py-2 rounded-3 transition-all d-flex align-items-center">
                             Select
                         </button>
                     </div>
@@ -1297,13 +1297,13 @@ function startCountdownTimer(requiredByDate) {
         // Update urgency badge
         if (hours < 1) {
             urgencyBadge.textContent = 'CRITICAL';
-            urgencyBadge.className = 'px-3 py-1 bg-red-600 text-white rounded-full text-sm font-semibold';
+            urgencyBadge.className = 'px-3 py-1 bg-danger text-white rounded-pill small fw-semibold';
         } else if (hours < 3) {
             urgencyBadge.textContent = 'URGENT';
-            urgencyBadge.className = 'px-3 py-1 bg-orange-500 text-white rounded-full text-sm font-semibold';
+            urgencyBadge.className = 'px-3 py-1 bg-warning text-white rounded-pill small fw-semibold';
         } else {
             urgencyBadge.textContent = 'NORMAL';
-            urgencyBadge.className = 'px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold';
+            urgencyBadge.className = 'px-3 py-1 bg-primary text-white rounded-pill small fw-semibold';
         }
     }
     
@@ -1372,22 +1372,23 @@ function renderChatMessages(messages) {
         if (isSystem) {
             html += `
                 <div class="text-center my-2">
-                    <span class="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-full">${msg.message}</span>
+                    <span class="small text-white opacity-50 bg-dark px-3 py-1 rounded-pill">${msg.message}</span>
                 </div>
             `;
         } else {
-            const bubbleClass = isCurrentUser ? 
-                'bg-gradient-to-r from-red-500 to-red-600 ml-auto' : 
-                'bg-white/10 mr-auto';
-            const alignClass = isCurrentUser ? 'text-right' : 'text-left';
+            const bubbleStyle = isCurrentUser ? 
+                'background: linear-gradient(90deg, #ef4444, #dc2626); margin-left: auto;' : 
+                'background: rgba(255,255,255,0.1); margin-right: auto;';
+            const alignClass = isCurrentUser ? 'text-end' : 'text-start';
+            const justifyClass = isCurrentUser ? 'justify-content-end' : 'justify-content-start';
             
             html += `
-                <div class="${alignClass}">
-                    <div class="inline-block max-w-[80%]">
-                        <div class="${bubbleClass} px-4 py-2 rounded-2xl text-white text-sm">
+                <div class="d-flex ${justifyClass} mb-3">
+                    <div class="d-inline-block" style="max-width: 80%;">
+                        <div class="px-4 py-2 rounded-4 text-white small" style="${bubbleStyle}">
                             ${msg.message}
                         </div>
-                        <p class="text-xs text-gray-500 mt-1 px-1">${formatTime(msg.created_at)}</p>
+                        <p class="small text-white opacity-50 mt-1 px-1 ${alignClass} mb-0">${formatTime(msg.created_at)}</p>
                     </div>
                 </div>
             `;

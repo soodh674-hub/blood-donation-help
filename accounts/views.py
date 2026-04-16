@@ -584,6 +584,10 @@ def register_donor_view(request):
                 CaptchaStore.objects.get(hashkey=captcha_key).delete()
             except CaptchaStore.DoesNotExist:
                 errors['captcha'] = ['Invalid CAPTCHA. Please try again.']
+            except Exception as captcha_db_error:
+                logger.warning(f'CAPTCHA database error: {str(captcha_db_error)}')
+                # Continue without captcha if table doesn't exist
+                pass
             
         # Check if username or email already exists
         User = get_user_model()
@@ -710,9 +714,13 @@ def login_view(request):
             try:
                 CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
             except CaptchaStore.DoesNotExist:
-                messages.error(request, 'Invalid security verification. Please try again.')
+                errors = {'captcha': ['Invalid CAPTCHA. Please try again.']}
                 captcha_form = CaptchaForm() if CaptchaForm else None
-                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+                return render(request, 'accounts/login.html', {'captcha_form': captcha_form, 'errors': errors})
+            except Exception as captcha_db_error:
+                logger.warning(f'CAPTCHA database error in login: {str(captcha_db_error)}')
+                # Continue without captcha if table doesn't exist
+                pass
 
         # Handle both username and email login
         # Try authenticating with username first
