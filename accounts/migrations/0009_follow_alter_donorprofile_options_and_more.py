@@ -40,9 +40,21 @@ class Migration(migrations.Migration):
             name='useractivitylog',
             options={'ordering': ['-timestamp'], 'verbose_name': 'Activity Log', 'verbose_name_plural': 'Activity Logs'},
         ),
-        migrations.RemoveIndex(
-            model_name='useractivitylog',
-            name='accounts_us_user_id_abc123_idx',
+        migrations.RunSQL(
+            sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM pg_indexes 
+                    WHERE indexname = 'accounts_us_user_id_abc123_idx'
+                ) THEN
+                    DROP INDEX accounts_us_user_id_abc123_idx;
+                END IF;
+            END $$;
+            """,
+            reverse_sql="""
+            -- Cannot reverse DROP INDEX safely
+            """,
         ),
         migrations.RenameField(
             model_name='donorprofile',
@@ -79,10 +91,29 @@ class Migration(migrations.Migration):
             old_name='show_phone',
             new_name='show_phone_number',
         ),
-        migrations.RenameIndex(
-            model_name='passwordresetotp',
-            new_name='accounts_pa_user_id_92b775_idx',
-            old_name='accounts_pa_user_id_8d9f3a_idx',
+        migrations.RunSQL(
+            sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM pg_indexes 
+                    WHERE indexname = 'accounts_pa_user_id_8d9f3a_idx'
+                ) THEN
+                    ALTER INDEX accounts_pa_user_id_8d9f3a_idx RENAME TO accounts_pa_user_id_92b775_idx;
+                END IF;
+            END $$;
+            """,
+            reverse_sql="""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM pg_indexes 
+                    WHERE indexname = 'accounts_pa_user_id_92b775_idx'
+                ) THEN
+                    ALTER INDEX accounts_pa_user_id_92b775_idx RENAME TO accounts_pa_user_id_8d9f3a_idx;
+                END IF;
+            END $$;
+            """,
         ),
         migrations.RemoveField(
             model_name='donorprofile',
