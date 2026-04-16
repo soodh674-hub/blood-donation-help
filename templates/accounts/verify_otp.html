@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     } else {
         // Redirect to forgot password if no email
-        window.location.href = '{% url "forgot_password" %}';
+        window.location.href = '{% url "accounts:forgot_password" %}';
     }
 
     // Handle OTP input navigation
