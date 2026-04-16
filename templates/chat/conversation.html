@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat with {{ other_user.get_full_name|default:other_user.username }} - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="margin-top: 20px; height: calc(100vh - 100px);" data-aos="fade-in" data-aos-duration="800">
+    <div class="row h-100" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-12">
+            <div class="glass-card h-100 d-flex flex-column" data-aos="zoom-in" data-aos-delay="200">
+                <!-- Chat Header -->
+                <div class="p-3 border-bottom border-secondary border-opacity-25" data-aos="fade-down" data-aos-delay="300">
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'accounts:public-profile' other_user.id %}" class="text-decoration-none text-white me-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff3b3b, #ff6b6b); font-size: 1.25rem; color: white; font-weight: bold;">
+                                {{ other_user.first_name|default:other_user.username|make_list|first|upper }}
+                            </div>
+                        </a>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-0">
+                                <a href="{% url 'accounts:public-profile' other_user.id %}" class="text-decoration-none text-white">
+                                    {{ other_user.get_full_name|default:other_user.username }}
+                                </a>
+                            </h5>
+                            <p class="text-secondary small mb-0">
+                                @{{ other_user.username }}
+                                {% if other_user.is_available %}
+                                    <span class="badge bg-success ms-2">Available</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{% url 'accounts:public-profile' other_user.id %}" class="btn btn-outline-light btn-sm me-2">
+                                <i class="bi bi-person"></i> Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages Container -->
+                <div id="messages-container" class="flex-grow-1 p-3 overflow-auto" 
+                     data-user-id="{{ request.user.id }}"
+                     data-other-user-id="{{ other_user.id }}"
+                     style="max-height: calc(100vh - 280px);">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %} mb-3">
+                                <div class="message-bubble {% if message.sender == request.user %}message-sent{% else %}message-received{% endif %}" 
+                                     style="max-width: 70%; padding: 12px 16px; border-radius: 16px;">
+                                    <p class="mb-1">{{ message.message }}</p>
+                                    <small class="{% if message.sender == request.user %}text-white-50{% else %}text-secondary{% endif %}" style="font-size: 0.75rem;">
+                                        {{ message.created_at|timesince }} ago
+                                        {% if message.sender == request.user %}
+                                            <i class="bi bi-check2-all ms-1"></i>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots" style="font-size: 4rem; color: var(--text-secondary);"></i>
+                            <p class="mt-3 text-secondary">Start a conversation</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Message Input -->
+                <div class="p-3 border-top border-secondary border-opacity-25">
+                    <form id="message-form" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" id="receiver-id" value="{{ other_user.id }}">
+                        <input type="text" id="message-input" class="form-control" 
+                               placeholder="Type a message..." 
+                               style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white;"
+                               autocomplete="off">
+                        <button type="submit" class="btn btn-gradient" id="send-btn">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#messages-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#messages-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 59, 59, 0.3);
+    border-radius: 3px;
+}
+
+#messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 59, 59, 0.5);
+}
+
+.message-bubble {
+    animation: messageSlide 0.3s ease;
+}
+
+.message-sent {
+    background: linear-gradient(135deg, #ff3b3b, #ff6b6b);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+    
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const messagesContainer = document.getElementById('messages-container');
+    const receiverId = document.getElementById('receiver-id').value;
+    const sendBtn = document.getElementById('send-btn');
+    
+    // Auto-scroll to bottom
+    scrollToBottom();
+    
+    // Send message
+    messageForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Disable input while sending
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        
+        try {
+            const formData = new FormData();
+            formData.append('receiver_id', receiverId);
+            formData.append('message', message);
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+            
+            const response = await fetch('/requests/chat/api/send/', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Add message to UI
+                addMessageToUI(message, true);
+                
+                // Clear input
+                messageInput.value = '';
+                
+                // Scroll to bottom
+                scrollToBottom();
+            } else {
+                showToast(data.error || 'Failed to send message', 'error');
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            showToast('Failed to send message', 'error');
+        } finally {
+            // Re-enable input
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="bi bi-send"></i>';
+            messageInput.focus();
+        }
+    });
+    
+    // Add message to UI
+    function addMessageToUI(message, isSent) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `d-flex ${isSent ? 'justify-content-end' : 'justify-content-start'} mb-3`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-bubble" style="max-width: 70%; padding: 12px 16px; border-radius: 16px; ${isSent ? 'background: linear-gradient(135deg, #ff3b3b, #ff6b6b); color: white; border-bottom-right-radius: 4px;' : 'background: rgba(255, 255, 255, 0.05); color: white; border-bottom-left-radius: 4px;'}">
+                <p class="mb-1">${escapeHtml(message)}</p>
+                <small class="${isSent ? 'text-white-50' : 'text-secondary'}" style="font-size: 0.75rem;">
+                    Just now
+                    ${isSent ? '<i class="bi bi-check2-all ms-1"></i>' : ''}
+                </small>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+    }
+    
+    // Scroll to bottom
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} position-fixed`;
+        toast.style.cssText = 'top: 80px; right: 20px; z-index: 1100; min-width: 300px; animation: slideIn 0.3s ease;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                <div class="flex-grow-1">${message}</div>
+                <button type="button" class="btn-close btn-close-white ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+    
+    // Enter key to send
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+    
+    // Poll for new messages every 5 seconds
+    // NOTE: WebSocket integration available for real-time messaging
+    // To enable WebSocket, see: PRODUCTION_DEPLOYMENT_GUIDE.md
+    
+    // WebSocket Integration (Optional - requires Redis & Django Channels)
+    const WEBSOCKET_ENABLED = false;  // Set to true when Redis is configured
+    
+    if (WEBSOCKET_ENABLED) {
+        // Create WebSocket connection
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const chatSocket = new WebSocket(
+            `${protocol}//${window.location.host}/ws/chat/{{ request.user.id }}_{{ other_user.id }}/`
+        );
+        
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.type === 'chat_message') {
+                // Add new message to UI
+                const currentUserId = parseInt(messagesContainer.dataset.userId);
+                if (data.sender_id != currentUserId) {
+                    addMessageToUI(data.message, false);
+                    scrollToBottom();
+                }
+            } else if (data.type === 'typing_indicator') {
+                // Show typing indicator
+                showTypingIndicator(data.is_typing);
+            } else if (data.type === 'user_status') {
+                // Update online/offline status
+                updateUserStatus(data.action);
+            }
+        };
+        
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        
+        // Send message via WebSocket
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            chatSocket.send(JSON.stringify({
+                'type': 'message',
+                'message': message,
+                'receiver_id': receiverId
+            }));
+            
+            // Add message to UI immediately
+            addMessageToUI(message, true);
+            messageInput.value = '';
+            scrollToBottom();
+        });
+        
+        // Typing indicator
+        let typingTimeout;
+        messageInput.addEventListener('input', function() {
+            chatSocket.send(JSON.stringify({
+                'type': 'typing',
+                'is_typing': true,
+                'receiver_id': receiverId
+            }));
+            
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(function() {
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing',
+                    'is_typing': false,
+                    'receiver_id': receiverId
+                }));
+            }, 1000);
+        });
+    } else {
+        // Fallback to HTTP polling (current implementation)
+        setInterval(async function() {
+            try {
+                const formData = new FormData();
+                formData.append('sender_id', receiverId);
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                
+                const response = await fetch('/requests/chat/api/mark-read/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // In a real implementation, you would fetch new messages here
+                // and add them to the UI
+            } catch (error) {
+                console.error('Error polling for messages:', error);
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

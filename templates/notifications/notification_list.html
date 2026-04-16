@@ -1,78 +1,86 @@
 {% extends 'base.html' %}
 
-{% block title %}Notifications - BloodHelp{% endblock %}
+{% block title %}Notifications - BloodLife{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-5 pt-4" style="max-width: 900px;" data-aos="fade-in" data-aos-duration="800">
     <div class="row">
         <div class="col-12">
-            <h2><i class="fas fa-bell"></i> Notifications</h2>
-            <hr>
-            
+            <div class="d-flex align-items-center justify-content-between mb-4" data-aos="fade-down" data-aos-delay="100">
+                <h2 class="fw-bold">
+                    <i class="bi bi-bell-fill text-danger me-2"></i>
+                    Notifications
+                </h2>
+                {% if notifications %}
+                <span class="badge bg-danger rounded-pill">{{ unread_count }} Unread</span>
+                {% endif %}
+            </div>
+            <hr class="border-secondary">
+
             {% if notifications %}
                 <!-- Mark All as Read Button -->
-                <div class="mb-3">
-                    <button id="markAllReadBtn" class="btn btn-outline-primary" onclick="markAllAsRead()">
-                        <i class="fas fa-check-double"></i> Mark All as Read
+                <div class="mb-4" data-aos="fade-in" data-aos-delay="200">
+                    <button id="markAllReadBtn" class="btn btn-outline-danger btn-sm" onclick="markAllAsRead()">
+                        <i class="bi bi-check-all me-1"></i> Mark All as Read
                     </button>
-                    <span class="badge bg-danger ms-2">{{ unread_count }} Unread</span>
                 </div>
-                
+
                 <!-- Notification List -->
-                <div class="list-group">
+                <div class="list-group" data-aos="fade-up" data-aos-delay="300">
                     {% for notification in notifications %}
-                    <div class="list-group-item notification-item {% if not notification.is_read %}unread{% endif %}" 
-                         data-notification-id="{{ notification.id }}">
+                    <div class="list-group-item notification-item {% if not notification.is_read %}unread{% endif %} mb-3 rounded-3" data-aos="fade-in"
+                         data-notification-id="{{ notification.id }}"
+                         style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: var(--text-primary);">
                         <div class="d-flex w-100 justify-content-between align-items-start">
                             <!-- Icon -->
                             <div class="notification-icon me-3">
                                 {% if notification.notification_type == 'blood_request' %}
-                                    <i class="fas fa-hand-holding-medical text-danger"></i>
+                                    <i class="bi bi-droplet-fill text-danger" style="font-size: 1.5rem;"></i>
                                 {% elif notification.notification_type == 'donation_reminder' %}
-                                    <i class="fas fa-clock text-primary"></i>
+                                    <i class="bi bi-clock-fill text-primary" style="font-size: 1.5rem;"></i>
                                 {% elif notification.notification_type == 'eligibility' %}
-                                    <i class="fas fa-check-circle text-success"></i>
+                                    <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
                                 {% else %}
-                                    <i class="fas fa-info-circle text-info"></i>
+                                    <i class="bi bi-info-circle-fill text-info" style="font-size: 1.5rem;"></i>
                                 {% endif %}
                             </div>
-                            
+
                             <!-- Content -->
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">
+                                <h5 class="mb-1 fw-semibold">
                                     {{ notification.title }}
                                     {% if not notification.is_read %}
-                                        <span class="badge bg-danger badge-sm">New</span>
+                                        <span class="badge bg-danger ms-2">New</span>
                                     {% endif %}
                                 </h5>
-                                <p class="mb-2">{{ notification.message }}</p>
+                                <p class="mb-2" style="color: var(--text-secondary);">{{ notification.message }}</p>
                                 <small class="text-muted">
-                                    <i class="far fa-clock"></i> {{ notification.created_at|timesince }} ago
+                                    <i class="bi bi-clock me-1"></i> {{ notification.created_at|timesince }} ago
                                 </small>
                             </div>
-                            
+
                             <!-- Actions -->
                             <div class="ms-3">
-                                <button class="btn btn-sm btn-outline-secondary mark-read-btn" 
+                                <button class="btn btn-sm btn-outline-secondary mark-read-btn"
                                         onclick="markAsRead('{{ notification.id }}')">
-                                    <i class="fas fa-check"></i>
+                                    <i class="bi bi-check"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-                
+
                 <!-- Pagination Info -->
-                <div class="mt-3 text-center text-muted">
-                    <small>Showing {{ notifications.count }} notification(s)</small>
+                <div class="mt-4 text-center">
+                    <small class="text-muted">Showing {{ notifications.count }} notification(s)</small>
                 </div>
-                
+
             {% else %}
                 <!-- Empty State -->
-                <div class="text-center py-5">
-                    <i class="fas fa-bell-slash fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
-                    <h4>No Notifications</h4>
+                <div class="text-center py-5" data-aos="fade-in" data-aos-delay="400">
+                    <i class="bi bi-bell-slash" style="font-size: 4rem; color: var(--text-secondary); opacity: 0.3;"></i>
+                    <h4 class="mt-3">No Notifications</h4>
                     <p class="text-muted">You don't have any notifications yet.</p>
                     <p class="text-muted">We'll notify you when there are updates!</p>
                 </div>
@@ -86,64 +94,58 @@
     .notification-item {
         transition: all 0.3s ease;
         border-left: 4px solid transparent;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     .notification-item:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         transform: translateX(5px);
+        border-color: rgba(255, 59, 59, 0.3);
     }
-    
+
     .notification-item.unread {
-        border-left-color: #dc3545;
-        background-color: #fff5f5;
+        border-left-color: #ef4444;
+        background: rgba(239, 68, 68, 0.1) !important;
     }
-    
+
     .notification-item.read {
         opacity: 0.7;
     }
-    
+
     .notification-icon {
         width: 50px;
         height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #f8f9fa;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
-        font-size: 1.5rem;
         flex-shrink: 0;
     }
-    
+
     .mark-read-btn {
         opacity: 0;
         transition: opacity 0.3s ease;
     }
-    
+
     .notification-item:hover .mark-read-btn {
         opacity: 1;
     }
-    
+
     @media (max-width: 768px) {
         .notification-icon {
             width: 40px;
             height: 40px;
-            font-size: 1.2rem;
         }
-        
+
         .mark-read-btn {
-            opacity: 1; /* Always show on mobile */
+            opacity: 1;
         }
     }
 </style>
 
 <!-- JavaScript for Interactions -->
 <script>
-    /**
-     * Mark a single notification as read
-     */
     function markAsRead(notificationId) {
         fetch(`/notifications/${notificationId}/mark-read/`, {
             method: 'POST',
@@ -155,21 +157,16 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Remove the 'unread' styling
                 const notificationEl = document.querySelector(`[data-notification-id="${notificationId}"]`);
                 if (notificationEl) {
                     notificationEl.classList.remove('unread');
                     notificationEl.classList.add('read');
 
-                    // Remove the 'New' badge
                     const badge = notificationEl.querySelector('.badge.bg-danger');
                     if (badge) badge.remove();
                 }
 
-                // Update unread count
                 updateUnreadCount(-1);
-
-                // Show toast notification
                 showToast('Notification marked as read');
             }
         })
@@ -178,12 +175,9 @@
             showToast('Error marking notification as read', 'error');
         });
     }
-    
-    /**
-     * Mark all notifications as read
-     */
+
     function markAllAsRead() {
-        fetch('{% url "notifications:mark-all-read" %}', {
+        fetch('/notifications/mark-all-read/', {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -193,7 +187,6 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Remove all 'unread' styling
                 document.querySelectorAll('.notification-item.unread').forEach(el => {
                     if (el) {
                         el.classList.remove('unread');
@@ -204,16 +197,13 @@
                     }
                 });
 
-                // Update unread count to 0
                 updateUnreadCount(0, true);
 
-                // Hide mark all button
                 const markAllBtn = document.getElementById('markAllReadBtn');
                 if (markAllBtn) {
                     markAllBtn.style.display = 'none';
                 }
 
-                // Show success message
                 showToast('All notifications marked as read');
             }
         })
@@ -222,10 +212,7 @@
             showToast('Error marking all notifications as read', 'error');
         });
     }
-    
-    /**
-     * Update unread count display
-     */
+
     function updateUnreadCount(newCount, setAbsolute = false) {
         const badge = document.querySelector('#notification-badge');
         if (badge) {
@@ -236,41 +223,33 @@
                 const updated = Math.max(0, currentCount + newCount);
                 badge.textContent = updated > 9 ? '9+' : updated;
             }
-            
+
             if (parseInt(badge.textContent) === 0) {
-                badge.style.display = 'none';
+                badge.classList.add('d-none');
             } else {
-                badge.style.display = 'inline-block';
+                badge.classList.remove('d-none');
             }
         }
     }
-    
-    /**
-     * Show toast notification
-     */
+
     function showToast(message, type = 'success') {
-        // Create toast element
         const toast = document.createElement('div');
         toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 1100; min-width: 300px;';
         toast.innerHTML = `
-            <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+            <i class="bi ${type === 'error' ? 'bi-exclamation-triangle' : 'bi-check-circle'} me-2"></i>
             ${message}
         `;
-        
+
         document.body.appendChild(toast);
-        
-        // Auto-remove after 3 seconds
+
         setTimeout(() => {
             toast.style.transition = 'opacity 0.3s ease';
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
-    
-    /**
-     * Get CSRF token from cookie
-     */
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -285,5 +264,16 @@
         }
         return cookieValue;
     }
+
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out-cubic',
+                once: true
+            });
+        }
+    });
 </script>
 {% endblock %}

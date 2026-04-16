@@ -3,20 +3,24 @@
     Provides intelligent assistance for blood donation queries
     Includes predefined responses + can be extended with AI API
 -->
-<div id="ai-chatbot" class="fixed bottom-6 left-6 z-50" x-data="aiChatbot()">
+<div id="ai-chatbot" class="position-fixed bottom-0 start-0 m-3 m-sm-4 z-50" x-data="aiChatbot()">
     <!-- Chatbot Toggle Button -->
     <button @click="toggleChatbot()" 
-            class="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-purple-500/50 relative">
-        <svg x-show="!isOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="btn btn-gradient rounded-circle d-flex align-items-center justify-content-center shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-purple-500/50 position-relative" 
+            style="width: 56px; height: 56px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);"
+            data-aos="zoom-in"
+            data-aos-duration="600">
+        <svg x-show="!isOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
         </svg>
-        <svg x-show="isOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg x-show="isOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
         
         <!-- Notification Badge -->
         <span x-show="hasNewMessage && !isOpen" 
-              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+              class="position-absolute top-0 end-0 bg-danger text-white small fw-bold rounded-circle d-flex align-items-center justify-content-center" 
+              style="width: 20px; height: 20px; transform: translate(25%, -25%); animation: bounce 1s infinite;">
             !
         </span>
     </button>
@@ -29,25 +33,28 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-90 translate-y-4"
-         class="absolute bottom-16 left-0 w-80 md:w-96 bg-gray-900 border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
-         @click.away="isOpen = false">
+         class="position-absolute bottom-100 start-0 mb-2 w-100" 
+         style="max-width: 384px; background: #111827; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;"
+         @click.away="isOpen = false"
+         data-aos="fade-up"
+         data-aos-duration="600">
         
         <!-- Header -->
-        <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4">
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+        <div class="p-3 p-sm-4" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative">
+                    <div class="d-flex align-items-center justify-content-center rounded-circle bg-white/20" style="width: 40px; height: 40px;">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
                     </div>
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-purple-500"></div>
+                    <div class="position-absolute bottom-0 end-0 bg-success rounded-circle" style="width: 12px; height: 12px; border: 2px solid #7c3aed;"></div>
                 </div>
-                <div class="flex-1">
-                    <h3 class="text-white font-semibold">BloodBot Assistant</h3>
-                    <p class="text-purple-100 text-xs">Always here to help 🩸</p>
+                <div class="flex-grow-1">
+                    <h3 class="text-white fw-semibold fs-6 mb-0">BloodBot Assistant</h3>
+                    <p class="text-white-80 small mb-0">Always here to help 🩸</p>
                 </div>
-                <button @click="resetChat()" class="text-white/70 hover:text-white transition-colors" title="Reset conversation">
+                <button @click="resetChat()" class="text-white-70 hover:text-white btn btn-link text-white-70 p-0" title="Reset conversation">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                     </svg>
@@ -56,76 +63,77 @@
         </div>
         
         <!-- Quick Actions -->
-        <div class="p-3 bg-gray-800 border-b border-white/10">
-            <p class="text-gray-400 text-xs mb-2">Quick Questions:</p>
-            <div class="flex flex-wrap gap-2">
+        <div class="p-3 bg-gray-800 border-bottom border-white/10">
+            <p class="text-gray-400 small mb-2">Quick Questions:</p>
+            <div class="d-flex flex-wrap gap-2">
                 <button @click="sendQuickMessage('How can I donate blood?')" 
-                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                        class="btn btn-sm btn-outline-light bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-3">
                     How to donate?
                 </button>
                 <button @click="sendQuickMessage('What are the eligibility criteria?')" 
-                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                        class="btn btn-sm btn-outline-light bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-3">
                     Eligibility?
                 </button>
                 <button @click="sendQuickMessage('Find blood donors near me')" 
-                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                        class="btn btn-sm btn-outline-light bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-3">
                     Find donors
                 </button>
                 <button @click="sendQuickMessage('Create a blood request')" 
-                        class="px-3 py-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-lg text-xs transition-colors">
+                        class="btn btn-sm btn-outline-light bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 rounded-3">
                     Create request
                 </button>
             </div>
         </div>
         
         <!-- Messages Container -->
-        <div id="chatbot-messages" class="h-80 overflow-y-auto p-4 space-y-3 bg-gray-800 scroll-smooth">
+        <div id="chatbot-messages" class="overflow-y-auto p-3 p-sm-4 bg-gray-800 scroll-smooth" style="height: 320px; max-height: 50vh;">
             <!-- Welcome Message -->
-            <div x-show="messages.length === 0" class="text-center py-8">
-                <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+            <div x-show="messages.length === 0" class="text-center py-4 py-sm-5">
+                <div class="d-flex align-items-center justify-content-center mx-auto mb-3 rounded-circle bg-purple-500/20" style="width: 64px; height: 64px;">
                     <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <p class="text-white font-semibold mb-1">Hello! 👋</p>
-                <p class="text-gray-400 text-sm">I'm your BloodBot assistant. Ask me anything about blood donation!</p>
+                <p class="text-white fw-semibold mb-1">Hello! 👋</p>
+                <p class="text-gray-400 small">I'm your BloodBot assistant. Ask me anything about blood donation!</p>
             </div>
             
             <!-- Message List -->
             <template x-for="(msg, index) in messages" :key="index">
-                <div :class="msg.type === 'user' ? 'text-right' : 'text-left'"
-                     class="animate-fade-in">
+                <div :class="msg.type === 'user' ? 'text-end' : 'text-start'"
+                     class="mb-3 animate-fade-in">
                     <div :class="msg.type === 'user' ? 'bg-purple-500 text-white' : 'bg-gray-700 text-gray-200'"
-                         class="inline-block px-4 py-2 rounded-lg max-w-[85%] shadow-md">
-                        <p x-html="msg.text" class="text-sm leading-relaxed"></p>
-                        <span class="text-xs opacity-75 mt-1 block" x-text="formatTime(msg.timestamp)"></span>
+                         class="d-inline-block px-3 px-sm-4 py-2 rounded-3 shadow" style="max-width: 85%;">
+                        <p x-html="msg.text" class="small leading-relaxed mb-1"></p>
+                        <span class="small opacity-75 d-block" x-text="formatTime(msg.timestamp)"></span>
                     </div>
                 </div>
             </template>
             
             <!-- Typing Indicator -->
-            <div x-show="isTyping" class="text-left">
-                <div class="bg-gray-700 text-gray-200 inline-block px-4 py-3 rounded-lg">
-                    <div class="flex gap-1">
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            <div x-show="isTyping" class="text-start mb-3">
+                <div class="bg-gray-700 text-gray-200 d-inline-block px-3 px-sm-4 py-2 py-sm-3 rounded-3">
+                    <div class="d-flex gap-1">
+                        <div class="bg-gray-400 rounded-circle" style="width: 8px; height: 8px; animation: bounce 1s infinite; animation-delay: 0s"></div>
+                        <div class="bg-gray-400 rounded-circle" style="width: 8px; height: 8px; animation: bounce 1s infinite; animation-delay: 0.2s"></div>
+                        <div class="bg-gray-400 rounded-circle" style="width: 8px; height: 8px; animation: bounce 1s infinite; animation-delay: 0.4s"></div>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- Input Area -->
-        <div class="p-4 bg-gray-900 border-t border-white/10">
-            <form @submit.prevent="sendMessage" class="flex gap-2">
+        <div class="p-3 p-sm-4 bg-gray-900 border-top border-white/10">
+            <form @submit.prevent="sendMessage" class="d-flex gap-2">
                 <input type="text" 
                        x-model="userInput" 
                        @keydown.enter="sendMessage"
                        placeholder="Ask me anything..." 
-                       class="flex-1 px-3 py-2 bg-gray-800 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm">
+                       class="form-control flex-grow-1 bg-gray-800 border-white/20 text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent small">
                 <button type="submit" 
                         :disabled="!userInput.trim() || isTyping"
-                        class="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors">
+                        class="btn btn-gradient px-3 px-sm-4 py-2 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-3" 
+                        style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                     </svg>
@@ -136,6 +144,17 @@
 </div>
 
 <script>
+// Initialize AOS
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+
 function aiChatbot() {
     return {
         isOpen: false,
@@ -143,6 +162,7 @@ function aiChatbot() {
         userInput: '',
         messages: [],
         hasNewMessage: false,
+        sessionId: null,
         
         // Knowledge base for common questions
         knowledgeBase: {
@@ -254,37 +274,78 @@ function aiChatbot() {
             this.sendMessage();
         },
         
-        sendMessage() {
+        async sendMessage() {
             if (!this.userInput.trim() || this.isTyping) return;
-            
+
             const userMessage = this.userInput.trim();
-            
+
             // Add user message
             this.messages.push({
                 type: 'user',
                 text: userMessage,
                 timestamp: new Date()
             });
-            
+
             this.userInput = '';
             this.scrollToBottom();
-            
+
             // Show typing indicator
             this.isTyping = true;
-            
-            // Generate response
-            setTimeout(() => {
-                const response = this.generateResponse(userMessage);
-                
+
+            try {
+                // Call backend API
+                const response = await fetch('/api/requests/chatbot/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        session_id: this.sessionId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    this.messages.push({
+                        type: 'bot',
+                        text: data.response,
+                        timestamp: new Date()
+                    });
+
+                    // Store session ID for conversation continuity
+                    if (data.session_id) {
+                        this.sessionId = data.session_id;
+                    }
+                } else {
+                    // Fallback to local response if API fails
+                    const fallbackResponse = this.generateResponse(userMessage);
+                    this.messages.push({
+                        type: 'bot',
+                        text: fallbackResponse,
+                        timestamp: new Date()
+                    });
+                }
+            } catch (error) {
+                console.error('Chatbot API error:', error);
+                // Fallback to local response if API fails
+                const fallbackResponse = this.generateResponse(userMessage);
                 this.messages.push({
                     type: 'bot',
-                    text: response,
+                    text: fallbackResponse,
                     timestamp: new Date()
                 });
-                
-                this.isTyping = false;
-                this.scrollToBottom();
-            }, 1000 + Math.random() * 1000); // Simulate thinking time
+            }
+
+            this.isTyping = false;
+            this.scrollToBottom();
+        },
+
+        getCsrfToken() {
+            const csrfCookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return csrfCookie ? csrfCookie.split('=')[1] : '';
         },
         
         generateResponse(userMessage) {
@@ -352,5 +413,15 @@ function aiChatbot() {
 }
 .animate-fade-in {
     animation: fade-in 0.3s ease-out;
+}
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(-25%);
+        animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+        transform: translateY(0);
+        animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
 }
 </style>

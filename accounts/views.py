@@ -19,7 +19,7 @@ from .serializers import (
     CustomTokenObtainPairSerializer, EmailVerificationSerializer,
     PasswordResetRequestSerializer, OTPVerificationSerializer, PasswordResetSerializer
 )
-from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor
+from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor, Follow
 from . import services as otp_services
 from .tasks import send_password_reset_email_task
 import random
@@ -500,9 +500,18 @@ def reset_password_page(request):
 
 def donor_registration_view(request):
     """Render the donor registration page with blood types"""
-    from captcha.forms import CaptchaForm
+    from django.conf import settings
+    
+    # Create captcha form
+    captcha_form = None
+    if 'captcha' in settings.INSTALLED_APPS:
+        try:
+            from captcha.forms import CaptchaForm
+            captcha_form = CaptchaForm()
+        except (ImportError, Exception) as e:
+            logger.debug(f"Captcha form not available: {e}")
+    
     blood_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-    captcha_form = CaptchaForm()
     return render(request, 'accounts/register_donor.html', {
         'blood_types': blood_types,
         'captcha_form': captcha_form
@@ -511,8 +520,18 @@ def donor_registration_view(request):
 
 def register_donor_view(request):
     """Handle donor registration via traditional Django form with comprehensive error handling"""
-    from captcha.fields import CaptchaField
-    from captcha.forms import CaptchaForm
+    from django.conf import settings
+    
+    # Check if captcha is available and import CaptchaForm
+    has_captcha = 'captcha' in settings.INSTALLED_APPS
+    CaptchaForm = None
+    if has_captcha:
+        try:
+            from captcha.forms import CaptchaForm as CF
+            CaptchaForm = CF
+        except (ImportError, Exception) as e:
+            logger.debug(f"Captcha form not available: {e}")
+            has_captcha = False
     
     if request.method == 'POST':
         # Extract all form data
@@ -558,12 +577,13 @@ def register_donor_view(request):
         elif password != confirm_password:
             errors['confirm_password'] = ['Passwords do not match.']
         
-        # CAPTCHA validation
-        from captcha.models import CaptchaStore
-        try:
-            CaptchaStore.objects.get(hashkey=captcha_key).delete()
-        except CaptchaStore.DoesNotExist:
-            errors['captcha'] = ['Invalid CAPTCHA. Please try again.']
+        # CAPTCHA validation (only if captcha is available)
+        if has_captcha and CaptchaForm:
+            from captcha.models import CaptchaStore
+            try:
+                CaptchaStore.objects.get(hashkey=captcha_key).delete()
+            except CaptchaStore.DoesNotExist:
+                errors['captcha'] = ['Invalid CAPTCHA. Please try again.']
             
         # Check if username or email already exists
         User = get_user_model()
@@ -572,12 +592,29 @@ def register_donor_view(request):
         
         if email and User.objects.filter(email=email).exists():
             errors['email'] = errors.get('email', []) + ['Email already exists.']
-        
+
+        # Age restriction validation - must be at least 18 years old
+        if date_of_birth:
+            try:
+                from datetime import datetime
+                dob = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
+                today = datetime.now().date()
+                age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+                if age < 18:
+                    errors['date_of_birth'] = ['You must be at least 18 years old to register as a blood donor.']
+                elif age > 100:
+                    errors['date_of_birth'] = ['Please enter a valid date of birth.']
+            except ValueError:
+                errors['date_of_birth'] = ['Please enter a valid date of birth (YYYY-MM-DD).']
+        else:
+            errors['date_of_birth'] = ['Date of birth is required.']
+
         # If there are validation errors, return them
         if errors:
             messages.error(request, 'Please correct the errors below.')
             blood_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-            captcha_form = CaptchaForm()
+            captcha_form = CaptchaForm() if CaptchaForm else None
             return render(request, 'accounts/register_donor.html', {
                 'blood_types': blood_types,
                 'errors': errors,
@@ -624,7 +661,7 @@ def register_donor_view(request):
     
     # GET request - show registration form
     blood_types = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-    captcha_form = CaptchaForm()
+    captcha_form = CaptchaForm() if CaptchaForm else None
     return render(request, 'accounts/register_donor.html', {
         'blood_types': blood_types,
         'captcha_form': captcha_form
@@ -637,19 +674,50 @@ def login_view(request):
     # If user is already authenticated, redirect to dashboard
     if request.user.is_authenticated:
         return redirect('/accounts/dashboard/')
-    
+
+    # Check if captcha is available and import CaptchaForm
+    has_captcha = 'captcha' in settings.INSTALLED_APPS
+    CaptchaForm = None
+    if has_captcha:
+        try:
+            from captcha.forms import CaptchaForm as CF
+            CaptchaForm = CF
+        except (ImportError, Exception) as e:
+            logger.debug(f"Captcha form not available: {e}")
+            has_captcha = False
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
+
         if not username or not password:
             messages.error(request, 'Please enter both username/email and password.')
-            return render(request, 'accounts/login.html')
-        
+            captcha_form = CaptchaForm() if CaptchaForm else None
+            return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+
+        # CAPTCHA validation (only if captcha is available)
+        if has_captcha:
+            captcha_response = request.POST.get('captcha_0', '')
+            captcha_key = request.POST.get('captcha_1', '')
+
+            if not captcha_response or not captcha_key:
+                messages.error(request, 'Please complete the security verification.')
+                captcha_form = CaptchaForm() if CaptchaForm else None
+                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+
+            # Validate CAPTCHA
+            from captcha.models import CaptchaStore
+            try:
+                CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+            except CaptchaStore.DoesNotExist:
+                messages.error(request, 'Invalid security verification. Please try again.')
+                captcha_form = CaptchaForm() if CaptchaForm else None
+                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+
         # Handle both username and email login
         # Try authenticating with username first
         user = authenticate(request, username=username, password=password)
-        
+
         # If that fails, try with email
         if user is None:
             User = get_user_model()
@@ -662,8 +730,9 @@ def login_view(request):
                 # Log the error for debugging
                 logger.error(f'Login error: {str(e)}', exc_info=True)
                 messages.error(request, 'An error occurred during login. Please try again.')
-                return render(request, 'accounts/login.html')
-        
+                captcha_form = CaptchaForm() if CaptchaForm else None
+                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+
         if user is not None:
             if user.is_active:
                 login(request, user)
@@ -675,8 +744,10 @@ def login_view(request):
                 messages.error(request, 'Your account is inactive. Please contact support.')
         else:
             messages.error(request, 'Invalid username/email or password. Please try again.')
-    
-    return render(request, 'accounts/login.html')
+
+    # Create captcha form if enabled
+    captcha_form = CaptchaForm() if CaptchaForm else None
+    return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
 
 
 def logout_view(request):
@@ -886,6 +957,16 @@ def user_search_api(request):
         if pincode:
             users = users.filter(pincode=pincode)
         
+        # EXCLUDE users with anonymous_mode enabled (privacy feature)
+        try:
+            from .models import PrivacySettings
+            anonymous_user_ids = PrivacySettings.objects.filter(
+                anonymous_mode=True
+            ).values_list('user_id', flat=True)
+            users = users.exclude(id__in=anonymous_user_ids)
+        except Exception as e:
+            logger.warning(f'Could not filter anonymous users: {str(e)}')
+        
         # Apply privacy filtering
         if not request.user.is_authenticated or not request.user.is_staff:
             # Non-admin users can only see public profiles
@@ -974,23 +1055,40 @@ def settings_page(request):
     """User settings page with all preferences and account management"""
     if not request.user.is_authenticated:
         return redirect('/accounts/login/?next=/accounts/settings/')
-    
+
     # Get user profile data
     user = request.user
-    
+
+    # Get or create notification settings
+    from accounts.models import NotificationSettings, PrivacySettings
+    try:
+        notification_settings = user.notification_settings
+    except NotificationSettings.DoesNotExist:
+        notification_settings = NotificationSettings.objects.create(user=user)
+
+    try:
+        privacy_settings = user.privacy_settings
+    except PrivacySettings.DoesNotExist:
+        privacy_settings = PrivacySettings.objects.create(user=user)
+
     context = {
         'user': user,
         'full_name': user.get_full_name() or user.username,
         'email': user.email,
-        'phone': getattr(user, 'phone', '') or '',
+        'phone': getattr(user, 'phone_number', '') or '',
         'blood_group': getattr(user, 'blood_group', '') or '',
         'city': getattr(user, 'city', '') or '',
         'state': getattr(user, 'state', '') or '',
+        'country': getattr(user, 'country', 'India'),
         'pincode': getattr(user, 'pincode', '') or '',
         'is_donor': getattr(user, 'is_donor', False),
         'last_donation_date': getattr(user, 'last_donation_date', None),
+        # Notification settings
+        'notification_settings': notification_settings,
+        # Privacy settings
+        'privacy_settings': privacy_settings,
     }
-    
+
     return render(request, 'accounts/settings.html', context)
 
 
@@ -1319,3 +1417,197 @@ def favorites_list(request):
     except Exception as e:
         logger.error(f'Error loading favorites: {str(e)}', exc_info=True)
         return render(request, 'accounts/favorites.html', {'error': 'Failed to load favorites'})
+
+
+# ============================================================================
+# PUBLIC PROFILE & FOLLOW SYSTEM (Instagram-style)
+# ============================================================================
+
+def public_profile_view(request, user_id):
+    """View another user's public profile with follow/unfollow functionality"""
+    profile_user = get_object_or_404(User, id=user_id, is_active=True)
+    
+    # Check if viewing own profile
+    is_own_profile = request.user.is_authenticated and request.user == profile_user
+    
+    # Get privacy settings
+    privacy_settings = getattr(profile_user, 'privacy_settings', None)
+    
+    # Check if profile is private and user is not following
+    is_private = False
+    is_following = False
+    
+    if request.user.is_authenticated and not is_own_profile:
+        # Check if current user follows this user
+        is_following = Follow.objects.filter(
+            follower=request.user, 
+            following=profile_user
+        ).exists()
+        
+        # Check if profile is private
+        if privacy_settings and privacy_settings.profile_visibility == 'private':
+            if not is_following and not request.user.is_staff:
+                is_private = True
+    
+    # Get user's blood requests (only if not private or is follower/owner)
+    user_requests = []
+    if not is_private or is_following or is_own_profile or (request.user.is_authenticated and request.user.is_staff):
+        try:
+            from blood_requests_app.models import BloodRequest
+            user_requests = BloodRequest.objects.filter(
+                requester=profile_user
+            ).order_by('-created_at')[:10]
+        except Exception as e:
+            logger.error(f'Error fetching user requests: {str(e)}')
+    
+    # Get follower/following counts
+    followers_count = Follow.objects.filter(following=profile_user).count()
+    following_count = Follow.objects.filter(follower=profile_user).count()
+    
+    # Check if anonymous mode is enabled
+    anonymous_mode = False
+    if privacy_settings:
+        anonymous_mode = privacy_settings.anonymous_mode
+    
+    context = {
+        'profile_user': profile_user,
+        'user_requests': user_requests,
+        'is_following': is_following,
+        'is_own_profile': is_own_profile,
+        'is_private': is_private,
+        'followers_count': followers_count,
+        'following_count': following_count,
+        'anonymous_mode': anonymous_mode,
+        'privacy_settings': privacy_settings,
+    }
+    
+    return render(request, 'accounts/public_profile.html', context)
+
+
+@login_required
+def toggle_follow(request, user_id):
+    """Toggle follow/unfollow user (AJAX endpoint)"""
+    try:
+        user_to_follow = get_object_or_404(User, id=user_id, is_active=True)
+        
+        # Prevent users from following themselves
+        if user_to_follow == request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'You cannot follow yourself'
+            }, status=400)
+        
+        # Check if already following
+        follow, created = Follow.objects.get_or_create(
+            follower=request.user,
+            following=user_to_follow
+        )
+        
+        if not created:
+            # Already following, so unfollow
+            follow.delete()
+            
+            # Get updated counts
+            followers_count = Follow.objects.filter(following=user_to_follow).count()
+            
+            return JsonResponse({
+                'success': True,
+                'is_following': False,
+                'followers_count': followers_count,
+                'message': f'Unfollowed {user_to_follow.first_name or user_to_follow.username}'
+            })
+        else:
+            # Now following
+            # Get updated counts
+            followers_count = Follow.objects.filter(following=user_to_follow).count()
+            
+            # Create notification for the followed user
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    user=user_to_follow,
+                    notification_type='general',
+                    title='New Follower',
+                    message=f'{request.user.first_name or request.user.username} started following you',
+                    priority='low'
+                )
+            except Exception as e:
+                logger.error(f'Error creating follow notification: {str(e)}')
+            
+            return JsonResponse({
+                'success': True,
+                'is_following': True,
+                'followers_count': followers_count,
+                'message': f'Now following {user_to_follow.first_name or user_to_follow.username}'
+            })
+            
+    except Exception as e:
+        logger.error(f'Error toggling follow: {str(e)}', exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to toggle follow status'
+        }, status=500)
+
+
+@login_required
+def followers_list(request, user_id):
+    """Show list of followers for a user"""
+    user = get_object_or_404(User, id=user_id, is_active=True)
+    
+    # Check privacy settings
+    privacy_settings = getattr(user, 'privacy_settings', None)
+    is_private = privacy_settings and privacy_settings.profile_visibility == 'private'
+    
+    # Check if current user can view followers
+    can_view = (
+        request.user == user or  # Own profile
+        request.user.is_staff or  # Admin
+        not is_private or  # Public profile
+        Follow.objects.filter(follower=request.user, following=user).exists()  # Is following
+    )
+    
+    if not can_view:
+        messages.error(request, 'This profile is private')
+        return redirect('public-profile', user_id=user_id)
+    
+    followers = Follow.objects.filter(following=user).select_related('follower')
+    
+    context = {
+        'profile_user': user,
+        'followers': followers,
+        'is_own_profile': request.user == user,
+    }
+    
+    return render(request, 'accounts/followers_list.html', context)
+
+
+@login_required
+def following_list(request, user_id):
+    """Show list of users that a user is following"""
+    user = get_object_or_404(User, id=user_id, is_active=True)
+    
+    # Check privacy settings
+    privacy_settings = getattr(user, 'privacy_settings', None)
+    is_private = privacy_settings and privacy_settings.profile_visibility == 'private'
+    
+    # Check if current user can view following
+    can_view = (
+        request.user == user or  # Own profile
+        request.user.is_staff or  # Admin
+        not is_private or  # Public profile
+        Follow.objects.filter(follower=request.user, following=user).exists()  # Is following
+    )
+    
+    if not can_view:
+        messages.error(request, 'This profile is private')
+        return redirect('public-profile', user_id=user_id)
+    
+    following = Follow.objects.filter(follower=user).select_related('following')
+    
+    context = {
+        'profile_user': user,
+        'following': following,
+        'is_own_profile': request.user == user,
+    }
+    
+    return render(request, 'accounts/following_list.html', context)

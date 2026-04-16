@@ -6,7 +6,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db.models import Q
-from .models import BloodRequest, ChatMessage, DonorRating
+from .models import BloodRequest, DonorRating
+from .models_chat import ChatMessage
 from donors.models import DonorAvailability
 from .serializers import BloodRequestSerializer, ChatMessageSerializer, DonorRatingSerializer, DonorAvailabilitySerializer
 from asgiref.sync import async_to_sync
@@ -368,4 +369,79 @@ class SendMessageView(APIView):
             return Response({
                 'success': False,
                 'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ChatbotView(APIView):
+    """AI-powered chatbot for blood donation queries"""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        """Get chatbot response to user query"""
+        try:
+            from .chatbot_service import get_chatbot_response
+            import uuid
+
+            message = request.data.get('message', '').strip()
+            session_id = request.data.get('session_id') or str(uuid.uuid4())
+
+            if not message:
+                return Response({
+                    'success': False,
+                    'error': 'Message is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Build user context
+            user_context = {
+                'user_id': request.user.id if request.user.is_authenticated else None,
+                'username': request.user.username if request.user.is_authenticated else None,
+                'blood_group': getattr(request.user, 'blood_group', None) if request.user.is_authenticated else None,
+                'city': getattr(request.user, 'city', None) if request.user.is_authenticated else None,
+                'state': getattr(request.user, 'state', None) if request.user.is_authenticated else None,
+                'user_type': getattr(request.user, 'user_type', None) if request.user.is_authenticated else None,
+            }
+
+            # Get chatbot response
+            response_data = get_chatbot_response(message, user_context)
+
+            # Try to save conversation to database (optional, don't fail if model doesn't exist)
+            try:
+                from .models_chat import ChatbotConversation
+                conversation = ChatbotConversation.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    session_id=session_id,
+                    user_message=message,
+                    bot_response=response_data['response'],
+                    confidence=response_data.get('confidence', 'medium'),
+                    suggestions=response_data.get('suggestions', []),
+                    user_context=user_context
+                )
+            except ImportError as e:
+                # Model doesn't exist - this is OK
+                print(f"ℹ️ Chatbot conversation model not available: {e}")
+            except Exception as e:
+                # Log but don't fail if there are any database issues
+                logger.warning(f'Could not save chatbot conversation to database: {e}')
+                # Continue without saving - the response is still valid
+
+            response_dict = {
+                'success': True,
+                'response': response_data['response'],
+                'confidence': response_data.get('confidence', 'medium'),
+                'suggestions': response_data.get('suggestions', []),
+                'session_id': session_id,
+            }
+
+            # Add conversation_id only if it was saved successfully
+            try:
+                response_dict['conversation_id'] = conversation.id
+            except:
+                pass
+
+            return Response(response_dict)
+        except Exception as e:
+            logger.error(f'Chatbot error: {e}', exc_info=True)
+            return Response({
+                'success': False,
+                'error': 'Failed to process your request. Please try again.'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

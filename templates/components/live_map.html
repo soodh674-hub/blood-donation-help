@@ -4,87 +4,92 @@
     Provides real-time location tracking using Leaflet.js with WebSocket updates
 -->
 <div id="tracking-map-container" 
-     class="bg-gray-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl" 
+     class="bg-gray-900 rounded-3 overflow-hidden border border-white/10 shadow-lg" 
      x-data="liveMapTracker({{ request_id|default:'null' }}, {{ target_lat|default:'null' }}, {{ target_lng|default:'null' }})" 
-     x-init="initMap()">
+     x-init="initMap()"
+     data-aos="fade-in"
+     data-aos-duration="800">
     
     <!-- Map Header -->
-    <div class="bg-gradient-to-r from-red-500 to-red-600 p-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="relative">
-                <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+    <div class="p-3 p-sm-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="position-relative">
+                <div class="bg-success rounded-circle animate-pulse" style="width: 12px; height: 12px;"></div>
             </div>
             <div>
-                <h3 class="text-white font-semibold">Live Tracking</h3>
-                <p class="text-red-100 text-sm" x-text="statusText"></p>
+                <h3 class="text-white fw-semibold fs-6 mb-0">Live Tracking</h3>
+                <p class="text-white-80 small mb-0" x-text="statusText"></p>
             </div>
         </div>
         <button @click="toggleTracking()" 
-                class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-all">
+                class="btn btn-sm btn-light bg-white/20 hover:bg-white/30 text-white rounded-3">
             <span x-text="isTracking ? 'Stop Tracking' : 'Start Tracking'"></span>
         </button>
     </div>
     
     <!-- Map Container -->
-    <div id="map" class="h-96 w-full relative bg-gray-800">
+    <div id="map" class="position-relative bg-gray-800" style="height: 384px; min-height: 300px;">
         <!-- Loading State -->
-        <div x-show="!mapLoaded" class="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+        <div x-show="!mapLoaded" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-gray-800 z-10">
             <div class="text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent mx-auto mb-4"></div>
+                <div class="spinner-border text-danger mx-auto mb-3" role="status" style="width: 48px; height: 48px;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
                 <p class="text-gray-400">Loading map...</p>
             </div>
         </div>
         
         <!-- Error State -->
-        <div x-show="mapError" class="absolute inset-0 flex items-center justify-center bg-gray-800 z-10">
+        <div x-show="mapError" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-gray-800 z-10">
             <div class="text-center p-4">
-                <svg class="w-12 h-12 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-12 h-12 text-danger mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <p class="text-red-400 mb-2">Failed to load map</p>
-                <button @click="initMap()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">Retry</button>
+                <p class="text-danger mb-2">Failed to load map</p>
+                <button @click="initMap()" class="btn btn-sm btn-danger">Retry</button>
             </div>
         </div>
     </div>
     
     <!-- Location Info Panel -->
-    <div class="p-4 bg-gray-800 border-t border-white/10">
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Your Location</p>
-                <p class="text-white font-mono text-sm" x-text="currentLocation || 'Not tracking'"></p>
+    <div class="p-3 p-sm-4 bg-gray-800 border-top border-white/10">
+        <div class="row row-cols-2 g-3 mb-4">
+            <div class="col">
+                <p class="text-gray-400 small text-uppercase tracking-wider mb-1">Your Location</p>
+                <p class="text-white font-monospace small" x-text="currentLocation || 'Not tracking'"></p>
             </div>
-            <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Distance to Target</p>
-                <p class="text-white font-semibold" x-text="distanceToTarget || '--'"></p>
+            <div class="col">
+                <p class="text-gray-400 small text-uppercase tracking-wider mb-1">Distance to Target</p>
+                <p class="text-white fw-semibold" x-text="distanceToTarget || '--'"></p>
             </div>
         </div>
         
         <!-- ETA Progress Bar -->
-        <div>
-            <div class="flex justify-between text-xs text-gray-400 mb-2">
+        <div class="mb-4">
+            <div class="d-flex justify-content-between small text-gray-400 mb-2">
                 <span>Journey Progress</span>
                 <span x-text="progressPercentage.toFixed(0) + '%'"></span>
             </div>
-            <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full transition-all duration-500 ease-out"
+            <div class="w-100 bg-gray-700 rounded-pill h-2 overflow-hidden">
+                <div class="h-2 rounded-pill transition-all duration-500 ease-out" 
+                     style="background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);"
                      :style="'width: ' + progressPercentage + '%'"></div>
             </div>
         </div>
         
         <!-- Additional Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/10">
-            <div class="text-center">
-                <p class="text-gray-400 text-xs mb-1">Updates</p>
-                <p class="text-white font-semibold" x-text="updateCount"></p>
+        <div class="row row-cols-1 row-cols-md-3 g-3 mt-4 pt-4 border-top border-white/10">
+            <div class="col text-center">
+                <p class="text-gray-400 small mb-1">Updates</p>
+                <p class="text-white fw-semibold" x-text="updateCount"></p>
             </div>
-            <div class="text-center">
-                <p class="text-gray-400 text-xs mb-1">Last Update</p>
-                <p class="text-white text-xs" x-text="lastUpdate || 'Never'"></p>
+            <div class="col text-center">
+                <p class="text-gray-400 small mb-1">Last Update</p>
+                <p class="text-white small" x-text="lastUpdate || 'Never'"></p>
             </div>
-            <div class="text-center">
-                <p class="text-gray-400 text-xs mb-1">Accuracy</p>
-                <p class="text-green-400 text-xs">High</p>
+            <div class="col text-center">
+                <p class="text-gray-400 small mb-1">Accuracy</p>
+                <p class="text-success small">High</p>
             </div>
         </div>
     </div>
@@ -99,6 +104,17 @@
         crossorigin=""></script>
 
 <script>
+// Initialize AOS
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+
 function liveMapTracker(requestId, targetLat, targetLng) {
     return {
         map: null,
@@ -129,7 +145,7 @@ function liveMapTracker(requestId, targetLat, targetLng) {
             setTimeout(() => {
                 try {
                     // Initialize Leaflet map
-                    this.map = L.map('map').setView([this.targetLat || 28.6139, this.targetLng || 77.2090], 13);
+                    this.map = L.map('map').setView([this.targetLat || 20.5937, this.targetLng || 78.9629], 13);
                     
                     // Add OpenStreetMap tiles
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

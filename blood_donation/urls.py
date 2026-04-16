@@ -123,6 +123,9 @@ urlpatterns = [
     # Public home page - NEW REDESIGNED VERSION WITH FEATURE PREVIEWS
     path('', home_view, name='home'),
     
+    # CAPTCHA URLs (must be included for django-simple-captcha to work)
+    path('captcha/', include('captcha.urls')),
+    
     # How It Works page
     path('how-it-works/', how_it_works_view, name='how-it-works'),
     
@@ -159,10 +162,11 @@ urlpatterns = [
     
     # Frontend pages
     path('auth/', include('allauth.urls')),  # Django allauth for email verification
-    path('accounts/', include('accounts.urls')),
-    path('search/', include('accounts.urls')),  # Search functionality
-    path('requests/', include('blood_requests_app.urls')),  # Handles blood requests
+    path('accounts/', include(('accounts.urls', 'accounts'), namespace='accounts')),
+    path('search/', include(('accounts.urls', 'accounts'), namespace='accounts_search')),  # Search functionality
+    path('requests/', include(('blood_requests_app.urls', 'requests'), namespace='requests')),  # Handles blood requests
     path('notifications/', include('notifications.urls', namespace='notifications')),
+    path('donors/', include(('donors.urls', 'donors'), namespace='donors')),  # Donor pages
     
     # Authentication API (JWT - if available)
     *([
@@ -172,8 +176,8 @@ urlpatterns = [
     ] if JWT_AVAILABLE else []),
     
     # Core Apps APIs
-    path('api/accounts/', include('accounts.urls')),
-    path('api/donors/', include('donors.urls')),
+    path('api/accounts/', include(('accounts.urls', 'accounts_api'), namespace='accounts_api')),
+    path('api/donors/', include(('donors.urls', 'donors_api'), namespace='donors_api')),
     path('api/requests/', include(('blood_requests_app.urls', 'blood_requests_api_v1'), namespace='blood_requests_api_v1')),
     path('api/notifications/', include('notifications.urls', namespace='api_notifications')),
     path('api/analytics/', include('analytics.urls')),

@@ -52,21 +52,30 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 class UserPublicSerializer(serializers.ModelSerializer):
     """Public serializer for user data (privacy-controlled)"""
-    
+
     # Add distance field (will be added dynamically)
     distance_km = serializers.SerializerMethodField()
-    
+
+    # Add profile photo
+    profile_photo = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
             'id', 'username', 'first_name', 'last_name',
             'user_type', 'blood_group', 'city', 'state', 'pincode',
-            'phone_number', 'distance_km'
+            'phone_number', 'distance_km', 'profile_photo'
         ]
-    
+
     def get_distance_km(self, obj):
         # Return distance if available, otherwise None
         return getattr(obj, 'distance_km', None)
+
+    def get_profile_photo(self, obj):
+        # Return profile photo URL if available
+        if hasattr(obj, 'donor_profile') and obj.donor_profile.profile_photo:
+            return obj.donor_profile.profile_photo.url
+        return None
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token serializer"""

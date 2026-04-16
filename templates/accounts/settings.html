@@ -6,114 +6,104 @@
 {% block extra_css %}
 <style>
     :root {
-        --bg-primary: #0a0a0f;
-        --bg-secondary: #12121a;
-        --bg-card: rgba(255, 255, 255, 0.03);
-        --border-color: rgba(255, 255, 255, 0.08);
-        --neon-red: #ff3b3b;
-        --neon-coral: #ff6b6b;
+        --bg-primary: #0f1419;
+        --bg-secondary: #1a1f2e;
+        --bg-card: #252b3d;
+        --accent-red: #ef4444;
+        --accent-blue: #3b82f6;
         --text-primary: #ffffff;
-        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-secondary: #9ca3af;
+        --text-muted: #6b7280;
+        --border-color: rgba(255, 255, 255, 0.08);
     }
 
     .settings-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 2rem 1.5rem;
     }
 
-    /* Settings content max-width for large screens */
-    .settings-content-wrapper {
-        max-width: 1024px;
-        margin: 0 auto;
-    }
-
+    /* Header */
     .settings-header {
         margin-bottom: 2rem;
+        padding: 2rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
     }
 
     .settings-title {
-        font-size: 2.5rem;
-        font-weight: 900;
+        font-size: 2rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
-        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text-primary);
     }
 
     .settings-subtitle {
         color: var(--text-secondary);
-        font-size: 1.1rem;
-    }
-
-    /* Settings Layout */
-    .settings-layout {
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 2rem;
+        font-size: 1rem;
     }
 
     /* Sidebar Navigation */
     .settings-sidebar {
-        background: var(--bg-card);
-        backdrop-filter: blur(10px);
+        background: var(--bg-secondary);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 1.5rem;
-        height: fit-content;
+        border-radius: 12px;
+        padding: 0.5rem;
         position: sticky;
-        top: 2rem;
+        top: 100px;
     }
 
     .sidebar-nav {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.25rem;
     }
 
     .nav-item {
-        padding: 1rem 1.25rem;
-        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: 0.75rem;
         color: var(--text-secondary);
-        border: 1px solid transparent;
+        font-weight: 500;
+        font-size: 0.95rem;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
     }
 
     .nav-item:hover {
-        background: rgba(255, 59, 59, 0.1);
+        background: var(--bg-card);
         color: var(--text-primary);
-        border-color: var(--neon-red);
     }
 
     .nav-item.active {
-        background: linear-gradient(135deg, rgba(255, 59, 59, 0.2), rgba(255, 107, 107, 0.2));
+        background: var(--bg-card);
         color: var(--text-primary);
-        border-color: var(--neon-red);
-        box-shadow: 0 0 20px rgba(255, 59, 59, 0.3);
+        font-weight: 600;
     }
 
     .nav-icon {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
+        width: 20px;
+        text-align: center;
     }
 
     .nav-label {
-        font-weight: 600;
-        font-size: 0.95rem;
+        flex: 1;
     }
 
     /* Content Area */
     .settings-content {
-        background: var(--bg-card);
-        backdrop-filter: blur(10px);
+        background: var(--bg-secondary);
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 2.5rem;
-        min-height: 600px;
+        border-radius: 12px;
+        padding: 2rem;
     }
 
     .tab-content {
@@ -122,17 +112,11 @@
 
     .tab-content.active {
         display: block;
-        animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
     }
 
     .tab-title {
-        font-size: 1.8rem;
-        font-weight: 800;
+        font-size: 1.5rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
         color: var(--text-primary);
     }
@@ -140,12 +124,13 @@
     .tab-description {
         color: var(--text-secondary);
         margin-bottom: 2rem;
+        font-size: 0.95rem;
     }
 
     /* Form Sections */
     .form-section {
-        margin-bottom: 2.5rem;
-        padding-bottom: 2.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -156,829 +141,318 @@
     }
 
     .section-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
         color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .form-group.full-width {
-        grid-column: 1 / -1;
     }
 
     .form-label {
-        font-weight: 600;
+        font-weight: 500;
         color: var(--text-secondary);
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
     }
 
-    .form-input, .form-select {
-        padding: 0.875rem 1rem;
-        background: rgba(255, 255, 255, 0.05);
+    .form-control, .form-select {
+        background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 10px;
         color: var(--text-primary);
-        font-size: 1rem;
-        transition: all 0.3s ease;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.95rem;
     }
 
-    .form-input:focus, .form-select:focus {
-        outline: none;
-        border-color: var(--neon-red);
-        box-shadow: 0 0 0 3px rgba(255, 59, 59, 0.1);
+    .form-control:focus, .form-select:focus {
+        background: var(--bg-card);
+        border-color: var(--accent-blue);
+        color: var(--text-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
-    .form-input::placeholder {
-        color: rgba(255, 255, 255, 0.3);
+    .form-control::placeholder {
+        color: var(--text-muted);
     }
 
-    /* Toggle Switches */
-    .toggle-group {
+    /* Toggle Items */
+    .toggle-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 1rem;
-        background: rgba(255, 255, 255, 0.02);
+        background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
-        margin-bottom: 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
     }
 
-    .toggle-info h4 {
+    .toggle-info h5 {
         font-weight: 600;
         margin-bottom: 0.25rem;
+        color: var(--text-primary);
+        font-size: 0.95rem;
     }
 
     .toggle-info p {
         font-size: 0.85rem;
         color: var(--text-secondary);
+        margin-bottom: 0;
     }
 
-    .toggle-switch {
-        position: relative;
-        width: 60px;
-        height: 32px;
-    }
-
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .toggle-slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(255, 255, 255, 0.1);
-        transition: 0.3s;
-        border-radius: 32px;
-    }
-
-    .toggle-slider:before {
-        position: absolute;
-        content: "";
-        height: 24px;
-        width: 24px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: 0.3s;
-        border-radius: 50%;
-    }
-
-    input:checked + .toggle-slider {
-        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
-    }
-
-    input:checked + .toggle-slider:before {
-        transform: translateX(28px);
-    }
-
-    /* Buttons */
-    .btn-save {
-        padding: 1rem 2.5rem;
-        background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
-    }
-
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(255, 59, 59, 0.5);
-    }
-
-    .button-group {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    /* Status Badge */
-    .status-badge {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .status-available {
-        background: rgba(16, 185, 129, 0.2);
-        color: #10b981;
-        border: 1px solid #10b981;
-    }
-
-    .status-not-available {
-        background: rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        border: 1px solid #ef4444;
-    }
-
-    /* Info Box */
-    .info-box {
-        background: rgba(255, 149, 0, 0.1);
-        border: 1px solid rgba(255, 149, 0, 0.3);
-        border-radius: 12px;
-        padding: 1rem;
+    /* Profile Header */
+    .profile-header {
+        padding: 1.5rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         margin-bottom: 1.5rem;
     }
 
-    .info-box p {
-        color: #ff9500;
-        font-size: 0.9rem;
-        margin: 0;
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--accent-red), #dc2626);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
     }
 
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .settings-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .settings-sidebar {
-            position: static;
-        }
-
-        .sidebar-nav {
-            flex-direction: row;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .nav-item {
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
+    .profile-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
     }
 
-    @media (max-width: 768px) {
-        .settings-container {
-            padding: 1rem;
-        }
-
-        .settings-header {
-            margin-bottom: 1.5rem;
-        }
-
-        .settings-title {
-            font-size: 2rem;
-        }
-
-        .settings-subtitle {
-            font-size: 1rem;
-        }
-
-        .settings-content {
-            padding: 1.5rem;
-        }
-
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .button-group {
-            flex-direction: column;
-        }
-
-        .btn-save {
-            width: 100%;
-        }
-
-        .tab-title {
-            font-size: 1.5rem;
-        }
+    .profile-username {
+        color: var(--accent-red);
+        font-weight: 500;
     }
 
-    @media (max-width: 480px) {
-        .settings-container {
-            padding: 0.75rem;
-        }
-
-        .settings-content {
-            padding: 1rem;
-        }
-
-        .settings-title {
-            font-size: 1.75rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-        }
-
-        .form-input,
-        .form-select {
-            padding: 0.75rem 0.875rem;
-            font-size: 0.95rem;
-        }
-
-        .toggle-group {
-            padding: 0.875rem;
-        }
-
-        .nav-item {
-            padding: 0.875rem 1rem;
-            font-size: 0.9rem;
-        }
+    /* Cards */
+    .settings-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
     }
 
-    /* =========================================
-       COMPREHENSIVE RESPONSIVE DESIGN
-       ========================================= */
-
-    /* Tablet Landscape (1024px and below) */
-    @media (max-width: 1024px) {
-        .settings-container {
-            padding: 1.5rem;
-        }
-
-        .settings-layout {
-            grid-template-columns: 240px 1fr;
-            gap: 1.5rem;
-        }
-
-        .settings-title {
-            font-size: 2.25rem;
-        }
-
-        .settings-sidebar {
-            padding: 1.25rem;
-        }
+    .settings-card h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
     }
 
-    /* Tablet Portrait (768px and below) */
-    @media (max-width: 768px) {
-        .settings-container {
-            padding: 1rem;
-        }
+    /* Buttons */
+    .btn-primary-custom {
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+        color: white;
+        padding: 0.625rem 1.25rem;
+        font-weight: 500;
+    }
 
-        .settings-header {
-            margin-bottom: 1.5rem;
-        }
+    .btn-primary-custom:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
+    }
 
-        .settings-title {
-            font-size: 2rem;
-        }
+    .btn-success-custom {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+        padding: 0.625rem 1.25rem;
+        font-weight: 500;
+    }
 
-        .settings-subtitle {
-            font-size: 1rem;
-        }
+    .btn-success-custom:hover {
+        background: #059669;
+        border-color: #059669;
+        color: white;
+    }
 
-        /* Stack sidebar on top */
-        .settings-layout {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
+    /* Mobile Responsive */
+    @media (max-width: 992px) {
         .settings-sidebar {
             position: relative;
             top: 0;
-            padding: 1rem;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1.5rem;
         }
 
-        /* Horizontal scrollable tabs */
         .sidebar-nav {
             flex-direction: row;
-            gap: 0.5rem;
             overflow-x: auto;
             padding-bottom: 0.5rem;
-            scrollbar-width: thin;
-            scrollbar-color: var(--neon-red) transparent;
-        }
-
-        .sidebar-nav::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: var(--neon-red);
-            border-radius: 3px;
         }
 
         .nav-item {
-            padding: 0.75rem 1rem;
             white-space: nowrap;
             flex-shrink: 0;
-            font-size: 0.9rem;
-        }
-
-        .nav-icon {
-            font-size: 1.2rem;
-        }
-
-        .nav-label {
-            font-size: 0.85rem;
-        }
-
-        /* Adjust form grids */
-        .form-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .form-section {
-            padding: 1.25rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Profile header adjustments */
-        .profile-header .flex {
-            flex-direction: column;
-            text-align: center;
-            gap: 1rem;
-        }
-
-        .button-group {
-            flex-direction: column;
-        }
-
-        .btn-save,
-        .btn-cancel,
-        .btn-secondary {
-            width: 100%;
-        }
-
-        /* Toggle groups */
-        .toggle-group {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        .toggle-label {
-            margin-bottom: 0.25rem;
         }
     }
 
-    /* Mobile (480px and below) */
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
         .settings-container {
-            padding: 0.75rem;
-        }
-
-        .settings-header {
-            margin-bottom: 1rem;
-        }
-
-        .settings-title {
-            font-size: 1.75rem;
-        }
-
-        .settings-subtitle {
-            font-size: 0.9rem;
-        }
-
-        /* Smaller sidebar */
-        .settings-sidebar {
-            padding: 0.75rem;
-            border-radius: 12px;
-        }
-
-        .nav-item {
-            padding: 0.625rem 0.875rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-        }
-
-        .nav-icon {
-            font-size: 1.1rem;
-        }
-
-        .nav-label {
-            font-size: 0.8rem;
-        }
-
-        /* Compact form sections */
-        .form-section {
             padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-        }
-
-        .section-title {
-            font-size: 1rem;
-            margin-bottom: 0.875rem;
-        }
-
-        .tab-title {
-            font-size: 1.5rem;
-        }
-
-        .tab-description {
-            font-size: 0.9rem;
-        }
-
-        /* Smaller form inputs */
-        .form-label {
-            font-size: 0.85rem;
-            margin-bottom: 0.375rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            padding: 0.625rem 0.75rem;
-            font-size: 0.9rem;
-        }
-
-        /* Profile adjustments */
-        .profile-avatar {
-            width: 80px !important;
-            height: 80px !important;
-        }
-
-        .profile-avatar span {
-            font-size: 1.75rem !important;
-        }
-
-        .profile-name {
-            font-size: 1.5rem !important;
-        }
-
-        .profile-username {
-            font-size: 0.9rem !important;
-        }
-
-        /* Buttons */
-        .btn-save,
-        .btn-cancel,
-        .btn-secondary {
-            padding: 0.75rem 1rem;
-            font-size: 0.9rem;
-        }
-
-        /* Toggle switches */
-        .toggle-switch {
-            width: 44px;
-            height: 24px;
-        }
-
-        .toggle-switch::before {
-            width: 18px;
-            height: 18px;
-        }
-
-        .toggle-switch.active::before {
-            transform: translateX(20px);
-        }
-
-        /* Cards and lists */
-        .connected-account,
-        .privacy-item,
-        .danger-item {
-            padding: 0.875rem;
-        }
-
-        .connected-account-info h4,
-        .privacy-info h4,
-        .danger-info h4 {
-            font-size: 0.95rem;
-        }
-
-        .connected-account-info p,
-        .privacy-info p,
-        .danger-info p {
-            font-size: 0.8rem;
-        }
-    }
-
-    /* Small Mobile (360px and below) */
-    @media (max-width: 360px) {
-        .settings-container {
-            padding: 0.5rem;
-        }
-
-        .settings-title {
-            font-size: 1.5rem;
-        }
-
-        .settings-subtitle {
-            font-size: 0.85rem;
-        }
-
-        .nav-item {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .nav-icon {
-            font-size: 1rem;
-        }
-
-        .nav-label {
-            font-size: 0.75rem;
-        }
-
-        .form-section {
-            padding: 0.875rem;
-        }
-
-        .section-title {
-            font-size: 0.95rem;
-        }
-
-        .form-label {
-            font-size: 0.8rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            padding: 0.5rem 0.625rem;
-            font-size: 0.85rem;
-        }
-
-        .tab-title {
-            font-size: 1.25rem;
-        }
-
-        .profile-avatar {
-            width: 70px !important;
-            height: 70px !important;
-        }
-
-        .profile-avatar span {
-            font-size: 1.5rem !important;
-        }
-
-        .profile-name {
-            font-size: 1.25rem !important;
-        }
-    }
-
-    /* Large Desktop (1440px and above) */
-    @media (min-width: 1440px) {
-        .settings-container {
-            max-width: 1600px;
-            padding: 3rem;
-        }
-
-        .settings-layout {
-            grid-template-columns: 320px 1fr;
-            gap: 3rem;
-        }
-
-        .settings-title {
-            font-size: 3rem;
-        }
-
-        .settings-sidebar {
-            padding: 2rem;
-        }
-
-        .nav-item {
-            padding: 1.25rem 1.5rem;
-            font-size: 1.05rem;
-        }
-
-        .form-section {
-            padding: 2rem;
-        }
-
-        .form-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    /* Extra Large Desktop (1920px and above) */
-    @media (min-width: 1920px) {
-        .settings-container {
-            max-width: 1800px;
-            padding: 4rem;
-        }
-
-        .settings-layout {
-            grid-template-columns: 360px 1fr;
-            gap: 4rem;
-        }
-
-        html {
-            font-size: 18px;
-        }
-    }
-
-    /* Landscape orientation on mobile */
-    @media (max-height: 500px) and (orientation: landscape) {
-        .settings-container {
-            padding: 0.5rem;
         }
 
         .settings-header {
-            margin-bottom: 0.75rem;
+            padding: 1.5rem;
         }
 
         .settings-title {
             font-size: 1.5rem;
         }
 
-        .form-section {
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
+        .settings-content {
+            padding: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            font-size: 1.5rem;
         }
     }
 
-    /* Touch device optimizations */
-    @media (hover: none) and (pointer: coarse) {
-        .nav-item {
-            min-height: 44px;
+    @media (max-width: 576px) {
+        .settings-content {
+            padding: 1rem;
         }
 
-        .btn-save,
-        .btn-cancel,
-        .btn-secondary {
-            min-height: 44px;
-        }
-
-        .toggle-switch {
-            min-width: 44px;
-            min-height: 44px;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            min-height: 44px;
+        .settings-card {
+            padding: 1rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="py-10 settings-content-wrapper">
+<div class="settings-container">
     <!-- Header -->
     <div class="settings-header">
-        <h1 class="settings-title">⚙️ Settings</h1>
+        <h1 class="settings-title">Settings</h1>
         <p class="settings-subtitle">Manage your account, preferences, and privacy</p>
     </div>
 
     <!-- Settings Layout -->
-    <div class="settings-layout">
+    <div class="row">
         <!-- Sidebar Navigation -->
-        <aside class="settings-sidebar">
-            <nav class="sidebar-nav">
-                <div class="nav-item active" data-tab="profile">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-label">Profile</span>
-                </div>
-                <div class="nav-item" data-tab="account">
-                    <span class="nav-icon">�</span>
-                    <span class="nav-label">Account</span>
-                </div>
-                <div class="nav-item" data-tab="donor">
-                    <span class="nav-icon">🩸</span>
-                    <span class="nav-label">Donor Settings</span>
-                </div>
-                <div class="nav-item" data-tab="notifications">
-                    <span class="nav-icon">🔔</span>
-                    <span class="nav-label">Notifications</span>
-                </div>
-                <div class="nav-item" data-tab="privacy">
-                    <span class="nav-icon">🔒</span>
-                    <span class="nav-label">Privacy</span>
-                </div>
-                <div class="nav-item" data-tab="security">
-                    <span class="nav-icon">🛡️</span>
-                    <span class="nav-label">Security</span>
-                </div>
-                <div class="nav-item" data-tab="location">
-                    <span class="nav-icon">📍</span>
-                    <span class="nav-label">Location</span>
-                </div>
-                <div class="nav-item" data-tab="ui">
-                    <span class="nav-icon">🎨</span>
-                    <span class="nav-label">UI Preferences</span>
+        <div class="col-12 col-lg-3 mb-4 mb-lg-0">
+            <nav class="settings-sidebar">
+                <div class="sidebar-nav">
+                    <button class="nav-item active" data-tab="profile">
+                        <span class="nav-icon"><i class="bi bi-person"></i></span>
+                        <span class="nav-label">Profile</span>
+                    </button>
+                    <button class="nav-item" data-tab="account">
+                        <span class="nav-icon"><i class="bi bi-gear"></i></span>
+                        <span class="nav-label">Account</span>
+                    </button>
+                    <button class="nav-item" data-tab="donor">
+                        <span class="nav-icon"><i class="bi bi-heart-pulse"></i></span>
+                        <span class="nav-label">Donor Settings</span>
+                    </button>
+                    <button class="nav-item" data-tab="notifications">
+                        <span class="nav-icon"><i class="bi bi-bell"></i></span>
+                        <span class="nav-label">Notifications</span>
+                    </button>
+                    <button class="nav-item" data-tab="privacy">
+                        <span class="nav-icon"><i class="bi bi-shield-lock"></i></span>
+                        <span class="nav-label">Privacy</span>
+                    </button>
+                    <button class="nav-item" data-tab="security">
+                        <span class="nav-icon"><i class="bi bi-key"></i></span>
+                        <span class="nav-label">Security</span>
+                    </button>
+                    <button class="nav-item" data-tab="location">
+                        <span class="nav-icon"><i class="bi bi-geo-alt"></i></span>
+                        <span class="nav-label">Location</span>
+                    </button>
+                    <button class="nav-item" data-tab="ui">
+                        <span class="nav-icon"><i class="bi bi-palette"></i></span>
+                        <span class="nav-label">UI Preferences</span>
+                    </button>
                 </div>
             </nav>
-        </aside>
+        </div>
 
         <!-- Content Area -->
-        <main class="settings-content">
-            <!-- Profile Tab -->
-            <div id="profile" class="tab-content active">
-                <h2 class="tab-title">My Profile</h2>
-                <p class="tab-description">View and manage your profile information</p>
+        <div class="col-12 col-lg-9">
+            <div class="settings-content">
+                <!-- Profile Tab -->
+                <div id="profile" class="tab-content active">
+                    <h2 class="tab-title">My Profile</h2>
+                    <p class="tab-description">View and manage your profile information</p>
 
-                <!-- Profile Header -->
-                <div class="form-section profile-header">
-                    <div class="flex items-center gap-6 mb-6">
-                        <div class="w-24 h-24 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center profile-avatar">
-                            <span class="text-3xl font-bold text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-semibold text-white profile-name">{{ user.first_name }} {{ user.last_name }}</h3>
-                            <p class="text-red-400 font-medium profile-username">@{{ user.username }}</p>
-                            <p class="text-gray-400 text-sm">{{ user.get_user_type_display }}</p>
-                            {% if user.is_verified %}
-                            <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                Verified
+                    <!-- Profile Header -->
+                    <div class="profile-header mb-4">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="profile-avatar">
+                                {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
                             </div>
-                            {% endif %}
+                            <div>
+                                <h3 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h3>
+                                <p class="profile-username mb-1">@{{ user.username }}</p>
+                                <p class="text-muted small mb-2">{{ user.get_user_type_display }}</p>
+                                {% if user.is_verified %}
+                                <div class="mt-2 d-inline-flex align-items-center px-3 py-1 rounded-pill bg-success bg-opacity-10 text-success small">
+                                    <i class="bi bi-check-circle-fill me-1"></i>
+                                    Verified
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Personal Information -->
-                <div class="form-section">
-                    <h3 class="section-title">👤 Personal Information</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
+                <div class="settings-card mb-4">
+                    <h3><i class="bi bi-person me-2"></i>Personal Information</h3>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">First Name</label>
-                            <p class="text-white view-field">{{ user.first_name|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.first_name|default:"Not provided" }}</p>
                             <input type="text" name="first_name" value="{{ user.first_name|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Last Name</label>
-                            <p class="text-white view-field">{{ user.last_name|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.last_name|default:"Not provided" }}</p>
                             <input type="text" name="last_name" value="{{ user.last_name|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Email</label>
-                            <p class="text-white">{{ user.email }}</p>
+                            <p class="text-white mb-0">{{ user.email }}</p>
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Phone Number</label>
-                            <p class="text-white view-field">{{ user.phone_number|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.phone_number|default:"Not provided" }}</p>
                             <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Date of Birth</label>
-                            <p class="text-white view-field">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
                             <input type="date" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
                     </div>
                 </div>
 
                 <!-- Blood Donation Info -->
-                <div class="form-section">
-                    <h3 class="section-title">🩸 Blood Donation Information</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
+                <div class="settings-card mb-4">
+                    <h3><i class="bi bi-heart-pulse me-2"></i>Blood Donation Information</h3>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Blood Group</label>
-                            <p class="text-red-400 font-medium text-lg view-field">{{ user.blood_group|default:"Not specified" }}</p>
-                            <select name="blood_group" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                            <p class="text-danger fw-medium fs-5 view-field mb-0">{{ user.blood_group|default:"Not specified" }}</p>
+                            <select name="blood_group" class="form-select edit-field d-none">
                                 <option value="">Select Blood Group</option>
                                 <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
                                 <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
@@ -990,20 +464,20 @@
                                 <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Last Donation Date</label>
-                            <p class="text-white view-field">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
                             <input type="date" name="last_donation_date" value="{{ user.last_donation_date|date:'Y-m-d'|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Days Since Last Donation</label>
-                            <p class="text-white">{{ user.days_since_last_donation|default:"N/A" }} days</p>
+                            <p class="text-white mb-0">{{ user.days_since_last_donation|default:"N/A" }} days</p>
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Availability Status</label>
-                            <p class="text-white view-field">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
-                            <select name="is_available" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                            <p class="text-white view-field mb-0">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
+                            <select name="is_available" class="form-select edit-field d-none">
                                 <option value="true" {% if user.is_available %}selected{% endif %}>Available for donation</option>
                                 <option value="false" {% if not user.is_available %}selected{% endif %}>Not available</option>
                             </select>
@@ -1012,39 +486,39 @@
                 </div>
 
                 <!-- Location Information -->
-                <div class="form-section">
-                    <h3 class="section-title">📍 Location Information</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
+                <div class="settings-card mb-4">
+                    <h3><i class="bi bi-geo-alt me-2"></i>Location Information</h3>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">City</label>
-                            <p class="text-white view-field">{{ user.city|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.city|default:"Not provided" }}</p>
                             <input type="text" name="city" value="{{ user.city|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">State</label>
-                            <p class="text-white view-field">{{ user.state|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.state|default:"Not provided" }}</p>
                             <input type="text" name="state" value="{{ user.state|default:'' }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Country</label>
-                            <p class="text-white view-field">{{ user.country }}</p>
+                            <p class="text-white view-field mb-0">{{ user.country }}</p>
                             <input type="text" name="country" value="{{ user.country }}"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Pincode</label>
-                            <p class="text-white view-field">{{ user.pincode|default:"Not provided" }}</p>
+                            <p class="text-white view-field mb-0">{{ user.pincode|default:"Not provided" }}</p>
                             <input type="text" name="pincode" value="{{ user.pincode|default:'' }}" maxlength="6"
-                                   class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                   class="form-control edit-field d-none" />
                         </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="toggleEditMode()">✏️ Edit Profile</button>
-                    <button class="btn-save" onclick="saveProfile()" style="background: linear-gradient(135deg, #10b981, #059669);">💾 Save Changes</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-outline-light" onclick="toggleEditMode()"><i class="bi bi-pencil me-2"></i>Edit Profile</button>
+                    <button class="btn btn-success-custom" onclick="saveProfile()"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
                 </div>
             </div>
 
@@ -1054,53 +528,53 @@
                 <p class="tab-description">Update your personal information and contact details</p>
 
                 <!-- Basic Info -->
-                <div class="form-section">
-                    <h3 class="section-title">👤 Personal Information</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
+                <div class="settings-card mb-4">
+                    <h3><i class="bi bi-person me-2"></i>Personal Information</h3>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">First Name</label>
-                            <input type="text" class="form-input" id="firstName" value="{{ user.first_name }}" placeholder="Enter first name">
+                            <input type="text" class="form-control" id="firstName" value="{{ user.first_name }}" placeholder="Enter first name">
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Last Name</label>
-                            <input type="text" class="form-input" id="lastName" value="{{ user.last_name }}" placeholder="Enter last name">
+                            <input type="text" class="form-control" id="lastName" value="{{ user.last_name }}" placeholder="Enter last name">
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Email Address</label>
-                            <input type="email" class="form-input" id="email" value="{{ email }}" placeholder="Enter email">
+                            <input type="email" class="form-control" id="email" value="{{ email }}" placeholder="Enter email">
                         </div>
-                        <div class="form-group">
+                        <div class="col-12 col-md-6">
                             <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-input" id="phone" value="{{ phone }}" placeholder="Enter phone number">
+                            <input type="tel" class="form-control" id="phone" value="{{ phone }}" placeholder="Enter phone number">
                         </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="saveAccountSettings()">💾 Save Changes</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="saveAccountSettings()"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
                 </div>
             </div>
 
             <!-- Donor Settings Tab -->
-            <div id="donor" class="tab-content">
+            <div id="donor" class="tab-content" >
                 <h2 class="tab-title">Donor Settings</h2>
                 <p class="tab-description">Manage your donation availability and health information</p>
 
                 <!-- Availability Status -->
-                <div class="form-section">
-                    <h3 class="section-title">🩸 Availability Status</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Current Status</label>
-                            <select class="form-select" id="availabilityStatus">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-heart-pulse me-2"></i>Availability Status</h3>
+                    <div class="row g-3 g-md-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Current Status</label>
+                            <select class="form-select" id="availabilityStatus" >
                                 <option value="available">Available to Donate ✅</option>
                                 <option value="not_available">Not Available ❌</option>
                                 <option value="busy">Busy ⏳</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Blood Group</label>
-                            <select class="form-select" id="bloodGroup">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Blood Group</label>
+                            <select class="form-select" id="bloodGroup" >
                                 <option value="">Select Blood Group</option>
                                 <option value="A+" {% if blood_group == "A+" %}selected{% endif %}>A+</option>
                                 <option value="A-" {% if blood_group == "A-" %}selected{% endif %}>A-</option>
@@ -1116,344 +590,331 @@
                 </div>
 
                 <!-- Donation History -->
-                <div class="form-section">
-                    <h3 class="section-title">📊 Donation Tracking</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Last Donation Date</label>
-                            <input type="date" class="form-input" id="lastDonationDate" value="{{ last_donation_date|date:'Y-m-d' }}">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-graph-up me-2"></i>Donation Tracking</h3>
+                    <div class="row g-3 g-md-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Last Donation Date</label>
+                            <input type="date" class="form-control" id="lastDonationDate" value="{{ last_donation_date|date:'Y-m-d' }}" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Next Eligible Date (Auto-calculated)</label>
-                            <input type="date" class="form-input" id="nextEligibleDate" readonly style="opacity: 0.6;">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Next Eligible Date (Auto-calculated)</label>
+                            <input type="date" class="form-control" id="nextEligibleDate" readonly >
                         </div>
                     </div>
                     
-                    <div class="info-box" style="margin-top: 1.5rem;">
-                        <p>ℹ️ After donating, you must wait 90 days before your next donation to ensure your health and safety.</p>
+                    <div class="alert alert-info mt-4" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>After donating, you must wait 90 days before your next donation to ensure your health and safety.
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="saveDonorSettings()">💾 Save Donor Settings</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="saveDonorSettings()"><i class="bi bi-check-circle me-2"></i>Save Donor Settings</button>
                 </div>
             </div>
 
             <!-- Notifications Tab -->
-            <div id="notifications" class="tab-content">
+            <div id="notifications" class="tab-content" >
                 <h2 class="tab-title">Notification Settings</h2>
                 <p class="tab-description">Control how and when you receive alerts</p>
 
                 <!-- Alert Types -->
-                <div class="form-section">
-                    <h3 class="section-title">🔔 Alert Types</h3>
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-bell me-2"></i>Alert Types</h3>
                     
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Blood Request Alerts</h4>
+                            <h5>Blood Request Alerts</h5>
                             <p>Get notified when someone needs your blood type</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="bloodRequestAlerts" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="bloodRequestAlerts" {% if notification_settings.blood_request_alerts %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Emergency Alerts</h4>
+                            <h5>Emergency Alerts</h5>
                             <p>Immediate notifications for critical emergencies nearby</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="emergencyAlerts" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emergencyAlerts" {% if notification_settings.emergency_alerts %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Donation Reminders</h4>
+                            <h5>Donation Reminders</h5>
                             <p>Reminders when you're eligible to donate again</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="donationReminders" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="donationReminders" {% if notification_settings.donation_reminders %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Chat Messages</h4>
+                            <h5>Chat Messages</h5>
                             <p>Notifications for new messages from requesters</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="chatNotifications" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="chatNotifications" {% if notification_settings.chat_notifications %}checked{% endif %} >
+                        </div>
                     </div>
                 </div>
 
                 <!-- Notification Channels -->
-                <div class="form-section">
-                    <h3 class="section-title">📱 Notification Channels</h3>
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-phone me-2"></i>Notification Channels</h3>
                     
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Email Notifications</h4>
+                            <h5>Email Notifications</h5>
                             <p>Receive alerts via email</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="emailNotifications" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" {% if notification_settings.email_notifications %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>SMS Notifications</h4>
+                            <h5>SMS Notifications</h5>
                             <p>Get text message alerts (may incur charges)</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="smsNotifications">
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="smsNotifications" {% if notification_settings.sms_notifications %}checked{% endif %} >
+                        </div>
                     </div>
                 </div>
 
                 <!-- Quiet Hours -->
-                <div class="form-section">
-                    <h3 class="section-title">🌙 Quiet Hours</h3>
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-moon me-2"></i>Quiet Hours</h3>
                     
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Enable Quiet Hours</h4>
+                            <h5>Enable Quiet Hours</h5>
                             <p>Don't disturb during specific hours</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="quietHoursEnabled">
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="quietHoursEnabled" {% if notification_settings.quiet_hours_enabled %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="form-grid" style="margin-top: 1rem;">
-                        <div class="form-group">
-                            <label class="form-label">Start Time</label>
-                            <input type="time" class="form-input" id="quietHoursStart" value="23:00">
+                    <div class="row g-3 g-md-4 mt-2">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Start Time</label>
+                            <input type="time" class="form-control" id="quietHoursStart" value="{{ notification_settings.quiet_hours_start|time:'H:i' }}" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">End Time</label>
-                            <input type="time" class="form-input" id="quietHoursEnd" value="06:00">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">End Time</label>
+                            <input type="time" class="form-control" id="quietHoursEnd" value="{{ notification_settings.quiet_hours_end|time:'H:i' }}" >
                         </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="saveNotificationSettings()">💾 Save Preferences</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="saveNotificationSettings()"><i class="bi bi-check-circle me-2"></i>Save Preferences</button>
                 </div>
             </div>
 
             <!-- Privacy Tab -->
-            <div id="privacy" class="tab-content">
+            <div id="privacy" class="tab-content" >
                 <h2 class="tab-title">Privacy Settings</h2>
                 <p class="tab-description">Control what information others can see</p>
 
                 <!-- Profile Visibility -->
-                <div class="form-section">
-                    <h3 class="section-title">👁️ Profile Visibility</h3>
-                    <div class="form-group">
-                        <label class="form-label">Who can see your profile?</label>
-                        <select class="form-select" id="profileVisibility">
-                            <option value="public">Public - Everyone can see</option>
-                            <option value="donors_only">Donors Only</option>
-                            <option value="private">Private - Hidden</option>
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-eye me-2"></i>Profile Visibility</h3>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Who can see your profile?</label>
+                        <select class="form-select" id="profileVisibility" >
+                            <option value="public" {% if privacy_settings.profile_visibility == 'public' %}selected{% endif %}>Public - Everyone can see</option>
+                            <option value="donors_only" {% if privacy_settings.profile_visibility == 'donors_only' %}selected{% endif %}>Donors Only</option>
+                            <option value="private" {% if privacy_settings.profile_visibility == 'private' %}selected{% endif %}>Private - Hidden</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Contact Info -->
-                <div class="form-section">
-                    <h3 class="section-title">📞 Contact Information</h3>
-                    
-                    <div class="toggle-group">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-telephone me-2"></i>Contact Information</h3>
+
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Show Phone Number</h4>
+                            <h5>Show Phone Number</h5>
                             <p>Allow others to see your phone number</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="showPhone">
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showPhone" {% if privacy_settings.show_phone_number %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Show Email Address</h4>
+                            <h5>Show Email Address</h5>
                             <p>Display your email on your profile</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="showEmail">
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showEmail" {% if privacy_settings.show_email %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Show Location</h4>
+                            <h5>Show Location</h5>
                             <p>Display your city and state</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="showLocation" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showLocation" {% if privacy_settings.show_location %}checked{% endif %} >
+                        </div>
                     </div>
                 </div>
 
                 <!-- Anonymous Mode -->
-                <div class="form-section">
-                    <h3 class="section-title">🎭 Anonymous Mode</h3>
-                    
-                    <div class="toggle-group">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-incognito me-2"></i>Anonymous Mode</h3>
+
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Enable Anonymous Mode</h4>
+                            <h5>Enable Anonymous Mode</h5>
                             <p>Hide your identity until you accept a request</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="anonymousMode">
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="anonymousMode" {% if privacy_settings.anonymous_mode %}checked{% endif %} >
+                        </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="savePrivacySettings()">💾 Save Privacy Settings</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="savePrivacySettings()"><i class="bi bi-check-circle me-2"></i>Save Privacy Settings</button>
                 </div>
             </div>
 
             <!-- Security Tab -->
-            <div id="security" class="tab-content">
+            <div id="security" class="tab-content" >
                 <h2 class="tab-title">Security Settings</h2>
                 <p class="tab-description">Protect your account with advanced security</p>
 
                 <!-- Change Password -->
-                <div class="form-section">
-                    <h3 class="section-title">🔐 Change Password</h3>
-                    <div class="form-grid">
-                        <div class="form-group full-width">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-shield-lock me-2"></i>Change Password</h3>
+                    <div class="row g-3 g-md-4">
+                        <div class="col-12">
+                            <label class="form-label text-white-50">Current Password</label>
+                            <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">New Password</label>
-                            <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-white-50">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" >
                         </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="changePassword()">🔐 Update Password</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="changePassword()"><i class="bi bi-shield-check me-2"></i>Update Password</button>
                 </div>
             </div>
 
             <!-- Location Tab -->
-            <div id="location" class="tab-content">
+            <div id="location" class="tab-content" >
                 <h2 class="tab-title">Location Settings</h2>
                 <p class="tab-description">Manage your location for better donor matching</p>
 
                 <!-- Location Info -->
-                <div class="form-section">
-                    <h3 class="section-title">📍 Current Location</h3>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">City</label>
-                            <input type="text" class="form-input" id="city" value="{{ city }}" placeholder="Enter your city">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-geo-alt me-2"></i>Current Location</h3>
+                    <div class="row g-3 g-md-4">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-white-50">City</label>
+                            <input type="text" class="form-control" id="city" value="{{ city }}" placeholder="Enter your city" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">State</label>
-                            <input type="text" class="form-input" id="state" value="{{ state }}" placeholder="Enter your state">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-white-50">State</label>
+                            <input type="text" class="form-control" id="state" value="{{ state }}" placeholder="Enter your state" >
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Pincode</label>
-                            <input type="text" class="form-input" id="pincode" value="{{ pincode }}" placeholder="Enter pincode" maxlength="6">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-white-50">Pincode</label>
+                            <input type="text" class="form-control" id="pincode" value="{{ pincode }}" placeholder="Enter pincode" maxlength="6" >
                         </div>
                     </div>
                 </div>
 
                 <!-- Search Radius -->
-                <div class="form-section">
-                    <h3 class="section-title">🎯 Search Radius</h3>
-                    <div class="form-group">
-                        <label class="form-label">Default search radius for nearby donors/requests</label>
-                        <select class="form-select" id="searchRadius">
-                            <option value="5">5 km - Very Local</option>
-                            <option value="10">10 km - Local</option>
-                            <option value="25" selected>25 km - Recommended</option>
-                            <option value="50">50 km - Regional</option>
-                            <option value="100">100 km - Wide Area</option>
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-bullseye me-2"></i>Search Radius</h3>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Default search radius for nearby donors/requests</label>
+                        <select class="form-select" id="searchRadius" >
+                            <option value="5" {% if notification_settings.search_radius_km == 5 %}selected{% endif %}>5 km - Very Local</option>
+                            <option value="10" {% if notification_settings.search_radius_km == 10 %}selected{% endif %}>10 km - Local</option>
+                            <option value="25" {% if notification_settings.search_radius_km == 25 %}selected{% endif %}>25 km - Recommended</option>
+                            <option value="50" {% if notification_settings.search_radius_km == 50 %}selected{% endif %}>50 km - Regional</option>
+                            <option value="100" {% if notification_settings.search_radius_km == 100 %}selected{% endif %}>100 km - Wide Area</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Location Sharing -->
-                <div class="form-section">
-                    <h3 class="section-title">🛰️ Location Sharing</h3>
-                    
-                    <div class="toggle-group">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-satellite me-2"></i>Location Sharing</h3>
+
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Enable Location Sharing</h4>
+                            <h5>Enable Location Sharing</h5>
                             <p>Allow the system to use your location for matching</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="locationSharing" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="locationSharing" {% if privacy_settings.location_sharing_enabled %}checked{% endif %} >
+                        </div>
                     </div>
 
-                    <div class="toggle-group">
+                    <div class="toggle-item">
                         <div class="toggle-info">
-                            <h4>Live Location During Emergencies</h4>
+                            <h5>Live Location During Emergencies</h5>
                             <p>Share real-time location only during active emergency requests</p>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="liveLocationEmergency" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="liveLocationEmergency" {% if privacy_settings.live_location_during_emergency %}checked{% endif %} >
+                        </div>
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="saveLocationSettings()">💾 Save Location</button>
-                    <button class="btn-save" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);" onclick="detectLocation()">📍 Auto-Detect Location</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="saveLocationSettings()"><i class="bi bi-check-circle me-2"></i>Save Location</button>
+                    <button class="btn btn-primary-custom" onclick="detectLocation()"><i class="bi bi-geo me-2"></i>Auto-Detect Location</button>
                 </div>
             </div>
 
             <!-- UI Preferences Tab -->
-            <div id="ui" class="tab-content">
+            <div id="ui" class="tab-content" >
                 <h2 class="tab-title">UI Preferences</h2>
                 <p class="tab-description">Customize your interface appearance and experience</p>
 
                 <!-- Theme Selection -->
-                <div class="form-section">
-                    <h3 class="section-title">🎨 Theme</h3>
-                    <div class="form-group">
-                        <label class="form-label">Select your preferred theme</label>
-                        <select class="form-select" id="themeSelect">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-palette me-2"></i>Theme</h3>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Select your preferred theme</label>
+                        <select class="form-select" id="themeSelect" >
                             <option value="dark" {% if user.theme == 'dark' %}selected{% endif %}>🌙 Dark Mode</option>
                             <option value="light" {% if user.theme == 'light' %}selected{% endif %}>☀️ Light Mode</option>
                         </select>
-                        <p class="text-gray-400 text-sm mt-2">Dark mode is easier on the eyes in low light. Light mode is better for bright environments.</p>
+                        <p class="text-muted small mt-2">Dark mode is easier on the eyes in low light. Light mode is better for bright environments.</p>
                     </div>
                 </div>
 
                 <!-- Font Size -->
-                <div class="form-section">
-                    <h3 class="section-title">📝 Font Size</h3>
-                    <div class="form-group">
-                        <label class="form-label">Text size preference</label>
-                        <select class="form-select" id="fontSize">
+                <div class="settings-card mb-4">
+                    <h3 class="section-title"><i class="bi bi-text-paragraph me-2"></i>Font Size</h3>
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Text size preference</label>
+                        <select class="form-select" id="fontSize" >
                             <option value="small">Small</option>
                             <option value="medium" selected>Medium (Default)</option>
                             <option value="large">Large</option>
@@ -1461,28 +922,36 @@
                     </div>
                 </div>
 
-                <div class="button-group">
-                    <button class="btn-save" onclick="saveUISettings()">💾 Save UI Preferences</button>
+                <div class="d-flex gap-3">
+                    <button class="btn btn-success-custom" onclick="saveUISettings()"><i class="bi bi-check-circle me-2"></i>Save UI Preferences</button>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<!-- Hidden CSRF token for JavaScript -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+
 <script>
 // Tab Navigation
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
         // Remove active class from all items
-        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(nav => {
+            nav.classList.remove('active');
+        });
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
 
         // Add active class to clicked item
         this.classList.add('active');
         const tabId = this.getAttribute('data-tab');
-        document.getElementById(tabId).classList.add('active');
+        const targetTab = document.getElementById(tabId);
+        if (targetTab) {
+            targetTab.classList.add('active');
+        }
     });
 });
 
@@ -1525,7 +994,7 @@ async function saveProfile() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1558,7 +1027,7 @@ async function saveAccountSettings() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1587,7 +1056,7 @@ async function saveDonorSettings() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1623,7 +1092,7 @@ async function saveNotificationSettings() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1654,7 +1123,7 @@ async function savePrivacySettings() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1696,7 +1165,7 @@ async function changePassword() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify({
                 current_password: currentPassword,
@@ -1736,7 +1205,7 @@ async function saveLocationSettings() {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(data)
         });
@@ -1799,22 +1268,31 @@ function calculateNextEligibleDate() {
 
 // Save UI Settings
 async function saveUISettings() {
+    const csrfToken = getCSRFToken();
+    if (!csrfToken) {
+        showNotification('❌ Security token missing. Please refresh the page.', 'error');
+        return;
+    }
+
     const data = {
         theme: document.getElementById('themeSelect').value,
         font_size: document.getElementById('fontSize').value
     };
 
     try {
+        console.log('Saving UI settings with CSRF token:', csrfToken.substring(0, 10) + '...');
         const response = await fetch('/api/accounts/settings/update/', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify(data)
         });
 
+        console.log('Response status:', response.status);
         const result = await response.json();
+        
         if (result.success) {
             showNotification('✅ UI preferences saved! Reloading page...', 'success');
             // Reload page to apply theme changes
@@ -1823,7 +1301,8 @@ async function saveUISettings() {
             showNotification('❌ ' + result.message, 'error');
         }
     } catch (error) {
-        showNotification('❌ Failed to update UI preferences', 'error');
+        console.error('Error saving UI settings:', error);
+        showNotification('❌ Failed to update UI preferences: ' + error.message, 'error');
     }
 }
 
@@ -1862,6 +1341,7 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
+            // Check if cookie name matches
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -1871,8 +1351,40 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Get CSRF Token - Fallback to hidden input
+function getCSRFToken() {
+    // Try to get from cookie first
+    const cookieToken = getCookie('csrftoken');
+    if (cookieToken) {
+        return cookieToken;
+    }
+    
+    // Fallback to hidden input
+    const hiddenInput = document.getElementById('csrf_token');
+    if (hiddenInput) {
+        return hiddenInput.value;
+    }
+    
+    // Last resort: try to get from meta tag
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        return metaTag.getAttribute('content');
+    }
+    
+    console.error('CSRF token not found!');
+    return null;
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
     calculateNextEligibleDate();
 });
 </script>

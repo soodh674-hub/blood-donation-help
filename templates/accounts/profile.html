@@ -3,119 +3,130 @@
 
 {% block title %}My Profile - BloodLife{% endblock %}
 
-{% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-12">
-    <div class="max-w-4xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl animate-on-scroll">
-            <div class="flex items-center justify-between mb-8">
-                <h1 class="text-3xl font-bold text-white">My Profile</h1>
-                <div class="flex gap-3">
-                    <a href="/requests/my-requests/" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
-                        Track Requests
-                    </a>
-                    <a href="/accounts/dashboard/" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
-                        Back to Dashboard
-                    </a>
-                </div>
-            </div>
+{% block extra_css %}
+<style>
+    .profile-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+    }
+    .info-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+{% block content %}
+<div class="container py-5" data-aos="fade-in" data-aos-duration="800">
+    <div class="profile-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down" data-aos-delay="200">
+            <h1 class="h3 fw-bold text-white">My Profile</h1>
+            <div class="d-flex gap-2">
+                <a href="/requests/my-requests/" class="btn btn-primary">
+                    Track Requests
+                </a>
+                <a href="/accounts/dashboard/" class="btn btn-danger">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4" data-aos="fade-up" data-aos-delay="300">
                 <!-- Profile Picture and Basic Info -->
-                <div class="md:col-span-1">
-                    <div class="bg-white/10 rounded-xl p-6 text-center">
-                        <div class="w-24 h-24 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span class="text-3xl font-bold text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+                <div class="col-md-4">
+                    <div class="info-card p-4 p-md-5 text-center" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <span class="display-6 fw-bold text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+                            </div>
                         </div>
-                        <h2 class="text-xl font-semibold text-white">{{ user.first_name }} {{ user.last_name }}</h2>
-                        <p class="text-red-400 font-medium">@{{ user.username }}</p>
-                        <p class="text-gray-400 text-sm mt-2">{{ user.get_user_type_display }}</p>
+                        <h4 class="text-white">{{ user.first_name }} {{ user.last_name }}</h4>
+                        <p class="text-danger fw-medium">@{{ user.username }}</p>
+                        <p class="text-secondary small mt-2">{{ user.get_user_type_display }}</p>
                         
                         <!-- Age Display -->
                         {% if user.age %}
-                        <p class="text-gray-300 text-sm mt-1">Age: {{ user.age }} years</p>
+                        <p class="text-secondary small mt-1">Age: {{ user.age }} years</p>
                         {% endif %}
                         
                         <!-- Donation Eligibility Status -->
                         {% if user.user_type == 'donor' %}
                         <div class="mt-3">
                             {% if user.is_eligible_donor %}
-                            <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                Eligible to Donate
-                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-check-circle me-1"></i>Eligible to Donate
+                            </span>
                             {% else %}
-                            <div class="inline-flex items-center px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-sm">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                </svg>
-                                Not Eligible
-                            </div>
+                            <span class="badge bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-x-circle me-1"></i>Not Eligible
+                            </span>
                             {% endif %}
                         </div>
                         {% endif %}
                         
                         {% if user.is_verified %}
-                        <div class="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            Verified
+                        <div class="mt-3">
+                            <span class="badge bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-check-circle me-1"></i>Verified
+                            </span>
                         </div>
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Profile Details -->
-                <div class="md:col-span-2">
-                    <div class="space-y-6">
+                <div class="col-md-8">
+                    <div class="mb-4" data-aos="fade-left" data-aos-delay="400">
                         <!-- CSRF Token -->
                         {% csrf_token %}
                         
                         <!-- Personal Information -->
-                        <div class="bg-white/5 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4">Personal Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">First Name</label>
-                                    <p class="text-white view-field">{{ user.first_name|default:"Not provided" }}</p>
+                        <div class="info-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="450">
+                            <h5 class="text-white mb-3">Personal Information</h5>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">First Name</label>
+                                    <p class="text-white view-field mb-0">{{ user.first_name|default:"Not provided" }}</p>
                                     <input type="text" name="first_name" value="{{ user.first_name|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Last Name</label>
-                                    <p class="text-white view-field">{{ user.last_name|default:"Not provided" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Last Name</label>
+                                    <p class="text-white view-field mb-0">{{ user.last_name|default:"Not provided" }}</p>
                                     <input type="text" name="last_name" value="{{ user.last_name|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>
-                                    <p class="text-white">{{ user.email }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Email</label>
+                                    <p class="text-white mb-0">{{ user.email }}</p>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Phone Number</label>
-                                    <p class="text-white view-field">{{ user.phone_number|default:"Not provided" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Phone Number</label>
+                                    <p class="text-white view-field mb-0">{{ user.phone_number|default:"Not provided" }}</p>
                                     <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Date of Birth</label>
-                                    <p class="text-white view-field">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Date of Birth</label>
+                                    <p class="text-white view-field mb-0">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
                                     <input type="date" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
                             </div>
                         </div>
 
                         <!-- Blood Donation Info -->
-                        <div class="bg-white/5 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4">Blood Donation Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Blood Group</label>
-                                    <p class="text-red-400 font-medium text-lg view-field">{{ user.blood_group|default:"Not specified" }}</p>
-                                    <select name="blood_group" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                        <div class="info-card p-4 mb-4">
+                            <h5 class="text-white mb-3">Blood Donation Information</h5>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Blood Group</label>
+                                    <p class="text-danger fw-medium fs-5 view-field mb-0">{{ user.blood_group|default:"Not specified" }}</p>
+                                    <select name="blood_group" class="form-select bg-white bg-opacity-10 text-white border-white/20 edit-field d-none">
                                         <option value="">Select Blood Group</option>
                                         <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
                                         <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
@@ -127,20 +138,20 @@
                                         <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Last Donation Date</label>
-                                    <p class="text-white view-field">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Last Donation Date</label>
+                                    <p class="text-white view-field mb-0">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
                                     <input type="date" name="last_donation_date" value="{{ user.last_donation_date|date:'Y-m-d'|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Days Since Last Donation</label>
-                                    <p class="text-white">{{ user.days_since_last_donation|default:"N/A" }} days</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Days Since Last Donation</label>
+                                    <p class="text-white mb-0">{{ user.days_since_last_donation|default:"N/A" }} days</p>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Availability Status</label>
-                                    <p class="text-white view-field">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
-                                    <select name="is_available" class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden">
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Availability Status</label>
+                                    <p class="text-white view-field mb-0">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
+                                    <select name="is_available" class="form-select bg-white bg-opacity-10 text-white border-white/20 edit-field d-none">
                                         <option value="true" {% if user.is_available %}selected{% endif %}>Available for donation</option>
                                         <option value="false" {% if not user.is_available %}selected{% endif %}>Not available</option>
                                     </select>
@@ -149,45 +160,45 @@
                         </div>
 
                         <!-- Location Information -->
-                        <div class="bg-white/5 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-white mb-4">Location Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">City</label>
-                                    <p class="text-white view-field">{{ user.city|default:"Not provided" }}</p>
+                        <div class="info-card p-4 mb-4">
+                            <h5 class="text-white mb-3">Location Information</h5>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">City</label>
+                                    <p class="text-white view-field mb-0">{{ user.city|default:"Not provided" }}</p>
                                     <input type="text" name="city" value="{{ user.city|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">State</label>
-                                    <p class="text-white view-field">{{ user.state|default:"Not provided" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">State</label>
+                                    <p class="text-white view-field mb-0">{{ user.state|default:"Not provided" }}</p>
                                     <input type="text" name="state" value="{{ user.state|default:'' }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Country</label>
-                                    <p class="text-white view-field">{{ user.country }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Country</label>
+                                    <p class="text-white view-field mb-0">{{ user.country }}</p>
                                     <input type="text" name="country" value="{{ user.country }}" 
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-400 mb-1">Pincode</label>
-                                    <p class="text-white view-field">{{ user.pincode|default:"Not provided" }}</p>
+                                <div class="col-12 col-md-6">
+                                    <label class="text-secondary small mb-1">Pincode</label>
+                                    <p class="text-white view-field mb-0">{{ user.pincode|default:"Not provided" }}</p>
                                     <input type="text" name="pincode" value="{{ user.pincode|default:'' }}" maxlength="6"
-                                           class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 edit-field hidden" />
+                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
                                 </div>
                             </div>
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex flex-wrap gap-4 pt-4">
-                            <button onclick="toggleEditMode()" id="edit-toggle-btn" class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 border border-white/20">
+                        <div class="d-flex flex-wrap gap-2 pt-3">
+                            <button onclick="toggleEditMode()" id="edit-toggle-btn" class="btn btn-outline-light">
                                 Edit Profile
                             </button>
-                            <button onclick="saveProfile()" id="save-btn" class="hidden bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+                            <button onclick="saveProfile()" id="save-btn" class="btn btn-success d-none">
                                 Save Changes
                             </button>
-                            <button onclick="cancelEdit()" id="cancel-btn" class="hidden bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 border border-white/20">
+                            <button onclick="cancelEdit()" id="cancel-btn" class="btn btn-outline-secondary d-none">
                                 Cancel
                             </button>
                         </div>
@@ -214,12 +225,12 @@ function toggleEditMode() {
     
     if (isEditing) {
         // Switch to edit mode
-        viewFields.forEach(field => field.classList.add('hidden'));
-        editFields.forEach(field => field.classList.remove('hidden'));
+        viewFields.forEach(field => field.classList.add('d-none'));
+        editFields.forEach(field => field.classList.remove('d-none'));
         
-        editToggleBtn.classList.add('hidden');
-        saveBtn.classList.remove('hidden');
-        cancelBtn.classList.remove('hidden');
+        editToggleBtn.classList.add('d-none');
+        saveBtn.classList.remove('d-none');
+        cancelBtn.classList.remove('d-none');
         
         // Store original data for cancellation
         storeOriginalData();
@@ -227,12 +238,12 @@ function toggleEditMode() {
         editToggleBtn.textContent = 'Cancel Editing';
     } else {
         // Switch to view mode
-        viewFields.forEach(field => field.classList.remove('hidden'));
-        editFields.forEach(field => field.classList.add('hidden'));
+        viewFields.forEach(field => field.classList.remove('d-none'));
+        editFields.forEach(field => field.classList.add('d-none'));
         
-        editToggleBtn.classList.remove('hidden');
-        saveBtn.classList.add('hidden');
-        cancelBtn.classList.add('hidden');
+        editToggleBtn.classList.remove('d-none');
+        saveBtn.classList.add('d-none');
+        cancelBtn.classList.add('d-none');
         
         editToggleBtn.textContent = 'Edit Profile';
     }
@@ -509,26 +520,21 @@ function showMessage(message, type = 'info') {
     
     // Create message element
     const messageDiv = document.createElement('div');
-    messageDiv.className = `profile-message fixed top-20 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out max-w-sm ${
-        type === 'success' ? 'bg-green-500' : 
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-    } text-white animate-fade-in-up`;
+    const alertClass = type === 'success' ? 'alert-success' : 
+                       type === 'error' ? 'alert-danger' : 'alert-info';
+    messageDiv.className = `profile-message alert ${alertClass} position-fixed top-0 end-0 m-3 p-3 rounded-3 shadow-lg`;
+    messageDiv.style.cssText = 'z-index: 9999; max-width: 400px; animation: fadeInUp 0.3s ease-out;';
+    
+    const iconHtml = type === 'success' ? '<i class="bi bi-check-circle me-2"></i>' :
+                     type === 'error' ? '<i class="bi bi-exclamation-triangle me-2"></i>' :
+                     '<i class="bi bi-info-circle me-2"></i>';
     
     messageDiv.innerHTML = `
-        <div class="flex items-center">
-            ${type === 'success' ? 
-                '<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
-            type === 'error' ? 
-                '<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
-                '<svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-            }
+        <div class="d-flex align-items-center">
+            ${iconHtml}
             <span>${message}</span>
         </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="absolute top-2 right-2 text-white hover:text-gray-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
+        <button class="btn-close btn-close-white position-absolute top-0 end-0 m-2" onclick="this.parentElement.remove()"></button>
     `;
     
     // Add to document
@@ -544,6 +550,15 @@ function showMessage(message, type = 'info') {
 
 // Add CSS for animations if not already present
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+    
     if (!document.querySelector('#profile-animation-styles')) {
         const style = document.createElement('style');
         style.id = 'profile-animation-styles';

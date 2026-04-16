@@ -1,9 +1,9 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="description" content="BloodLife helps you find blood donors near you quickly. Request blood online and save lives with our real-time donor network across India.">
     <meta name="keywords" content="blood donor near me, emergency blood request, online blood donation system, find blood donors, blood donation India, urgent blood required">
     <meta name="author" content="BloodLife">
@@ -25,1390 +25,1194 @@
     <title>{% block title %}BloodLife – Donate Blood, Save Lives{% endblock %}</title>
     
     <!-- Favicon -->
-    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="/static/favicon.ico">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{% static 'favicon.ico' %}">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
-    <meta name="theme-color" content="#f87171">
+    <meta name="theme-color" content="#dc3545">
     
-    <!-- UIkit CSS Framework - Local Files with CDN Fallback -->
-    <link rel="stylesheet" href="{% static 'css/uikit.min.css' %}" 
-          onerror="this.href='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/css/uikit.min.css'" />
-
-    <!-- UIkit JS - Local Files with CDN Fallback -->
-    <script src="{% static 'js/uikit.min.js' %}" 
-            onerror="this.src='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit.min.js'"></script>
-    <script src="{% static 'js/uikit-icons.min.js' %}" 
-            onerror="this.src='https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit-icons.min.js'"></script>
-
-    <!-- Fallback check: Load from CDN if local files fail -->
-    <script>
-        (function() {
-            if (typeof UIkit === 'undefined') {
-                var script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit.min.js';
-                script.onload = function() {
-                    var iconScript = document.createElement('script');
-                    iconScript.src = 'https://cdn.jsdelivr.net/npm/uikit@3.16.22/dist/js/uikit-icons.min.js';
-                    document.head.appendChild(iconScript);
-                };
-                document.head.appendChild(script);
-            }
-        })();
-    </script>
-
-    <!-- Custom CSS for UIkit customization -->
-    <style>
-        /* UIkit Dark Theme Customization */
-        :root {
-            --uk-background: #0a0a0f;
-            --uk-text: #ffffff;
-            --uk-primary: #f87171;
-            --uk-secondary: #fb7185;
-        }
-
-        body {
-            background-color: var(--uk-background);
-            color: var(--uk-text);
-        }
-
-        /* Custom gradient utilities */
-        .uk-gradient-red {
-            background: linear-gradient(135deg, #f87171 0%, #fb7185 50%, #ff9500 100%);
-        }
-
-        .uk-gradient-dark {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-
-        /* Glass morphism effect */
-        .uk-glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Custom card styles */
-        .uk-card-custom {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-        }
-
-        /* Custom button styles */
-        .uk-button-red {
-            background: linear-gradient(135deg, #f87171, #fb7185);
-            color: white;
-            border: none;
-        }
-
-        .uk-button-red:hover {
-            background: linear-gradient(135deg, #ef4444, #f472b6);
-            color: white;
-        }
-    </style>
-
-    <!-- Alpine.js - Local File with CDN Fallback -->
-    <script defer src="{% static 'js/alpine.min.js' %}" 
-            onerror="this.src='https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js'"></script>
-
-    <!-- GSAP - Local Files with CDN Fallback -->
-    <script defer src="{% static 'js/gsap.min.js' %}" 
-            onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'"></script>
-    <script defer src="{% static 'js/ScrollTrigger.min.js' %}" 
-            onerror="this.src='https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js'"></script>
-
-    <!-- Fallback check: Load from CDN if local files fail -->
-    <script>
-        (function() {
-            if (typeof Alpine === 'undefined') {
-                var script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js';
-                script.defer = true;
-                document.head.appendChild(script);
-            }
-            if (typeof gsap === 'undefined') {
-                var gsapScript = document.createElement('script');
-                gsapScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js';
-                gsapScript.onload = function() {
-                    var triggerScript = document.createElement('script');
-                    triggerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js';
-                    document.head.appendChild(triggerScript);
-                };
-                document.head.appendChild(gsapScript);
-            }
-        })();
-    </script>
+    <!-- Bootstrap 5 CSS - Local Files -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     
-    <!-- Leaflet.js for Maps - LOCAL FILES to prevent storage block warnings -->
-    <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}" />
-    <script src="{% static 'leaflet/leaflet.js' %}"></script>
+    <!-- Bootstrap Icons - Local Files -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
 
-    <!-- Tailwind CSS - Local File with CDN Fallback -->
-    <link rel="stylesheet" href="{% static 'css/tailwind-fallback.css' %}" 
-          onerror="this.href='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css'">
+
+    <!-- Leaflet CSS - FREE OpenStreetMap alternative (No API key required) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <!-- Leaflet JS - FREE OpenStreetMap (No API key needed) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
 
     <!-- Custom styles -->
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    
+    <!-- Global Responsive Styles -->
+    <link rel="stylesheet" href="{% static 'css/responsive-global.css' %}">
 
     <!-- Extra CSS for specific pages -->
     {% block extra_css %}{% endblock %}
     
-    <!-- Critical CSS to ensure page visibility -->
+    <!-- Bootstrap Custom Styles - Original UI Design -->
     <style>
-        /* FORCE PAGE VISIBILITY */
-        html, body {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: block !important;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a1f2e;
+            --bg-tertiary: #252b3d;
+            --neon-red: #ff3b3b;
+            --neon-coral: #ff6b6b;
+            --neon-orange: #ff9500;
+            --accent-blue: #3b82f6;
+            --accent-blue-light: #60a5fa;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.75);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* =========================================
+           GLOBAL RESPONSIVE BASE RULES
+           Applied to ALL pages automatically
+           ========================================= */
+
+        /* 1. Prevent horizontal scroll on small devices */
+        html {
             overflow-x: hidden;
-        }
-        
-        /* Mobile button fix - prevents overflow on all pages */
-        @media (max-width: 768px) {
-            button, .btn, input[type="submit"], input[type="button"], a.btn,
-            .hero-btn, .cta-btn, .action-btn {
-                width: 100%;
-                max-width: 100%;
-                box-sizing: border-box;
-            }
+            scroll-behavior: smooth;
         }
 
-        /* === TAILWIND REPLACEMENT UTILITIES === */
-        
-        /* Container utilities */
-        .container, .max-w-7xl, .max-w-6xl, .max-w-5xl, .max-w-4xl, .max-w-3xl, .max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm {
-            margin-left: auto;
-            margin-right: auto;
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-        .max-w-7xl { max-width: 80rem; }
-        .max-w-6xl { max-width: 72rem; }
-        .max-w-5xl { max-width: 64rem; }
-        .max-w-4xl { max-width: 56rem; }
-        .max-w-3xl { max-width: 48rem; }
-        .max-w-2xl { max-width: 42rem; }
-        .max-w-xl { max-width: 36rem; }
-        .max-w-lg { max-width: 32rem; }
-        .max-w-md { max-width: 28rem; }
-        .max-w-sm { max-width: 24rem; }
-
-        /* Flexbox utilities */
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .flex-row { flex-direction: row; }
-        .flex-wrap { flex-wrap: wrap; }
-        .items-center { align-items: center; }
-        .items-start { align-items: flex-start; }
-        .items-end { align-items: flex-end; }
-        .justify-center { justify-content: center; }
-        .justify-start { justify-content: flex-start; }
-        .justify-end { justify-content: flex-end; }
-        .justify-between { justify-content: space-between; }
-        .justify-around { justify-content: space-around; }
-        .flex-1 { flex: 1; }
-        .flex-grow { flex-grow: 1; }
-        .flex-shrink { flex-shrink: 1; }
-        .flex-shrink-0 { flex-shrink: 0; }
-
-        /* Grid utilities */
-        .grid { display: grid; }
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        .grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-        .grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-        .gap-2 { gap: 0.5rem; }
-        .gap-4 { gap: 1rem; }
-        .gap-6 { gap: 1.5rem; }
-        .gap-8 { gap: 2rem; }
-
-        /* Spacing utilities - Padding */
-        .p-0 { padding: 0; }
-        .p-2 { padding: 0.5rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .p-8 { padding: 2rem; }
-        .p-12 { padding: 3rem; }
-        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .px-8 { padding-left: 2rem; padding-right: 2rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
-        .pt-2 { padding-top: 0.5rem; }
-        .pt-4 { padding-top: 1rem; }
-        .pt-6 { padding-top: 1.5rem; }
-        .pt-8 { padding-top: 2rem; }
-        .pb-2 { padding-bottom: 0.5rem; }
-        .pb-4 { padding-bottom: 1rem; }
-        .pb-6 { padding-bottom: 1.5rem; }
-        .pb-8 { padding-bottom: 2rem; }
-        .pl-2 { padding-left: 0.5rem; }
-        .pl-4 { padding-left: 1rem; }
-        .pr-2 { padding-right: 0.5rem; }
-        .pr-4 { padding-right: 1rem; }
-
-        /* Spacing utilities - Margin */
-        .m-0 { margin: 0; }
-        .m-2 { margin: 0.5rem; }
-        .m-4 { margin: 1rem; }
-        .m-6 { margin: 1.5rem; }
-        .m-8 { margin: 2rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .my-2 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
-        .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
-        .my-6 { margin-top: 1.5rem; margin-bottom: 1.5rem; }
-        .my-8 { margin-top: 2rem; margin-bottom: 2rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .mt-8 { margin-top: 2rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .ml-4 { margin-left: 1rem; }
-        .mr-2 { margin-right: 0.5rem; }
-        .mr-4 { margin-right: 1rem; }
-
-        /* Width utilities */
-        .w-full { width: 100%; }
-        .w-1\/2 { width: 50%; }
-        .w-1\/3 { width: 33.333333%; }
-        .w-2\/3 { width: 66.666667%; }
-        .w-1\/4 { width: 25%; }
-        .w-3\/4 { width: 75%; }
-        .w-auto { width: auto; }
-        .w-screen { width: 100vw; }
-
-        /* Height utilities */
-        .h-full { height: 100%; }
-        .h-screen { height: 100vh; }
-        .h-auto { height: auto; }
-        .h-8 { height: 2rem; }
-        .h-10 { height: 2.5rem; }
-        .h-12 { height: 3rem; }
-        .h-16 { height: 4rem; }
-        .h-20 { height: 5rem; }
-
-        /* Text alignment */
-        .text-left { text-align: left; }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-
-        /* Font size */
-        .text-xs { font-size: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .text-base { font-size: 1rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-3xl { font-size: 1.875rem; }
-        .text-4xl { font-size: 2.25rem; }
-        .text-5xl { font-size: 3rem; }
-
-        /* Font weight */
-        .font-light { font-weight: 300; }
-        .font-normal { font-weight: 400; }
-        .font-medium { font-weight: 500; }
-        .font-semibold { font-weight: 600; }
-        .font-bold { font-weight: 700; }
-
-        /* Colors - Text */
-        .text-white { color: #ffffff; }
-        .text-gray-100 { color: #f3f4f6; }
-        .text-gray-200 { color: #e5e7eb; }
-        .text-gray-300 { color: #d1d5db; }
-        .text-gray-400 { color: #9ca3af; }
-        .text-gray-500 { color: #6b7280; }
-        .text-gray-600 { color: #4b5563; }
-        .text-gray-700 { color: #374151; }
-        .text-gray-800 { color: #1f2937; }
-        .text-gray-900 { color: #111827; }
-        .text-red-500 { color: #ef4444; }
-        .text-red-600 { color: #dc2626; }
-        .text-red-700 { color: #b91c1c; }
-        .text-green-500 { color: #10b981; }
-        .text-green-600 { color: #059669; }
-        .text-blue-500 { color: #3b82f6; }
-        .text-blue-600 { color: #2563eb; }
-
-        /* Colors - Background */
-        .bg-white { background-color: #ffffff; }
-        .bg-gray-100 { background-color: #f3f4f6; }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .bg-gray-300 { background-color: #d1d5db; }
-        .bg-gray-400 { background-color: #9ca3af; }
-        .bg-gray-500 { background-color: #6b7280; }
-        .bg-gray-600 { background-color: #4b5563; }
-        .bg-gray-700 { background-color: #374151; }
-        .bg-gray-800 { background-color: #1f2937; }
-        .bg-gray-900 { background-color: #111827; }
-        .bg-red-500 { background-color: #ef4444; }
-        .bg-red-600 { background-color: #dc2626; }
-        .bg-red-700 { background-color: #b91c1c; }
-        .bg-green-500 { background-color: #10b981; }
-        .bg-green-600 { background-color: #059669; }
-        .bg-blue-500 { background-color: #3b82f6; }
-        .bg-blue-600 { background-color: #2563eb; }
-        .bg-transparent { background-color: transparent; }
-
-        /* Rounded corners */
-        .rounded-none { border-radius: 0; }
-        .rounded-sm { border-radius: 0.125rem; }
-        .rounded { border-radius: 0.25rem; }
-        .rounded-md { border-radius: 0.375rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .rounded-3xl { border-radius: 1.5rem; }
-        .rounded-full { border-radius: 9999px; }
-
-        /* Shadows */
-        .shadow-none { box-shadow: none; }
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
-        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-
-        /* Display */
-        .block { display: block; }
-        .inline-block { display: inline-block; }
-        .inline { display: inline; }
-        .hidden { display: none; }
-
-        /* Position */
-        .relative { position: relative; }
-        .absolute { position: absolute; }
-        .fixed { position: fixed; }
-        .sticky { position: sticky; }
-
-        /* Overflow */
-        .overflow-hidden { overflow: hidden; }
-        .overflow-auto { overflow: auto; }
-        .overflow-x-hidden { overflow-x: hidden; }
-        .overflow-y-auto { overflow-y: auto; }
-
-        /* Cursor */
-        .cursor-pointer { cursor: pointer; }
-        .cursor-not-allowed { cursor: not-allowed; }
-
-        /* Transition */
-        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .duration-200 { transition-duration: 200ms; }
-        .duration-300 { transition-duration: 300ms; }
-        .ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-
-        /* Transform */
-        .transform { transform: translateX(0) translateY(0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }
-        .scale-95 { transform: scale(0.95); }
-        .scale-100 { transform: scale(1); }
-        .scale-105 { transform: scale(1.05); }
-
-        /* Opacity */
-        .opacity-0 { opacity: 0; }
-        .opacity-50 { opacity: 0.5; }
-        .opacity-75 { opacity: 0.75; }
-        .opacity-100 { opacity: 1; }
-
-        /* Z-index */
-        .z-0 { z-index: 0; }
-        .z-10 { z-index: 10; }
-        .z-20 { z-index: 20; }
-        .z-30 { z-index: 30; }
-        .z-40 { z-index: 40; }
-        .z-50 { z-index: 50; }
-
-        /* Large screen layout fix - ONLY target .container class */
-        .container {
-            max-width: 1280px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Mobile layout optimization */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            /* Fix button overflow on mobile */
-            .hero-btn,
-            button,
-            .btn,
-            input[type="submit"] {
-                width: 100%;
-                max-width: 100%;
-            }
-            
-            .hero-text {
-                text-align: center;
-            }
-        }
-        
-        /* Button alignment fix */
-        .btn, button, input[type="submit"] {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-        
-        /* Ensure content is visible on load */
-        .page, main, #main-content {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: block !important;
-        }
-        
-        /* Prevent flash of unstyled content */
         body {
-            background-color: #111827; /* gray-900 */
-            color: #ffffff;
+            overflow-x: hidden;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding-top: 76px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 2. Make all images fully responsive - GLOBAL RULE */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* 3. Responsive video embeds */
+        video,
+        iframe,
+        embed,
+        object {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 4. Container fluid max-width for ultra-large screens */
+        @media (min-width: 1400px) {
+            .container-fluid {
+                max-width: 1400px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .container-fluid {
+                max-width: 1600px;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 1800px;
+            }
+        }
+
+        /* 5. Responsive spacing utilities */
+        .responsive-section {
+            padding: 2rem 1rem;
+        }
+
+        @media (min-width: 576px) {
+            .responsive-section {
+                padding: 3rem 1.5rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .responsive-section {
+                padding: 4rem 2rem;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .responsive-section {
+                padding: 5rem 2.5rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .responsive-section {
+                padding: 6rem 3rem;
+            }
+        }
+
+        /* 6. Text responsiveness - Bootstrap Way */
+        .responsive-text {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        /* 7. Card responsiveness */
+        .responsive-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .responsive-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .responsive-card {
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* 8. Button responsiveness */
+        .responsive-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        @media (min-width: 576px) {
+            .responsive-btn {
+                width: auto;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        /* 9. Grid gap responsiveness */
+        .responsive-grid {
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .responsive-grid {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .responsive-grid {
+                gap: 2rem;
+            }
+        }
+
+        /* 10. Form responsiveness */
+        .form-control,
+        .form-select {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        /* 11. Table responsiveness */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 12. Modal responsiveness */
+        @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .modal-content {
+                padding: 0.5rem;
+            }
+        }
+
+        /* 13. Fix for very small screens */
+        @media (max-width: 360px) {
+            html {
+                font-size: 14px;
+            }
+        }
+
+        /* 14. Ultra-wide screen optimizations */
+        @media (min-width: 1920px) {
+            html {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            html {
+                font-size: 20px;
+            }
+        }
+
+        /* 15. Accessibility - Focus outlines */
+        *:focus-visible {
+            outline: 2px solid var(--neon-red);
+            outline-offset: 2px;
+        }
+
+        /* 16. Selection color */
+        ::selection {
+            background: rgba(255, 59, 59, 0.3);
+            color: white;
+        }
+
+        /* Navbar Styling - Always Visible */
+        .navbar {
+            background: rgba(15, 20, 25, 0.98) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.4);
+            transition: all 0.3s;
+            height: 64px;
+            z-index: 1050 !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            box-shadow: 0 4px 30px rgba(59, 130, 246, 0.2), 0 2px 10px rgba(0, 0, 0, 0.5);
         }
         
-        /* Loading animation */
+        #mainNavbar {
+            background: rgba(15, 20, 25, 0.98) !important;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-blue) !important;
+        }
+        
+        /* Navbar Toggler */
+        .navbar-toggler {
+            border: none !important;
+            padding: 0.5rem;
+            box-shadow: none !important;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            background: rgba(15, 20, 25, 0.98);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(59, 130, 246, 0.3);
+            max-height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+        
+        .mobile-nav-link {
+            padding: 1rem 1.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin: 0.25rem 0.5rem;
+        }
+        
+        .mobile-nav-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .mobile-nav-link.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+
+        /* Glass Morphism Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+
+        /* Gradient Buttons */
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--neon-red), var(--neon-coral));
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, var(--neon-coral), var(--neon-orange));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 59, 59, 0.4);
+            color: white;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--neon-red) 0%, var(--neon-coral) 50%, var(--neon-orange) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(33, 37, 41, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            margin-top: 100px;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--neon-red);
+        }
+
+        /* Icons - Proper Sizing */
+        .bi {
+            vertical-align: middle;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
+
+        /* Slide In/Out Animations for Toast */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-    </style>
-    
-    <style>
-        /* Additional Tailwind configuration */
-        body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
-        
-        /* Animation utilities */
-        .animate-on-scroll {
+
+        /* Pulse Animation */
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        /* AOS Animation Keyframes */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes float-bg {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -30px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.5); }
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { background-color: rgba(255, 255, 255, 0.05); }
+            50% { background-color: rgba(255, 255, 255, 0.08); }
+        }
+
+        @keyframes pulse-circle {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        /* =========================================
+           NOTIFICATION TOAST STYLES
+           Fixed z-index to avoid navbar conflict
+           ========================================= */
+        .donation-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 320px;
+            max-width: 400px;
+            background: rgba(15, 20, 25, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .donation-toast.toast-hidden {
+            transform: translateX(120%);
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease-out;
         }
-        
-        .animate-on-scroll.visible {
+
+        .donation-toast.toast-visible {
+            transform: translateX(0);
             opacity: 1;
-            transform: translateY(0);
         }
-        
-        /* Video background styles */
-        .video-background {
+
+        .donation-toast.toast-emergency {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .donation-toast.toast-urgent {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .donation-toast.toast-success {
+            border-color: rgba(34, 197, 94, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(34, 197, 94, 0.3);
+        }
+
+        .toast-bg-decoration {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(239, 68, 68, 0.05));
+            pointer-events: none;
         }
-        
-        .video-overlay {
+
+        .toast-content-wrapper {
+            position: relative;
+            z-index: 1;
+            padding: 16px;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .toast-icon-wrapper {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            font-size: 20px;
+        }
+
+        .toast-message {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-header h4 {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .toast-glow-effect {
             position: absolute;
-            top: 0;
+            top: -2px;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+            animation: toastGlow 2s ease-in-out infinite;
         }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
+
+        @keyframes toastGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+
+        .toast-message p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            margin: 0;
+            line-height: 1.4;
         }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #f87171;
+
+        .eligibility-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            background: rgba(34, 197, 94, 0.2);
             border-radius: 4px;
+            color: #4ade80;
+            font-size: 11px;
+            font-weight: 500;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #fb7185;
+
+        .toast-close {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
         }
-        
-        /* Message animations */
-        @keyframes fadeInUp {
+
+        .toast-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .toast-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-update {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-update:hover {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            transform: translateY(-1px);
+        }
+
+        .btn-dismiss {
+            padding: 8px 12px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-dismiss:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toast-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            animation: toastProgress linear forwards;
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Mobile adjustments for notifications */
+        @media (max-width: 576px) {
+            .donation-toast {
+                top: 70px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+                max-width: none;
+            }
+        }
+
+        /* =========================================
+           ANIMATED NOTIFICATION VARIANTS
+           For donor acceptance and other events
+           ========================================= */
+        .donation-toast.toast-donor-accepted {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1));
+        }
+
+        .donation-toast.toast-donor-accepted .toast-icon-wrapper {
+            background: rgba(34, 197, 94, 0.3);
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .donation-toast.toast-new-request {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+        }
+
+        .donation-toast.toast-new-request .toast-icon-wrapper {
+            background: rgba(239, 68, 68, 0.3);
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Live Activity Feed Animations */
+        @keyframes slideInRight {
             from {
                 opacity: 0;
-                transform: translate3d(0, 100%, 0);
+                transform: translateX(-20px);
             }
             to {
                 opacity: 1;
-                transform: translate3d(0, 0, 0);
+                transform: translateX(0);
             }
         }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.3s ease-out forwards;
+
+        .activity-item {
+            animation: slideInRight 0.4s ease-out;
         }
-        
-        /* Accessibility improvements */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
+
+        .activity-item:nth-child(1) { animation-delay: 0s; }
+        .activity-item:nth-child(2) { animation-delay: 0.1s; }
+        .activity-item:nth-child(3) { animation-delay: 0.2s; }
+        .activity-item:nth-child(4) { animation-delay: 0.3s; }
+        .activity-item:nth-child(5) { animation-delay: 0.4s; }
+
+        /* Pulse animation for urgent items */
+        .urgent-pulse {
+            animation: urgentPulse 1.5s ease-in-out infinite;
         }
-        
-        .focus-within-ring:focus-within,
-        .focus-ring:focus {
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.5);
+
+        @keyframes urgentPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
         }
-        
-        /* Mobile responsive improvements */
+
+        /* Fade scale animation for cards */
+        @keyframes fadeScaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .fade-scale-in {
+            animation: fadeScaleIn 0.3s ease-out;
+        }
+
+        /* Custom Select Styling */
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            text-indent: 1px;
+            text-overflow: '';
+        }
+
+        /* Mobile Optimizations */
         @media (max-width: 768px) {
-            .container-mobile {
-                padding-left: 1rem;
-                padding-right: 1rem;
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            /* Stack flex columns on mobile */
+            .flex-md-row {
+                flex-direction: column !important;
+            }
+
+            /* Reduce heading sizes */
+            h1, .h1 {
+                font-size: clamp(1.5rem, 5vw, 1.75rem) !important;
+            }
+
+            h2, .h2 {
+                font-size: clamp(1.25rem, 4vw, 1.5rem) !important;
+            }
+
+            h3, .h3 {
+                font-size: clamp(1.125rem, 3vw, 1.25rem) !important;
+            }
+
+            /* Full width cards on mobile */
+            .col-md-6,
+            .col-lg-4,
+            .col-xl-3 {
+                margin-bottom: 1rem;
             }
             
-            .text-mobile-responsive {
-                font-size: 1rem;
+            /* Ensure buttons are touch-friendly */
+            .btn, button, [role="button"] {
+                min-height: 44px;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .container-fluid {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+
+        /* Desktop optimizations */
+        @media (min-width: 1024px) {
+            .container-fluid {
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .navbar,
+            footer,
+            .btn,
+            #mobileMenu {
+                display: none !important;
             }
             
-            .mobile-spacing {
-                margin: 0.5rem 0;
+            body {
+                background: white;
+                color: black;
             }
-        }
-        
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-            .bg-gray-900 { background-color: #000000 !important; }
-            .text-white { color: #ffffff !important; }
-            .border-white { border-color: #ffffff !important; }
-        }
-
-        /* Light Theme Support */
-        [data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-        }
-
-        [data-theme="light"] .bg-gray-900 {
-            background-color: #ffffff !important;
-        }
-
-        [data-theme="light"] .bg-gray-800 {
-            background-color: #f3f4f6 !important;
-        }
-
-        [data-theme="light"] .bg-gray-700 {
-            background-color: #e5e7eb !important;
-        }
-
-        [data-theme="light"] .text-white {
-            color: #111827 !important;
-        }
-
-        [data-theme="light"] .text-gray-300,
-        [data-theme="light"] .text-gray-400 {
-            color: #6b7280 !important;
-        }
-
-        [data-theme="light"] .border-white\/10,
-        [data-theme="light"] .border-white\/20 {
-            border-color: #e5e7eb !important;
-        }
-
-        [data-theme="light"] .bg-white\/10,
-        [data-theme="light"] .bg-white\/5 {
-            background-color: rgba(0, 0, 0, 0.05) !important;
-        }
-
-        /* Light theme navbar */
-        [data-theme="light"] nav {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            border-bottom-color: rgba(239, 68, 68, 0.2) !important;
-        }
-
-        [data-theme="light"] .text-red-400 {
-            color: #dc2626 !important;
-        }
-
-        /* Light theme cards */
-        [data-theme="light"] .bg-white\/5 {
-            background-color: #ffffff !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Prevent oversized decorative elements on large screens */
-        .decorative-circle,
-        .background-decoration,
-        .hero-decoration {
-            max-width: 600px !important;
-            max-height: 600px !important;
-            width: auto !important;
-            height: auto !important;
-        }
-
-        /* SVG Icon Protection - Prevent icons from scaling incorrectly */
-        svg:not([width]):not([class*="w-"]) {
-            width: 1em;
-            height: 1em;
-            flex-shrink: 0;
-        }
-        
-        /* Ensure icons maintain proper size across all screen sizes */
-        svg {
-            max-width: none;
-            vertical-align: middle;
-        }
-        
-        /* Prevent icon scaling in buttons and links */
-        button svg, a svg, .icon {
-            flex-shrink: 0;
-            object-fit: contain;
-        }
-
-        /* Prevent viewport-based scaling on decorative elements */
-        .hero-title {
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
         }
     </style>
 </head>
-<body class="{% if user.is_authenticated %}{% if user.theme == 'light' %}bg-white text-gray-900{% else %}bg-gray-900 text-white{% endif %}{% else %}bg-gray-900 text-white{% endif %} overflow-x-hidden" data-theme="{% if user.is_authenticated %}{{ user.theme }}{% else %}dark{% endif %}" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}" data-user-id="{% if user.is_authenticated %}{{ user.id }}{% endif %}" data-user-username="{% if user.is_authenticated %}{{ user.username|escapejs }}{% endif %}">
-    <!-- Loading Indicator -->
-    <div id="page-loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 4px; background: #1f2937; z-index: 9999;">
-        <div id="loader-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f87171, #fb7185); transition: width 0.3s;"></div>
-    </div>
-    
-    <script>
-        // Global authentication status for JavaScript
-        // Read from data attributes to avoid Django template syntax in JavaScript
-        (function() {
-            const body = document.body;
-            window.isUserLoggedIn = body.getAttribute('data-authenticated') === 'true';
-            window.currentUserId = body.getAttribute('data-user-id') || null;
-            window.currentUserName = body.getAttribute('data-user-username') || null;
-        })();
-
-        // Start loading animation immediately
-        (function() {
-            const loader = document.getElementById('loader-bar');
-            if (loader) {
-                setTimeout(() => { loader.style.width = '30%'; }, 100);
-                setTimeout(() => { loader.style.width = '60%'; }, 300);
-                setTimeout(() => { loader.style.width = '90%'; }, 600);
-                setTimeout(() => { loader.style.width = '100%'; }, 1000);
-                setTimeout(() => { 
-                    const loaderContainer = document.getElementById('page-loader');
-                    if (loaderContainer) loaderContainer.style.display = 'none';
-                }, 1500);
-            }
-        })();
-    </script>
+<body>
     <!-- Navigation -->
     {% include 'partials/navbar.html' %}
+
     <!-- Messages -->
     {% if messages %}
-    <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm">
+    <div class="container-fluid px-3 px-sm-4 px-md-5 mt-3">
         {% for message in messages %}
-        <div class="px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out {% if message.tags %}{% if 'error' in message.tags %}bg-red-500{% elif 'success' in message.tags %}bg-green-500{% elif 'warning' in message.tags %}bg-yellow-500{% else %}bg-blue-500{% endif %}{% else %}bg-blue-500{% endif %} text-white animate-fade-in-up">
-            <div class="flex items-center">
-                {% if message.tags %}
-                    {% if 'error' in message.tags %}
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {% elif 'success' in message.tags %}
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {% elif 'warning' in message.tags %}
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    {% else %}
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    {% endif %}
-                {% endif %}
-                <span>{{ message }}</span>
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" class="absolute top-2 right-2 text-white hover:text-gray-200">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
+        <div class="alert alert-{% if message.tags %}{% if 'error' in message.tags %}danger{% else %}{{ message.tags }}{% endif %}{% else %}info{% endif %} alert-dismissible fade show glass-card" 
+             style="background: rgba(18, 18, 26, 0.95); border: 1px solid rgba(255, 59, 59, 0.3); color: white;" 
+             role="alert">
+            {% if 'error' in message.tags %}
+                <i class="bi bi-exclamation-triangle-fill me-2" style="color: #ff3b3b;"></i>
+            {% elif 'success' in message.tags %}
+                <i class="bi bi-check-circle-fill me-2" style="color: #10b981;"></i>
+            {% elif 'warning' in message.tags %}
+                <i class="bi bi-exclamation-circle-fill me-2" style="color: #f59e0b;"></i>
+            {% else %}
+                <i class="bi bi-info-circle-fill me-2" style="color: #3b82f6;"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    <!-- Main Content -->
-    <main id="main-content" class="min-h-screen">
-        <div class="container mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8 xl:px-12">
+    <!-- Main Content - Responsive Container -->
+    <main>
+        <div class="container-fluid px-3 px-sm-4 px-md-5">
             {% block content %}
             {% endblock %}
         </div>
     </main>
 
-    <!-- Floating Notification Bar -->
-    <div id="floatingNotificationBar" class="fixed bottom-0 left-0 right-0 z-40 transform translate-y-full transition-transform duration-300 ease-in-out">
-        <div class="bg-gray-900/95 backdrop-blur-md border-t border-red-500/30 shadow-2xl">
-            <div class="max-w-7xl mx-auto px-4 py-3">
-                <div class="flex items-center justify-between gap-4">
-                    <!-- Notification Content -->
-                    <div class="flex-1 flex items-center gap-3 overflow-hidden">
-                        <div class="flex-shrink-0">
-                            <span class="inline-flex items-center justify-center w-8 h-8 bg-red-500/20 rounded-full animate-pulse">
-                                <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p id="floatingNotificationText" class="text-sm text-white font-medium truncate">
-                                New blood request nearby! A+ blood needed in Delhi.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                        <button onclick="viewNotification()" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors">
-                            View
-                        </button>
-                        <button onclick="dismissFloatingNotification()" class="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
-                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Floating Notification Bar Logic
-        let notificationQueue = [];
-        let currentNotificationIndex = 0;
-
-        function showFloatingNotification(message, type = 'blood_request') {
-            const bar = document.getElementById('floatingNotificationBar');
-            const text = document.getElementById('floatingNotificationText');
-
-            if (bar && text) {
-                text.textContent = message;
-                bar.classList.remove('translate-y-full');
-                bar.classList.add('translate-y-0');
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    dismissFloatingNotification();
-                }, 5000);
-            } else {
-                console.warn('Floating notification elements not found');
-            }
-        }
-
-        function dismissFloatingNotification() {
-            const bar = document.getElementById('floatingNotificationBar');
-            if (bar) {
-                bar.classList.remove('translate-y-0');
-                bar.classList.add('translate-y-full');
-            }
-        }
-
-        function viewNotification() {
-            dismissFloatingNotification();
-            window.location.href = '/requests/track/';
-        }
-
-        // Fetch real notifications from API
-        async function fetchNotifications() {
-            try {
-                const response = await fetch('/notifications/api/list/', {
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.results && data.results.length > 0) {
-                        // Show the most recent blood request notification
-                        const bloodRequestNotification = data.results.find(n =>
-                            n.notification_type === 'blood_request' && !n.is_read
-                        );
-
-                        if (bloodRequestNotification) {
-                            showFloatingNotification(bloodRequestNotification.message, 'blood_request');
-                        }
-                    }
-                } else if (response.status === 403) {
-                    // User not authenticated or session expired
-                    // Silent skip for unauthenticated users
-                } else {
-                    console.error('Error fetching notifications:', response.status, response.statusText);
-                }
-            } catch (error) {
-                console.error('Error fetching notifications:', error);
-            }
-        }
-
-        // Poll for new notifications every 60 seconds (reduced from 30s)
-        function startNotificationPolling() {
-            // Initial fetch
-            fetchNotifications();
-
-            // Poll every 60 seconds to reduce server load
-            setInterval(() => {
-                fetchNotifications();
-            }, 60000);
-        }
-
-        // Start notification polling on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Only show notifications for authenticated users
-            const isAuthenticated = document.body.dataset.authenticated === 'true';
-            if (isAuthenticated) {
-                setTimeout(() => {
-                    startNotificationPolling();
-                }, 5000);
-            }
-
-            // Dynamic navbar padding to prevent overlap
-            const nav = document.querySelector('nav');
-            if (nav) {
-                document.body.style.paddingTop = nav.offsetHeight + 'px';
-                
-                // Update padding on resize
-                window.addEventListener('resize', () => {
-                    document.body.style.paddingTop = nav.offsetHeight + 'px';
-                });
-            }
-        });
-
-        // Helper function to get CSRF token
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    </script>
-
-    
     <!-- Footer -->
-    <footer class="bg-gray-800/50 backdrop-blur-lg py-12 mt-16 border-t border-white/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-                <!-- Brand Section -->
-                <div class="col-span-1 lg:col-span-2">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg">
-                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
-                            </svg>
+    <footer class="py-4 py-md-5">
+        <div class="container-fluid px-3 px-sm-4 px-md-5">
+            <div class="row">
+                <div class="col-12 col-md-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center me-2" 
+                             style="width: 40px; height: 40px; background: linear-gradient(135deg, #ff3b3b, #ff6b6b); border-radius: 50%;">
+                            <i class="bi bi-heart-pulse-fill text-white fs-5"></i>
                         </div>
-                        <span class="text-2xl font-bold text-gradient">BloodLife</span>
+                        <h5 class="gradient-text mb-0">BloodLife</h5>
                     </div>
-                    <p class="text-gray-400 max-w-md leading-relaxed mb-6">
-                        Connecting donors with those in need. Making blood donation easier, safer, and more efficient for everyone involved.
-                    </p>
-                    <!-- Social Links -->
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110">
-                            <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110">
-                            <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266-.057-1.644-.07-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.689-.07-4.948 0-3.204.013-3.583.07-4.849zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110">
-                            <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                            </svg>
-                        </a>
+                    <p class="text-secondary">Connecting donors with those in need. Making blood donation easier, safer, and more efficient for everyone involved.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-secondary fs-5"><i class="bi bi-linkedin"></i></a>
                     </div>
                 </div>
-                
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
-                    <ul class="space-y-3">
-                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            Home
-                        </a></li>
-                        <li><a href="/accounts/register/" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            Register as Donor
-                        </a></li>
-                        <li><a href="/search/donors/" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            Find Donors
-                        </a></li>
-                        <li><a href="/requests/create/" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            Create Request
-                        </a></li>
-                        <li><a href="/admin/" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 group">
-                            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Admin Panel
-                        </a></li>
+                <div class="col-12 col-md-4 mb-4">
+                    <h5 class="text-white mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/"><i class="bi bi-house-door me-2"></i>Home</a></li>
+                        <li class="mb-2"><a href="/accounts/register/"><i class="bi bi-person-plus me-2"></i>Register as Donor</a></li>
+                        <li class="mb-2"><a href="/accounts/search/"><i class="bi bi-search me-2"></i>Find Donors</a></li>
+                        <li class="mb-2"><a href="/requests/create/"><i class="bi bi-plus-circle me-2"></i>Create Request</a></li>
                     </ul>
                 </div>
-                
-                <!-- Contact Info -->
-                <div>
-                    <h3 class="text-lg font-semibold text-white mb-4">Contact Us</h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                            <span>bloodlife025@gmail.com</span>
-                        </li>
-                        <li class="flex items-start gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                            </svg>
-                            <span>07966772377</span>
-                        </li>
-                        <li class="flex items-start gap-3 text-gray-400">
-                            <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span>Emergency: 1-800-BLOOD</span>
-                        </li>
+                <div class="col-12 col-md-4 mb-4">
+                    <h5 class="text-white mb-3">Contact Us</h5>
+                    <ul class="list-unstyled text-secondary">
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i>bloodlife025@gmail.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i>07966772377</li>
+                        <li class="mb-2"><i class="bi bi-clock me-2"></i>Emergency: 1-800-BLOOD</li>
                     </ul>
                 </div>
             </div>
-            
-            <!-- Bottom Bar -->
-            <div class="border-t border-gray-700/50 mt-12 pt-8">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p class="text-gray-400 text-sm text-center md:text-left">
-                        &copy; 2026 BloodLife. All rights reserved. Made with ❤️ for humanity.
-                    </p>
-                    <div class="flex gap-6 text-sm">
-                        <a href="/legal/privacy/" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="/legal/terms/" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
-                    </div>
-                </div>
+            <hr style="border-color: rgba(255, 255, 255, 0.1);">
+            <div class="text-center text-secondary">
+                <p class="mb-0">&copy; {% now "Y" %} BloodLife. All rights reserved. Made with <i class="bi bi-heart-fill" style="color: #ff3b3b;"></i> for humanity.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="{% static 'js/home.js' %}"></script>
-    <script src="{% static 'js/animations.js' %}"></script>
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/live-map.js' %}"></script>
-    <!-- Floating Notification Bar -->
-    <script src="{% static 'js/floating-notifications.js' %}"></script>
+    <!-- Bootstrap 5 JS Bundle with Popper - Local Files -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     
-    <!-- Critical Page Load Script -->
+    
+    <!-- Custom Scripts -->
+    <script src="{% static 'js/home.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+    
+    {% block extra_js %}
+    {% endblock %}
+
+    <!-- Real-time Notification System -->
     <script>
-        // Force page visibility immediately
-        document.documentElement.style.opacity = '1';
-        document.documentElement.style.visibility = 'visible';
-        document.body.style.opacity = '1';
-        document.body.style.visibility = 'visible';
-        
-        // Monitor for failed resource loads (catches ERR_NAME_NOT_RESOLVED)
-        window.addEventListener('error', function(e) {
-            if (e.target && (e.target.src || e.target.href)) {
-                const url = e.target.src || e.target.href;
-                console.error('❌ Failed to load resource:', url);
-                console.error('   Error type:', e.target.tagName, '- Network/DNS error');
-            }
-        }, true); // Use capture phase to catch all errors
-        
-        // Ensure page is ready
+        // Notification Polling System
         (function() {
-            // Check if critical resources are loaded
-            window.addEventListener('load', function() {
-                // Add fade-in class to body for smooth appearance
-                document.body.classList.add('fade-in');
-            });
-            
-            // DOM Content Loaded check
+            let lastUnreadCount = 0;
+            let pollingInterval = 10000; // 10 seconds
+            let isPolling = false;
+
+            // Get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // Check for new notifications
+            async function checkNotifications() {
+                if (!document.body.classList.contains('user-authenticated')) {
+                    return; // Only poll for authenticated users
+                }
+
+                try {
+                    const response = await fetch('/notifications/', {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const newUnreadCount = data.unread_count || 0;
+
+                        // Update notification badge
+                        updateNotificationBadge(newUnreadCount);
+
+                        // Show toast if new notifications arrived
+                        if (newUnreadCount > lastUnreadCount && lastUnreadCount > 0) {
+                            const newCount = newUnreadCount - lastUnreadCount;
+                            showNotificationToast(newCount);
+                        }
+
+                        lastUnreadCount = newUnreadCount;
+                    }
+                } catch (error) {
+                    console.error('Error checking notifications:', error);
+                }
+            }
+
+            // Update notification badge in navbar
+            function updateNotificationBadge(count) {
+                const badge = document.querySelector('#notification-badge');
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count > 9 ? '9+' : count;
+                        badge.classList.remove('d-none');
+                        badge.classList.add('animate-pulse');
+                        setTimeout(() => badge.classList.remove('animate-pulse'), 2000);
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                }
+            }
+
+            // Show toast notification for new messages
+            function showNotificationToast(count) {
+                const toast = document.createElement('div');
+                toast.className = 'alert alert-info position-fixed';
+                toast.style.cssText = 'top: 80px; right: 20px; z-index: 1100; min-width: 300px; animation: slideIn 0.3s ease;';
+                toast.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bell-fill me-2" style="color: #ff3b3b;"></i>
+                        <div>
+                            <strong>New Notification${count > 1 ? 's' : ''}</strong>
+                            <p class="mb-0">You have ${count} new notification${count > 1 ? 's' : ''}</p>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                    </div>
+                `;
+
+                document.body.appendChild(toast);
+
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }
+
+            // Start polling
+            function startPolling() {
+                if (isPolling) return;
+                isPolling = true;
+
+                // Initial check
+                checkNotifications();
+
+                // Set up interval
+                setInterval(checkNotifications, pollingInterval);
+            }
+
+            // Stop polling
+            function stopPolling() {
+                isPolling = false;
+            }
+
+            // Initialize when DOM is ready
             document.addEventListener('DOMContentLoaded', function() {
-                // Verify Alpine.js
-                if (typeof Alpine !== 'undefined') {
-                    // Alpine.js loaded successfully
-                } else {
-                    console.warn('⚠️ Alpine.js NOT loaded - navbar may not work');
-                    // Try to load Alpine.js as fallback
-                    const script = document.createElement('script');
-                    script.src = '{% static "js/alpine.min.js" %}';
-                    script.defer = true;
-                    document.head.appendChild(script);
+                // Check if user is authenticated (look for authenticated user indicators)
+                const userIndicators = document.querySelectorAll('[data-user-authenticated="true"]');
+                if (userIndicators.length > 0 || document.querySelector('.user-dropdown')) {
+                    document.body.classList.add('user-authenticated');
+                    startPolling();
                 }
-                
-                // Verify GSAP
-                if (typeof gsap !== 'undefined') {
-                    // GSAP loaded successfully
-                } else {
-                    console.warn('⚠️ GSAP NOT loaded - animations disabled');
-                }
+
+                // Pause polling when tab is not visible
+                document.addEventListener('visibilitychange', function() {
+                    if (document.hidden) {
+                        stopPolling();
+                    } else {
+                        if (document.body.classList.contains('user-authenticated')) {
+                            startPolling();
+                        }
+                    }
+                });
             });
+
+            // Expose functions globally for manual control
+            window.notificationSystem = {
+                check: checkNotifications,
+                start: startPolling,
+                stop: stopPolling
+            };
         })();
     </script>
+
+    <!-- Service Worker for PWA -->
     <script>
-        // Register service worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/static/js/sw.js')
+                navigator.serviceWorker.register('{% static "js/sw.js" %}')
                     .then(function(registration) {
-                        // ServiceWorker registered successfully
+                        console.log('ServiceWorker registration successful');
                     })
                     .catch(function(error) {
                         console.error('ServiceWorker registration failed: ', error);
                     });
             });
         }
-        
-        // Initialize GSAP
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // Animation for scroll elements
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate elements on scroll - only if elements exist
-            const animateElements = document.querySelectorAll('.animate-on-scroll');
-            
-            animateElements.forEach(element => {
-                gsap.fromTo(element, 
-                    { opacity: 0, y: 30 },
+    </script>
+
+    <!-- Google Maps Helper Functions -->
+    <script>
+        // Google Maps initialization helper
+        window.initGoogleMaps = function() {
+            if (typeof google === 'undefined' || !google.maps) {
+                console.warn('Google Maps API not loaded. Please check your API key.');
+                return null;
+            }
+            return google.maps;
+        };
+
+        // Create a map instance
+        window.createMap = function(elementId, options = {}) {
+            const maps = window.initGoogleMaps();
+            if (!maps) return null;
+
+            const defaultOptions = {
+                center: { lat: 28.6139, lng: 77.2090 }, // Default: New Delhi
+                zoom: 12,
+                styles: [
                     {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.8,
-                        scrollTrigger: {
-                            trigger: element,
-                            start: "top 85%",
-                            end: "bottom 15%",
-                            toggleActions: "play none none reverse"
-                        }
+                        featureType: "all",
+                        elementType: "geometry",
+                        stylers: [{ color: "#12121a" }]
+                    },
+                    {
+                        featureType: "all",
+                        elementType: "labels.text.stroke",
+                        stylers: [{ color: "#0a0a0f" }]
+                    },
+                    {
+                        featureType: "all",
+                        elementType: "labels.text.fill",
+                        stylers: [{ color: "#ffffff" }]
+                    }
+                ],
+                disableDefaultUI: false,
+                zoomControl: true,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
+            };
+
+            const mapOptions = { ...defaultOptions, ...options };
+            const element = document.getElementById(elementId);
+            if (!element) {
+                console.error(`Element with id '${elementId}' not found`);
+                return null;
+            }
+
+            return new maps.Map(element, mapOptions);
+        };
+
+        // Get user's current location
+        window.getUserLocation = function() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation is not supported by your browser'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
                     }
                 );
             });
-            
-            // Navbar scroll effect with throttling
-            const navbar = document.querySelector('.navbar');
-            if (navbar) {
-                let lastScroll = 0;
-                window.addEventListener('scroll', () => {
-                    // Throttle scroll events to every 50ms
-                    const now = Date.now();
-                    if (now - lastScroll < 50) return;
-                    lastScroll = now;
-                    
-                    if (window.scrollY > 50) {
-                        navbar.classList.add('scrolled', 'bg-gray-900/95', 'backdrop-blur-md');
-                        navbar.classList.remove('bg-transparent');
-                    } else {
-                        navbar.classList.remove('scrolled', 'bg-gray-900/95', 'backdrop-blur-md');
-                        navbar.classList.add('bg-transparent');
-                    }
-                });
-            }
-            
-            // Initialize other components
-            if (typeof BloodDonationApp !== 'undefined') {
-                BloodDonationApp.initSmoothScrolling();
-                BloodDonationApp.initAnimatedElements();
-                BloodDonationApp.initDynamicColors();
-                BloodDonationApp.initParallaxEffects();
-                BloodDonationApp.initFormValidations();
-            }
-        });
-    </script>
-    
-    {% block extra_js %}
-    {% endblock %}
-    
-    <script>
-        // Notification badge functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            function updateNotificationBadge() {
-                const badge = document.getElementById('notification-badge');
-                if (badge) {
-                    // Only show badge if there are actual unread notifications
-                    // This will be updated by the backend context
-                    const unreadCount = parseInt(badge.textContent) || 0;
+        };
 
-                    if (unreadCount > 0) {
-                        badge.classList.remove('hidden');
-                    } else {
-                        badge.classList.add('hidden');
-                    }
-                }
-            }
-
-            // Initial check
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', updateNotificationBadge);
-            } else {
-                updateNotificationBadge();
-            }
-        });
+        // Calculate distance between two points using Haversine formula
+        window.calculateDistance = function(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // Distance in km
+        };
     </script>
     
-    <!-- Include new toast notification -->
-    {% include 'notifications/donation_status_toast.html' %}
-    
-    <!-- Smart Banner System - Context-Aware Banners -->
-    {% if show_banner %}
-    <!-- vscode-ignore-next-line -->
-    <!-- django-template-ignore -->
-    <div id="smartBanner" class="fixed top-0 left-0 right-0 z-50 transform transition-all duration-300 ease-in-out">
-        <div class="bg-gradient-to-r 
-            {% if banner_color == 'red' %}from-red-600 to-red-700
-            {% elif banner_color == 'orange' %}from-orange-500 to-orange-600
-            {% elif banner_color == 'green' %}from-green-600 to-green-700
-            {% elif banner_color == 'blue' %}from-blue-600 to-blue-700
-            {% elif banner_color == 'yellow' %}from-yellow-500 to-yellow-600
-            {% else %}from-gray-600 to-gray-700
-            {% endif %} shadow-2xl">
-            
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <!-- Banner Content -->
-                    <div class="flex-1 text-center sm:text-left">
-                        <!-- Icon based on banner type -->
-                        <div class="flex items-center justify-center sm:justify-start gap-3 mb-2">
-                            {% if banner_type == 'welcome' %}
-                                <svg class="w-8 h-8 text-white animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% elif banner_type == 'profile_update' %}
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% elif banner_type == 'eligibility_reminder' %}
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% elif banner_type == 'upcoming_eligibility' %}
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% elif banner_type == 'availability_reminder' %}
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
-                                </svg>
-                            {% endif %}
-                            
-                            <h3 class="text-lg sm:text-xl font-bold text-white">{{ banner_message }}</h3>
-                        </div>
-                        
-                        {% if banner_submessage %}
-                        <p class="text-sm sm:text-base text-white/90">{{ banner_submessage }}</p>
-                        {% endif %}
-                        
-                        <!-- Profile completeness bar (if applicable) -->
-                        {% if banner_type == 'profile_update' and profile_completeness %}
-                        <div class="mt-3">
-                            <div class="flex justify-between text-xs text-white/80 mb-1">
-                                <span>Profile Completion</span>
-                                <span>{{ profile_completeness }}%</span>
-                            </div>
-                            <div class="w-full bg-white/20 rounded-full h-2">
-                                <div class="bg-white rounded-full h-2 transition-all duration-500" data-width="{{ profile_completeness }}" style="width: var(--profile-width, 0%)"></div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        {% if banner_cta_url and banner_cta_text %}
-                        <a href="{{ banner_cta_url }}" 
-                           class="inline-flex items-center justify-center px-6 py-2.5 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg whitespace-nowrap text-sm sm:text-base">
-                            {{ banner_cta_text }}
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" clip-rule="evenodd"></path>
-                            </svg>
-                        </a>
-                        {% endif %}
-                        
-                        {% if banner_secondary_cta_url and banner_secondary_cta_text %}
-                        <a href="{{ banner_secondary_cta_url }}" 
-                           class="hidden sm:inline-flex items-center justify-center px-6 py-2.5 bg-white/10 border border-white/30 text-white font-semibold rounded-lg hover:bg-white/20 transition-all duration-200 whitespace-nowrap text-sm sm:text-base">
-                            {{ banner_secondary_cta_text }}
-                        </a>
-                        {% endif %}
-                        
-                        {% if banner_dismissible %}
-                        <button onclick="closeSmartBanner()" 
-                                class="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                                aria-label="Close banner">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add padding to body when banner is shown -->
-    <script type="text/template" id="banner-script-template">
-        // Adjust page padding for banner
-        document.addEventListener('DOMContentLoaded', function() {
-            const banner = document.getElementById('smartBanner');
-            if (banner) {
-                const bannerHeight = banner.offsetHeight;
-                document.body.style.paddingTop = bannerHeight + 'px';
-                
-                // Animate banner slide down
-                banner.style.transform = 'translateY(-100%)';
-                setTimeout(() => {
-                    banner.style.transform = 'translateY(0)';
-                }, 100);
-            }
-            
-            // Set profile completeness bar width using CSS variable
-            const profileBar = document.querySelector('[data-width]');
-            if (profileBar) {
-                const width = profileBar.getAttribute('data-width');
-                profileBar.style.setProperty('--profile-width', width + '%');
-            }
-        });
-        
-        // Close smart banner function
-        function closeSmartBanner() {
-            const banner = document.getElementById('smartBanner');
-            if (banner) {
-                // Animate slide up
-                banner.style.transform = 'translateY(-100%)';
-                setTimeout(() => {
-                    banner.style.display = 'none';
-                    document.body.style.paddingTop = '0';
-                    
-                    // Remember user dismissed it for this session
-                    {% if banner_type == 'welcome' %}
-                    sessionStorage.setItem('hasSeenWelcomeBanner', 'true');
-                    {% else %}
-                    sessionStorage.setItem('smartBannerDismissed_{{ banner_type }}', 'true');
-                    {% endif %}
-                }, 300);
-            }
-        }
-    </script>
-    
-    <script>
-        // Execute banner script
-        (function() {
-            const template = document.getElementById('banner-script-template');
-            if (template) {
-                const scriptContent = template.textContent;
-                const script = document.createElement('script');
-                script.textContent = scriptContent;
-                document.body.appendChild(script);
-            }
-        })();
-    </script>
-    {% endif %}
-    
-    <!-- Old Welcome Banner - REMOVED (replaced by Smart Banner System) -->
-    <script>
-        // Force show popup if it exists in DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            const popup = document.getElementById('donationStatusPopup');
-            if (popup) {
-                // Make sure it's visible immediately with animation
-                popup.style.display = 'block';
-                popup.style.opacity = '0';
-                popup.style.visibility = 'visible';
-                
-                // Fade in animation
-                setTimeout(() => {
-                    popup.style.opacity = '1';
-                }, 100);
-                
-                // Try to show via Bootstrap modal if available
-                try {
-                    $('#donationStatusPopup').modal('show');
-                } catch(e) {
-                    // Bootstrap modal not available, using CSS display
-                }
-            }
-        });
-    </script>
-    
-    <!-- AI Chatbot Assistant - Available on all pages -->
-    {% include 'components/ai_chatbot.html' %}
+    <!-- Chat Widget -->
+    {% include 'partials/chat_widget.html' %}
 </body>
 </html>
-

@@ -5,15 +5,22 @@ from . import health_check
 urlpatterns = [
     # Frontend pages
     path('register/', views.donor_registration_view, name='register-page'),
+    path('register/', views.donor_registration_view, name='register'),  # Alias for template compatibility
     path('register/donor/', views.register_donor_view, name='register-donor'),
     path('login/', views.login_view, name='login-page'),
+    path('login/', views.login_view, name='login'),  # Alias for template compatibility
     path('logout/', views.logout_view, name='logout'),
     path('donors/', views.donor_search_page, name='donor-search-page'),
     path('search/', views.donor_search_page, name='search-donors-page'),
     path('users/', views.user_search_page, name='user-search-page'),
     path('profile/', views.profile_page, name='profile-page'),
+    path('profile/', views.profile_page, name='profile'),  # Alias for template compatibility
     path('near-me/', views.near_me_page, name='near-me-page'),
+    path('near-me/', views.near_me_page, name='near_me'),  # Alias for template compatibility
     path('dashboard/', views.dashboard_page, name='dashboard-page'),
+    path('dashboard/', views.dashboard_page, name='dashboard'),  # Alias for template compatibility
+    # TODO: Add favorites_page view
+    # path('favorites/', views.favorites_page, name='favorites'),
     path('health/', health_check.health_check, name='health-check'),
     
     # Search pages
@@ -31,6 +38,7 @@ urlpatterns = [
     
     # Settings page
     path('settings/', views.settings_page, name='settings-page'),
+    path('settings/', views.settings_page, name='settings'),  # Alias for template compatibility
     
     # API endpoints (these will be under api/accounts/ due to main urls.py configuration)
     path('api/register/', views.RegisterView.as_view(), name='register-api'),
@@ -60,5 +68,11 @@ urlpatterns = [
     # Phase 2: Favorites
     path('favorites/', views.favorites_list, name='favorites_list'),
     path('toggle-favorite/<int:donor_id>/', views.toggle_favorite_donor, name='toggle_favorite'),
+
+    # Public Profile & Follow System (Instagram-style)
+    path('profile/<int:user_id>/', views.public_profile_view, name='public-profile'),
+    path('toggle-follow/<int:user_id>/', views.toggle_follow, name='toggle-follow'),
+    path('<int:user_id>/followers/', views.followers_list, name='followers-list'),
+    path('<int:user_id>/following/', views.following_list, name='following-list'),
 
 ]

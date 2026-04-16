@@ -1,0 +1,49 @@
+databases:
+  - name: bloodlife-db
+    databaseName: bloodlife_db
+    user: bloodlife_user
+    plan: free
+    region: oregon
+    postgresMajorVersion: "15"
+
+services:
+  - type: web
+    name: bloodlife-platform
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: "./render_build.sh"
+    startCommand: "gunicorn blood_donation.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bloodlife-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+        sync: false
+      - key: DJANGO_SETTINGS_MODULE
+        value: blood_donation.settings
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*.onrender.com,localhost,127.0.0.1"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: REDIS_URL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        value: "noreply@yourdomain.com"
+      - key: DEFAULT_FROM_EMAIL_NAME
+        value: "BloodLife Platform"
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: CREATE_SUPERUSER
+        value: "false"
+      - key: CELERY_TASK_ALWAYS_EAGER
+        value: "True"

@@ -470,9 +470,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="chat-container">
+<div class="chat-container" data-aos="fade-in" data-aos-duration="800">
     <!-- Chat Header -->
-    <div class="chat-header">
+    <div class="chat-header" data-aos="fade-down" data-aos-delay="100">
         <div class="chat-title">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
@@ -488,7 +488,7 @@
     <!-- Main Grid -->
     <div class="main-grid">
         <!-- Contacts Panel -->
-        <div class="panel">
+        <div class="panel" data-aos="fade-up" data-aos-delay="300">
             <div class="panel-header">
                 <h2 class="panel-title">Contacts</h2>
                 <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ contacts|length|default:"3" }}</span>
@@ -545,7 +545,7 @@
         </div>
 
         <!-- Chat Messages Panel -->
-        <div class="panel">
+        <div class="panel" data-aos="fade-right" data-aos-delay="200">
             <div class="panel-header">
                 <h2 class="panel-title" id="current-contact-name">Harish</h2>
                 <div class="online-status">
@@ -601,7 +601,7 @@
         </div>
 
         <!-- Profile Panel -->
-        <div class="panel">
+        <div class="panel" data-aos="fade-left" data-aos-delay="400">
             <div class="panel-header">
                 <h2 class="panel-title">Profile</h2>
                 <button class="btn-action" style="padding: 6px 12px; font-size: 12px;">Edit</button>
@@ -923,6 +923,15 @@ function loadChatHistory(contactId) {
 document.addEventListener('DOMContentLoaded', function() {
     initializeWebSocket();
     loadChatHistory(currentContactId);
+    
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
     
     // Handle input typing indicator
     const chatInput = document.getElementById('chat-input');

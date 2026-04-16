@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request Not Found - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                <h2 class="fw-bold mt-4 mb-3">Request Not Found</h2>
+                <p class="text-gray-400 mb-4">
+                    The blood request you're looking for doesn't exist or has been removed.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-danger">
+                        <i class="bi bi-grid me-2"></i>View Track Requests
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-outline-light">
+                        <i class="bi bi-house-door me-2"></i>Go Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

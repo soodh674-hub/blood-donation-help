@@ -88,7 +88,7 @@ class NotificationMessage(models.Model):
         ('emergency', 'Emergency'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_notifications')
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium')
     title = models.CharField(max_length=200)
@@ -142,3 +142,28 @@ class TypingIndicator(models.Model):
     
     def __str__(self):
         return f"{self.user.username} is typing: {self.is_typing}"
+
+
+class ChatbotConversation(models.Model):
+    """Model for storing chatbot conversations and feedback"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='chatbot_conversations')
+    session_id = models.CharField(max_length=100, unique=True)
+    user_message = models.TextField()
+    bot_response = models.TextField()
+    confidence = models.CharField(max_length=10, default='medium')
+    suggestions = models.JSONField(default=list, blank=True)
+    user_context = models.JSONField(default=dict, blank=True)
+    is_helpful = models.BooleanField(null=True, blank=True)  # User feedback
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['session_id', 'created_at']),
+            models.Index(fields=['user', 'created_at']),
+        ]
+    
+    def __str__(self):
+        user_str = self.user.username if self.user else 'Anonymous'
+        return f"{user_str}: {self.user_message[:50]}..."

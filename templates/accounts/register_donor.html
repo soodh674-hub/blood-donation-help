@@ -5,6 +5,11 @@
 
 {% block extra_css %}
 <style>
+    /* Ensure hidden class works */
+    .hidden {
+        display: none !important;
+    }
+    
     .blood-type-option {
         transition: all 0.3s ease;
         position: relative;
@@ -60,113 +65,147 @@
     .step {
         transition: opacity 0.3s ease-out, transform 0.3s ease-out;
     }
+    
+    /* Gradient text utility */
+    .text-gradient-red {
+        background: linear-gradient(135deg, #ff4d4d, #ef4444);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Glass card utility */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Gradient button */
+    .btn-gradient {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gradient:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-lg w-full mx-auto">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
-                <span class="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">Become a Life Saver</span>
+<div class="d-flex align-items-center justify-content-center py-5 px-3" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);" data-aos="fade-in" data-aos-duration="800">
+    <div class="w-100" style="max-width: 600px;" data-aos="fade-up" data-aos-delay="100">
+        <div class="text-center mb-5" data-aos="fade-down" data-aos-delay="200">
+            <h1 class="display-5 fw-bold text-white mb-3">
+                <span class="text-gradient-red">Become a Life Saver</span>
             </h1>
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p class="fs-5" style="color: var(--text-secondary); max-width: 100%;">
                 Join our community of blood donors and help save lives in your community
             </p>
         </div>
 
-        <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl">
-            <form id="donor-registration-form" method="post" class="space-y-6">
+        <div class="glass-card p-4 p-md-5" data-aos="zoom-in" data-aos-delay="300">
+            <form id="donor-registration-form" method="post">
                 {% csrf_token %}
                 
                 <!-- Display form errors -->
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="bg-red-500/20 border border-red-500/30 rounded-lg p-4 mb-6">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="text-red-300">{{ message }}</span>
-                            </div>
+                        <div class="alert alert-danger" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            {{ message }}
                         </div>
                     {% endfor %}
                 {% endif %}
                 
                 <!-- Progress Indicator -->
-                <div class="mb-8">
-                    <div class="flex justify-center mb-4">
-                        <div class="flex space-x-3">
-                            <div class="step-indicator w-4 h-4 bg-white/20 rounded-full flex items-center justify-center" data-step="0">
-                                <span class="text-xs font-bold text-white">1</span>
+                <div class="mb-4">
+                    <div class="d-flex justify-center mb-3">
+                        <div class="d-flex" style="gap: 0.75rem;">
+                            <div class="step-indicator rounded-circle d-flex align-items-center justify-content-center" style="width: 1rem; height: 1rem; background: rgba(255, 255, 255, 0.2);" data-step="0">
+                                <span class="text-white fw-bold" style="font-size: 0.75rem;">1</span>
                             </div>
-                            <div class="step-indicator w-4 h-4 bg-white/20 rounded-full flex items-center justify-center" data-step="1">
-                                <span class="text-xs font-bold text-white">2</span>
+                            <div class="step-indicator rounded-circle d-flex align-items-center justify-content-center" style="width: 1rem; height: 1rem; background: rgba(255, 255, 255, 0.2);" data-step="1">
+                                <span class="text-white fw-bold" style="font-size: 0.75rem;">2</span>
                             </div>
-                            <div class="step-indicator w-4 h-4 bg-white/20 rounded-full flex items-center justify-center" data-step="2">
-                                <span class="text-xs font-bold text-white">3</span>
+                            <div class="step-indicator rounded-circle d-flex align-items-center justify-content-center" style="width: 1rem; height: 1rem; background: rgba(255, 255, 255, 0.2);" data-step="2">
+                                <span class="text-white fw-bold" style="font-size: 0.75rem;">3</span>
                             </div>
-                            <div class="step-indicator w-4 h-4 bg-white/20 rounded-full flex items-center justify-center" data-step="3">
-                                <span class="text-xs font-bold text-white">4</span>
+                            <div class="step-indicator rounded-circle d-flex align-items-center justify-content-center" style="width: 1rem; height: 1rem; background: rgba(255, 255, 255, 0.2);" data-step="3">
+                                <span class="text-white fw-bold" style="font-size: 0.75rem;">4</span>
                             </div>
                         </div>
                     </div>
                     <div class="text-center">
-                        <div class="text-sm font-medium text-gray-400">Step <span id="current-step">1</span> of 4</div>
-                        <div class="text-sm font-medium text-gray-400 mt-1"><span id="progress-percent">25</span>% Complete</div>
+                        <div class="small fw-medium" style="color: var(--text-secondary);">Step <span id="current-step">1</span> of 4</div>
+                        <div class="small fw-medium mt-1" style="color: var(--text-secondary);"><span id="progress-percent">25</span>% Complete</div>
                     </div>
                 </div>
 
                 <!-- Step 1: Personal Information -->
                 <div id="step-1" class="step active">
-                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                        <span class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">1</span>
+                    <h2 class="fs-4 fw-bold text-white mb-4 d-flex align-items-center">
+                        <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3" style="width: 2rem; height: 2rem; background: #ef4444; font-size: 0.875rem;">1</span>
                         Personal Information
                     </h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="first_name" class="block text-sm font-medium text-gray-300 mb-2">First Name *</label>
-                            <input type="text" id="first_name" name="first_name" required
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="first_name" class="form-label small fw-medium" style="color: var(--text-secondary);">First Name *</label>
+                            <input type="text" id="first_name" name="first_name" data-required="true" required
                                    value="{{ form_data.first_name|default:'' }}"
-                                   class="w-full px-4 py-3 bg-white/10 border {% if errors.first_name %}border-red-500{% else %}border-white/20{% endif %} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                                   class="form-control form-control-lg {% if errors.first_name %}is-invalid{% endif %}" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                             {% if errors.first_name %}
-                                <p class="mt-1 text-sm text-red-400">{{ errors.first_name.0 }}</p>
+                                <div class="invalid-feedback">{{ errors.first_name.0 }}</div>
                             {% endif %}
                         </div>
                         
-                        <div>
-                            <label for="last_name" class="block text-sm font-medium text-gray-300 mb-2">Last Name *</label>
-                            <input type="text" id="last_name" name="last_name" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="last_name" class="form-label small fw-medium" style="color: var(--text-secondary);">Last Name *</label>
+                            <input type="text" id="last_name" name="last_name" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email Address *</label>
-                            <input type="email" id="email" name="email" required
+                        <div class="col-12 col-md-6">
+                            <label for="email" class="form-label small fw-medium" style="color: var(--text-secondary);">Email Address *</label>
+                            <input type="email" id="email" name="email" data-required="true" required
                                    value="{{ form_data.email|default:'' }}"
-                                   class="w-full px-4 py-3 bg-white/10 border {% if errors.email %}border-red-500{% else %}border-white/20{% endif %} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                                   class="form-control form-control-lg {% if errors.email %}is-invalid{% endif %}"
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                             {% if errors.email %}
-                                <p class="mt-1 text-sm text-red-400">{{ errors.email.0 }}</p>
+                                <div class="invalid-feedback">{{ errors.email.0 }}</div>
                             {% endif %}
                         </div>
                         
-                        <div>
-                            <label for="phone_number" class="block text-sm font-medium text-gray-300 mb-2">Phone Number *</label>
-                            <input type="tel" id="phone_number" name="phone_number" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="phone_number" class="form-label small fw-medium" style="color: var(--text-secondary);">Phone Number *</label>
+                            <input type="tel" id="phone_number" name="phone_number" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="date_of_birth" class="block text-sm font-medium text-gray-300 mb-2">Date of Birth *</label>
-                            <input type="date" id="date_of_birth" name="date_of_birth" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="date_of_birth" class="form-label small fw-medium" style="color: var(--text-secondary);">Date of Birth *</label>
+                            <input type="date" id="date_of_birth" name="date_of_birth" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="gender" class="block text-sm font-medium text-gray-300 mb-2">Gender *</label>
-                            <select id="gender" name="gender" required
-                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="gender" class="form-label small fw-medium" style="color: var(--text-secondary);">Gender *</label>
+                            <select id="gender" name="gender" data-required="true" required
+                                    class="form-select form-select-lg" 
+                                    style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                                 <option value="" disabled selected>Select Gender</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
@@ -179,90 +218,92 @@
 
                 <!-- Step 2: Medical Information -->
                 <div id="step-2" class="step hidden">
-                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                        <span class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">2</span>
+                    <h2 class="fs-4 fw-bold text-white mb-4 d-flex align-items-center">
+                        <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3" style="width: 2rem; height: 2rem; background: #ef4444; font-size: 0.875rem;">2</span>
                         Medical Information
                     </h2>
                     
-                    <div class="space-y-6">
+                    <div class="mb-3">
                         <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Blood Type *</label>
-                            <div class="space-y-2">
-                                <div id="blood-type-options" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    <!-- Blood type options will be dynamically populated here -->
-                                </div>
-                                <p class="text-sm text-gray-400 mt-2">Select your blood type - this information is essential for matching blood donation requests</p>
+                            <label class="form-label small fw-medium" style="color: var(--text-secondary);">Blood Type *</label>
+                            <div id="blood-type-options" class="row g-2">
+                                <!-- Blood type options will be dynamically populated here -->
                             </div>
+                            <p class="small mt-2" style="color: var(--text-secondary);">Select your blood type - this information is essential for matching blood donation requests</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="last_donation_date" class="form-label small fw-medium" style="color: var(--text-secondary);">Last Donation Date</label>
+                        <input type="date" id="last_donation_date" name="last_donation_date"
+                               class="form-control form-control-lg" 
+                               style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="has_medical_conditions" name="has_medical_conditions" value="true"
+                                   class="form-check-input" style="background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2);">
+                            <label for="has_medical_conditions" class="form-check-label small" style="color: var(--text-secondary);">Do you have any medical conditions?</label>
                         </div>
                         
-                        
-                        
-                        <div>
-                            <label for="last_donation_date" class="block text-sm font-medium text-gray-300 mb-2">Last Donation Date</label>
-                            <input type="date" id="last_donation_date" name="last_donation_date"
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-                        </div>
-                        
-                        <div class="space-y-4">
-                            <div class="flex items-center">
-                                <input type="checkbox" id="has_medical_conditions" name="has_medical_conditions" value="true"
-                                       class="w-4 h-4 text-red-500 bg-white/10 border-white/20 rounded focus:ring-red-500 focus:ring-2">
-                                <label for="has_medical_conditions" class="ml-3 text-sm text-gray-300">Do you have any medical conditions?</label>
-                            </div>
-                            
-                            <div id="medical_conditions_details" class="hidden space-y-3 ml-7">
-                                <textarea id="medical_conditions" name="medical_conditions" rows="3"
-                                          placeholder="Please describe your medical conditions"
-                                          class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"></textarea>
-                            </div>
+                        <div id="medical_conditions_details" class="hidden mt-3 ms-4">
+                            <textarea id="medical_conditions" name="medical_conditions" rows="3"
+                                      placeholder="Please describe your medical conditions"
+                                      class="form-control" 
+                                      style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Location Information -->
                 <div id="step-3" class="step hidden">
-                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                        <span class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">3</span>
+                    <h2 class="fs-4 fw-bold text-white mb-4 d-flex align-items-center">
+                        <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3" style="width: 2rem; height: 2rem; background: #ef4444; font-size: 0.875rem;">3</span>
                         Location Information
                     </h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="address" class="block text-sm font-medium text-gray-300 mb-2">Address *</label>
-                            <input type="text" id="address" name="address" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="address" class="form-label small fw-medium" style="color: var(--text-secondary);">Address *</label>
+                            <input type="text" id="address" name="address" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="city" class="block text-sm font-medium text-gray-300 mb-2">City *</label>
-                            <input type="text" id="city" name="city" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="city" class="form-label small fw-medium" style="color: var(--text-secondary);">City *</label>
+                            <input type="text" id="city" name="city" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="state" class="block text-sm font-medium text-gray-300 mb-2">State *</label>
-                            <input type="text" id="state" name="state" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="state" class="form-label small fw-medium" style="color: var(--text-secondary);">State *</label>
+                            <input type="text" id="state" name="state" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="country" class="block text-sm font-medium text-gray-300 mb-2">Country *</label>
-                            <input type="text" id="country" name="country" required value="India"
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+                        <div class="col-12 col-md-6">
+                            <label for="country" class="form-label small fw-medium" style="color: var(--text-secondary);">Country *</label>
+                            <input type="text" id="country" name="country" data-required="true" required value="India"
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
                         </div>
                         
-                        <div>
-                            <label for="pincode" class="block text-sm font-medium text-gray-300 mb-2">Pincode *</label>
-                            <input type="text" id="pincode" name="pincode" required
-                                   class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200" maxlength="6">
+                        <div class="col-12 col-md-6">
+                            <label for="pincode" class="form-label small fw-medium" style="color: var(--text-secondary);">Pincode *</label>
+                            <input type="text" id="pincode" name="pincode" data-required="true" required
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);" maxlength="6">
                         </div>
                         
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Enable Location Services</label>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-medium" style="color: var(--text-secondary);">Enable Location Services</label>
                             <button type="button" id="enable-location" 
-                                    class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-gray-300 hover:border-red-500 hover:text-white transition-colors duration-200">
-                                Use Current Location
+                                    class="btn btn-outline-light w-100 py-3">
+                                <i class="bi bi-geo-alt me-2"></i>Use Current Location
                             </button>
                         </div>
                     </div>
@@ -270,149 +311,135 @@
 
                 <!-- Step 4: Account Setup -->
                 <div id="step-4" class="step hidden">
-                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                        <span class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">4</span>
+                    <h2 class="fs-4 fw-bold text-white mb-4 d-flex align-items-center">
+                        <span class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3" style="width: 2rem; height: 2rem; background: #10b981; font-size: 0.875rem;">4</span>
                         Create Your Account
                     </h2>
                     
-                    <div class="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-4 mb-6">
-                        <div class="flex items-start">
-                            <svg class="w-6 h-6 text-green-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div>
-                                <h4 class="text-green-300 font-semibold mb-1">Almost Done!</h4>
-                                <p class="text-green-200 text-sm">Create your login credentials to complete your registration as a blood donor.</p>
-                            </div>
+                    <div class="alert alert-success mb-4" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                        <i class="bi bi-check-circle fs-5 me-2"></i>
+                        <div>
+                            <strong class="d-block mb-1">Almost Done!</strong>
+                            <small>Create your login credentials to complete your registration as a blood donor.</small>
                         </div>
                     </div>
                     
-                    <div class="space-y-6">
-                        <input type="hidden" id="user_type" name="user_type" value="donor">
+                    <input type="hidden" id="user_type" name="user_type" value="donor">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label small fw-medium" style="color: var(--text-secondary);">Username *</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" id="username" name="username" data-required="true" required
+                                   placeholder="Choose a unique username"
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                        </div>
+                        <small class="text-muted" style="color: var(--text-secondary);">This will be your unique identifier on the platform</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label small fw-medium" style="color: var(--text-secondary);">Password *</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" id="password" name="password" data-required="true" required
+                                   placeholder="Create a strong password"
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                            <button type="button" 
+                                    onclick="togglePassword('password', this)" 
+                                    class="btn btn-outline-secondary" 
+                                    style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted" style="color: var(--text-secondary);">Minimum 8 characters, include numbers and special characters</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label small fw-medium" style="color: var(--text-secondary);">Confirm Password *</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" id="confirm_password" name="confirm_password" data-required="true" required
+                                   placeholder="Re-enter your password"
+                                   class="form-control form-control-lg" 
+                                   style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                            <button type="button" 
+                                    onclick="togglePassword('confirm_password', this)" 
+                                    class="btn btn-outline-secondary" 
+                                    style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <p id="password-match-message" class="small mt-1 d-none"></p>
+                    </div>
+                    
+                    <div class="pt-3 mt-3" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="consent_given" name="consent_given" data-required="true" required
+                                   class="form-check-input" style="background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2);">
+                            <label for="consent_given" class="form-check-label small" style="color: var(--text-secondary);">
+                                I agree to the <a href="{% url 'accounts:terms_of_service' %}" target="_blank" class="text-success">Terms of Service</a> and
+                                <a href="{% url 'accounts:privacy_policy' %}" target="_blank" class="text-success">Privacy Policy</a>
+                            </label>
+                        </div>
                         
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="data_retention_consent" name="data_retention_consent" data-required="true" required
+                                   class="form-check-input" style="background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2);">
+                            <label for="data_retention_consent" class="form-check-label small" style="color: var(--text-secondary);">
+                                I consent to data retention and processing for blood donation purposes
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input type="checkbox" id="newsletter" name="newsletter"
+                                   class="form-check-input" style="background-color: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2);">
+                            <label for="newsletter" class="form-check-label small" style="color: var(--text-secondary);">
+                                Subscribe to our newsletter for updates and donation reminders
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- CAPTCHA (only if available) -->
+                    {% if captcha_form %}
+                    <div class="pt-3 mt-3" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <label class="form-label small fw-medium" style="color: var(--text-secondary);">Security Verification *</label>
+                        {{ captcha_form.captcha }}
+                        {% if errors.captcha %}
+                            <div class="invalid-feedback d-block">{{ errors.captcha.0 }}</div>
+                        {% endif %}
+                        <small class="text-muted" style="color: var(--text-secondary);">Please solve the math problem to verify you are human</small>
+                    </div>
+                    {% else %}
+                    <!-- CAPTCHA disabled for local testing -->
+                    {% endif %}
+                    
+                    <div class="alert alert-warning mt-4" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-info-circle me-2"></i>
                         <div>
-                            <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username *</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <input type="text" id="username" name="username" required
-                                       placeholder="Choose a unique username"
-                                       class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">This will be your unique identifier on the platform</p>
-                        </div>
-                        
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Password *</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <input type="password" id="password" name="password" required
-                                       placeholder="Create a strong password"
-                                       class="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                                <button type="button" 
-                                        onclick="togglePassword('password', this)" 
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 focus:outline-none transition-colors">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">Minimum 8 characters, include numbers and special characters</p>
-                        </div>
-                        
-                        <div>
-                            <label for="confirm_password" class="block text-sm font-medium text-gray-300 mb-2">Confirm Password *</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <input type="password" id="confirm_password" name="confirm_password" required
-                                       placeholder="Re-enter your password"
-                                       class="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200">
-                                <button type="button" 
-                                        onclick="togglePassword('confirm_password', this)" 
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 focus:outline-none transition-colors">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <p id="password-match-message" class="text-xs mt-1 hidden"></p>
-                        </div>
-                        
-                        <div class="space-y-4 pt-4 border-t border-white/10">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="consent_given" name="consent_given" required
-                                       class="w-4 h-4 text-green-500 bg-white/10 border-white/20 rounded focus:ring-green-500 focus:ring-2 mt-1">
-                                <label for="consent_given" class="ml-3 text-sm text-gray-300">
-                                    I agree to the <a href="{% url 'terms_of_service' %}" target="_blank" class="text-green-400 hover:text-green-300 underline">Terms of Service</a> and 
-                                    <a href="{% url 'privacy_policy' %}" target="_blank" class="text-green-400 hover:text-green-300 underline">Privacy Policy</a>
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-start">
-                                <input type="checkbox" id="data_retention_consent" name="data_retention_consent" required
-                                       class="w-4 h-4 text-green-500 bg-white/10 border-white/20 rounded focus:ring-green-500 focus:ring-2 mt-1">
-                                <label for="data_retention_consent" class="ml-3 text-sm text-gray-300">
-                                    I consent to data retention and processing for blood donation purposes
-                                </label>
-                            </div>
-                            
-                            <div class="flex items-start">
-                                <input type="checkbox" id="newsletter" name="newsletter"
-                                       class="w-4 h-4 text-green-500 bg-white/10 border-white/20 rounded focus:ring-green-500 focus:ring-2 mt-1">
-                                <label for="newsletter" class="ml-3 text-sm text-gray-300">
-                                    Subscribe to our newsletter for updates and donation reminders
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- CAPTCHA -->
-                        <div class="pt-4 border-t border-white/10">
-                            <label class="block text-sm font-medium text-gray-300 mb-2">Security Verification *</label>
-                            {% load captcha %}
-                            {{ captcha_form.captcha }}
-                            {% if errors.captcha %}
-                                <p class="text-red-400 text-sm mt-1">{{ errors.captcha.0 }}</p>
-                            {% endif %}
-                            <p class="text-xs text-gray-400 mt-1">Please solve the math problem to verify you are human</p>
-                        </div>
-                        
-                        <div class="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-xl p-4 mt-6">
-                            <div class="flex items-start">
-                                <svg class="w-5 h-5 text-yellow-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                </svg>
-                                <div>
-                                    <h5 class="text-yellow-300 font-semibold text-sm mb-1">Important Information</h5>
-                                    <p class="text-yellow-200 text-xs">Your personal and medical information helps us match you with appropriate donation requests. All data is kept confidential and secure.</p>
-                                </div>
-                            </div>
+                            <strong class="d-block mb-1 small">Important Information</strong>
+                            <small style="font-size: 0.75rem;">Your personal and medical information helps us match you with appropriate donation requests. All data is kept confidential and secure.</small>
                         </div>
                     </div>
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="flex justify-between mt-8">
-                    <button type="button" id="prev-btn" class="hidden px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors duration-200 border border-white/20">
-                        Previous
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" id="prev-btn" class="btn btn-outline-light px-4 py-2 d-none">
+                        <i class="bi bi-arrow-left me-2"></i>Previous
                     </button>
-                    <button type="button" id="next-btn" class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
-                        Next
+                    <button type="button" id="next-btn" class="btn btn-gradient px-4 py-2 ms-auto">
+                        Next<i class="bi bi-arrow-right ms-2"></i>
                     </button>
-                    <button type="submit" id="submit-btn" class="hidden px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-200 transform hover:scale-105">
-                        Register as Donor
+                    <button type="submit" id="submit-btn" class="btn btn-success px-4 py-2 d-none">
+                        <i class="bi bi-check-circle me-2"></i>Register as Donor
                     </button>
                 </div>
             </form>
@@ -422,6 +449,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+    
     const form = document.getElementById('donor-registration-form');
     const steps = document.querySelectorAll('.step');
     const prevBtn = document.getElementById('prev-btn');
@@ -438,14 +474,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const bloodTypeContainer = document.getElementById('blood-type-options');
     if (bloodTypeContainer) {
         bloodTypes.forEach(type => {
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-3';
+            
             const label = document.createElement('label');
-            label.className = 'blood-type-option relative flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-red-400 transition-all duration-300 group';
+            label.className = 'blood-type-option w-100 d-flex align-items-center justify-content-center p-3 border rounded-3 cursor-pointer';
+            label.style.cssText = 'background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1) !important; cursor: pointer; transition: all 0.3s ease;';
             
-            label.innerHTML = '<input type="radio" name="blood_group" value="' + type + '" required class="sr-only peer">' +
-                              '<span class="text-white font-medium text-lg peer-checked:text-red-400 group-hover:text-red-300 transition-colors duration-200 relative z-10">' + type + '</span>' +
-                              '<div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-red-600/5 rounded-xl transition-all duration-300 peer-checked:from-red-500/20 peer-checked:to-red-600/20"></div>';
+            label.innerHTML = '<input type="radio" name="blood_group" value="' + type + '" required class="d-none">' +
+                              '<span class="text-white fw-medium fs-5">' + type + '</span>';
             
-            bloodTypeContainer.appendChild(label);
+            label.addEventListener('mouseenter', function() {
+                this.style.borderColor = 'rgba(239, 68, 68, 0.5) !important';
+                this.style.background = 'rgba(239, 68, 68, 0.1)';
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                if (!this.querySelector('input').checked) {
+                    this.style.borderColor = 'rgba(255, 255, 255, 0.1) !important';
+                    this.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
+            });
+            
+            label.querySelector('input').addEventListener('change', function() {
+                // Remove active state from all
+                document.querySelectorAll('.blood-type-option').forEach(opt => {
+                    opt.style.borderColor = 'rgba(255, 255, 255, 0.1) !important';
+                    opt.style.background = 'rgba(255, 255, 255, 0.05)';
+                    opt.querySelector('span').style.color = 'white';
+                });
+                // Add active state to selected
+                if (this.checked) {
+                    label.style.borderColor = '#ef4444 !important';
+                    label.style.background = 'rgba(239, 68, 68, 0.2)';
+                    label.querySelector('span').style.color = '#ef4444';
+                    label.querySelector('span').style.fontWeight = 'bold';
+                }
+            });
+            
+            col.appendChild(label);
+            bloodTypeContainer.appendChild(col);
         });
     }
     
@@ -468,27 +536,41 @@ document.addEventListener('DOMContentLoaded', function() {
     function showStep(stepIndex) {
         steps.forEach((step, index) => {
             if (index === stepIndex) {
+                step.classList.remove('d-none');
                 step.classList.remove('hidden');
                 step.classList.add('active');
+                // Enable required attributes for current step
+                const requiredFields = step.querySelectorAll('input, select, textarea');
+                requiredFields.forEach(field => {
+                    if (field.dataset.required === 'true') {
+                        field.setAttribute('required', 'required');
+                    }
+                });
             } else {
+                step.classList.add('d-none');
                 step.classList.add('hidden');
                 step.classList.remove('active');
+                // Remove required attributes from hidden steps
+                const requiredFields = step.querySelectorAll('input[required], select[required], textarea[required]');
+                requiredFields.forEach(field => {
+                    field.removeAttribute('required');
+                });
             }
         });
 
         // Update navigation buttons
         if (stepIndex === 0) {
-            prevBtn.classList.add('hidden');
+            prevBtn.classList.add('d-none');
         } else {
-            prevBtn.classList.remove('hidden');
+            prevBtn.classList.remove('d-none');
         }
 
         if (stepIndex === totalSteps - 1) {
-            nextBtn.classList.add('hidden');
-            submitBtn.classList.remove('hidden');
+            nextBtn.classList.add('d-none');
+            submitBtn.classList.remove('d-none');
         } else {
-            nextBtn.classList.remove('hidden');
-            submitBtn.classList.add('hidden');
+            nextBtn.classList.remove('d-none');
+            submitBtn.classList.add('d-none');
         }
 
         // Update progress
@@ -508,24 +590,40 @@ document.addEventListener('DOMContentLoaded', function() {
     nextBtn.addEventListener('click', function(e) {
         e.preventDefault();
         
+        console.log('Next button clicked, current step:', currentStep);
+        
         // Validate current step
         let isValid = true;
         const currentStepElement = steps[currentStep];
         const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let emptyFieldNames = [];
         
         requiredFields.forEach(field => {
-            if (!field.value.trim()) {
+            // For radio buttons, check if any in the group is checked
+            if (field.type === 'radio') {
+                const radioGroup = currentStepElement.querySelectorAll(`input[name="${field.name}"]`);
+                const isChecked = Array.from(radioGroup).some(radio => radio.checked);
+                if (!isChecked) {
+                    isValid = false;
+                    emptyFieldNames.push(field.name || field.id);
+                    console.log('Radio group not selected:', field.name);
+                }
+            } else if (!field.value || !field.value.trim()) {
                 isValid = false;
-                field.classList.add('border-red-500');
+                field.style.borderColor = '#ef4444';
+                emptyFieldNames.push(field.name || field.id);
                 // Add shake animation
                 field.style.animation = 'shake 0.3s';
                 setTimeout(() => {
                     field.style.animation = '';
                 }, 300);
+                console.log('Empty field:', field.name || field.id);
             } else {
-                field.classList.remove('border-red-500');
+                field.style.borderColor = '';
             }
         });
+
+        console.log('Step validation:', isValid ? 'PASSED' : 'FAILED', 'Empty fields:', emptyFieldNames);
 
         if (isValid) {
             if (currentStep < totalSteps - 1) {
@@ -545,17 +643,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Show error notification
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-red-500/20 border border-red-500/30 rounded-lg p-4 mb-6 animate-pulse';
+            errorDiv.className = 'alert alert-danger';
             errorDiv.innerHTML = `
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="text-red-300">Please fill in all required fields in the current step.</span>
-                </div>
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <span>Please fill in all required fields: <strong>${emptyFieldNames.join(', ')}</strong></span>
             `;
             
-            const existingError = form.querySelector('.bg-red-500\/20');
+            const existingError = form.querySelector('.alert-danger');
             if (existingError) {
                 existingError.remove();
             }
@@ -587,9 +681,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     medicalConditionsCheckbox.addEventListener('change', function() {
         if (this.checked) {
-            medicalConditionsDetails.classList.remove('hidden');
+            medicalConditionsDetails.classList.remove('d-none');
         } else {
-            medicalConditionsDetails.classList.add('hidden');
+            medicalConditionsDetails.classList.add('d-none');
         }
     });
 
@@ -602,13 +696,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // In a real app, you would use the coordinates to get address
                 // For now, we'll just show a success message
                 enableLocationBtn.textContent = 'Location Enabled ✓';
-                enableLocationBtn.classList.add('text-green-400');
+                enableLocationBtn.style.color = '#10b981';
                 
                 // You could populate address fields here with reverse geocoding
                 // This would require a geocoding service like Google Maps API
             }, function(error) {
                 enableLocationBtn.textContent = 'Enable Location Services';
-                enableLocationBtn.classList.remove('text-green-400');
+                enableLocationBtn.style.color = '';
                 alert('Could not get your location. Please enter manually.');
             });
         } else {
@@ -626,16 +720,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (passwordInput.value !== confirmPasswordInput.value) {
                 confirmPasswordInput.setCustomValidity('Passwords do not match');
                 passwordMatchMessage.textContent = '❌ Passwords do not match';
-                passwordMatchMessage.className = 'text-xs text-red-400 mt-1';
-                passwordMatchMessage.classList.remove('hidden');
+                passwordMatchMessage.className = 'small text-danger mt-1';
+                passwordMatchMessage.classList.remove('d-none');
             } else {
                 confirmPasswordInput.setCustomValidity('');
                 passwordMatchMessage.textContent = '✅ Passwords match';
-                passwordMatchMessage.className = 'text-xs text-green-400 mt-1';
-                passwordMatchMessage.classList.remove('hidden');
+                passwordMatchMessage.className = 'small text-success mt-1';
+                passwordMatchMessage.classList.remove('d-none');
             }
         } else {
-            passwordMatchMessage.classList.add('hidden');
+            passwordMatchMessage.classList.add('d-none');
         }
     }
 
@@ -646,65 +740,75 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        console.log('Form submission started...');
+        
         // Final validation
         let isValid = true;
+        let emptyFields = [];
         const allRequired = form.querySelectorAll('[required]');
         
         allRequired.forEach(field => {
-            if (!field.value.trim()) {
+            if (!field.value || !field.value.trim()) {
                 isValid = false;
-                field.classList.add('border-red-500');
+                field.style.borderColor = '#ef4444';
+                emptyFields.push(field.name || field.id);
+                console.log('Empty field:', field.name || field.id);
             } else {
-                field.classList.remove('border-red-500');
+                field.style.borderColor = '';
             }
         });
 
         // Check password match
         if (passwordInput.value !== confirmPasswordInput.value) {
             isValid = false;
-            passwordInput.classList.add('border-red-500');
-            confirmPasswordInput.classList.add('border-red-500');
+            passwordInput.style.borderColor = '#ef4444';
+            confirmPasswordInput.style.borderColor = '#ef4444';
             alert('Passwords do not match!');
+            console.log('Password mismatch');
             return;
         }
 
-        if (isValid) {
-            // Show loading state
-            submitBtn.innerHTML = 'Registering...';
-            submitBtn.disabled = true;
-            
-            // Submit form via traditional POST (more reliable than AJAX)
-            form.action = '/accounts/register/donor/';
-            form.method = 'post';
-            form.submit();
-        } else {
-            alert('Please fill in all required fields.');
+        if (!isValid) {
+            console.log('Validation failed. Empty fields:', emptyFields);
+            alert('Please fill in all required fields: ' + emptyFields.join(', '));
+            return;
         }
+
+        console.log('Validation passed, submitting form...');
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Registering...';
+        submitBtn.disabled = true;
+        
+        // Submit form via traditional POST (more reliable than AJAX)
+        form.action = '/accounts/register/donor/';
+        form.method = 'post';
+        
+        console.log('Form action:', form.action);
+        console.log('Submitting form now...');
+        
+        // Use a small timeout to ensure the button state updates
+        setTimeout(function() {
+            form.submit();
+        }, 100);
     });
 });
 
 // Toggle Password Visibility Function
 function togglePassword(inputId, button) {
     const input = document.getElementById(inputId);
-    const eyeIcon = button.querySelector('svg');
+    const icon = button.querySelector('i');
     
     if (input.type === 'password') {
         input.type = 'text';
         // Change icon to crossed-out eye
-        eyeIcon.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
-        `;
-        eyeIcon.classList.add('text-red-400');
-        eyeIcon.classList.remove('text-gray-400');
+        icon.className = 'bi bi-eye-slash';
+        button.style.color = '#ef4444';
     } else {
         input.type = 'password';
         // Change icon back to normal eye
-        eyeIcon.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-        `;
-        eyeIcon.classList.remove('text-red-400');
-        eyeIcon.classList.add('text-gray-400');
+        icon.className = 'bi bi-eye';
+        button.style.color = '';
     }
 }
 </script>

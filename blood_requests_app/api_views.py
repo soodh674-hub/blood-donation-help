@@ -297,7 +297,7 @@ def chat_history_api(request, contact_id):
         contact = get_object_or_404(User, id=contact_id)
         
         # Get messages between current user and contact
-        from .models import ChatMessage
+        from .models_chat import ChatMessage
         
         messages = ChatMessage.objects.filter(
             Q(sender=request.user, receiver=contact) |

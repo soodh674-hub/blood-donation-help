@@ -145,18 +145,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="near-me-container">
+<div class="near-me-container" data-aos="fade-in" data-aos-duration="800">
     <!-- Header -->
-    <div class="near-me-header">
+    <div class="near-me-header" data-aos="fade-down" data-aos-delay="100">
         <div class="near-me-title">📍 Find Users Near Me</div>
         <div class="near-me-subtitle">Users within 25km of your location</div>
     </div>
     
     <!-- User Grid -->
     {% if nearby_users %}
-    <div class="user-grid">
+    <div class="user-grid" data-aos="fade-up" data-aos-delay="200">
         {% for item in nearby_users %}
-        <div class="user-card">
+        <div class="user-card" data-aos="zoom-in" data-aos-delay="300">
             <div class="user-avatar">{{ item.user.first_name|default:item.user.username|make_list|first|upper }}</div>
             <div class="user-name">{{ item.user.get_full_name|default:item.user.username }}</div>
             {% if item.user.blood_group %}
@@ -182,4 +182,17 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+// Initialize AOS
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+</script>
 {% endblock %}

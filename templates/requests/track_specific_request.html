@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Request #{{ blood_request.id }} - BloodLife{% endblock %}
+
+{% block extra_css %}
+<meta name="csrf-token" content="{% csrf_token %}">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #ef4444, #dc2626);
+        --success-gradient: linear-gradient(135deg, #10b981, #059669);
+        --warning-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+        --info-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .request-header {
+        background: rgba(31, 41, 55, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .blood-group-badge {
+        width: 80px;
+        height: 80px;
+        background: var(--primary-gradient);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+    }
+
+    .priority-badge {
+        padding: 0.5rem 1.25rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .priority-emergency {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        animation: pulse-emergency 2s infinite;
+    }
+
+    .priority-urgent {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .priority-normal {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .priority-low {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    @keyframes pulse-emergency {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .status-approved { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .status-active { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .status-fulfilled { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+    .status-cancelled { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    .info-card {
+        background: rgba(31, 41, 55, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card h5 {
+        color: #60a5fa;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .action-btn {
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-accept {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-accept:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-contact {
+        background: var(--info-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-contact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .response-card {
+        background: rgba(31, 41, 55, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .response-card:hover {
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .map-container {
+        height: 300px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--success-gradient);
+        transition: width 0.5s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-secondary">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'requests:track-request-dashboard' %}" class="text-decoration-none text-secondary">Track Requests</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page">Request #{{ blood_request.id }}</li>
+        </ol>
+    </nav>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        {{ error }}
+    </div>
+    {% else %}
+
+    <!-- Request Header -->
+    <div class="request-header">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="blood-group-badge">
+                    {{ blood_request.patient_blood_group }}
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="priority-badge priority-{{ blood_request.priority }}">
+                        {{ blood_request.priority }}
+                    </span>
+                    <span class="status-badge status-{{ blood_request.status }}">
+                        {{ blood_request.status }}
+                    </span>
+                    {% if blood_request.is_critical %}
+                    <span class="badge bg-danger">Critical</span>
+                    {% endif %}
+                </div>
+                
+                <h2 class="fw-bold mb-2">{{ blood_request.patient_name }}</h2>
+                <p class="text-gray-400 mb-2">{{ blood_request.hospital_name }}</p>
+                <p class="text-gray-300 mb-0">
+                    <i class="bi bi-geo-alt me-2"></i>
+                    {{ blood_request.city }}, {{ blood_request.state }}
+                </p>
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex flex-column gap-2">
+                    {% if blood_request.status == 'pending' or blood_request.status == 'approved' or blood_request.status == 'active' and not user_response %}
+                    <button class="action-btn btn-accept w-100" onclick="acceptRequest({{ blood_request.id }})">
+                        <i class="bi bi-check-circle me-2"></i>Accept Request
+                    </button>
+                    {% endif %}
+                    
+                    <a href="tel:{{ blood_request.contact_phone }}" class="action-btn btn-contact w-100 text-decoration-none text-center">
+                        <i class="bi bi-telephone me-2"></i>Call Hospital
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Request Details -->
+        <div class="col-lg-8">
+            <!-- Patient Information -->
+            <div class="info-card">
+                <h5><i class="bi bi-person me-2"></i>Patient Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Patient Name</label>
+                        <p class="text-white mb-0">{{ blood_request.patient_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Blood Group</label>
+                        <p class="text-white mb-0">{{ blood_request.patient_blood_group }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Age</label>
+                        <p class="text-white mb-0">{{ blood_request.patient_age }} years</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Gender</label>
+                        <p class="text-white mb-0">{{ blood_request.patient_gender|title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Information -->
+            <div class="info-card">
+                <h5><i class="bi bi-hospital me-2"></i>Hospital Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="text-gray-500 small">Hospital Name</label>
+                        <p class="text-white mb-0">{{ blood_request.hospital_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Address</label>
+                        <p class="text-white mb-0">{{ blood_request.hospital_address }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">City, State</label>
+                        <p class="text-white mb-0">{{ blood_request.city }}, {{ blood_request.state }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="info-card">
+                <h5><i class="bi bi-telephone me-2"></i>Contact Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Contact Person</label>
+                        <p class="text-white mb-0">{{ blood_request.contact_person }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Phone Number</label>
+                        <p class="text-white mb-0">
+                            <a href="tel:{{ blood_request.contact_phone }}" class="text-decoration-none text-white">
+                                {{ blood_request.contact_phone }}
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Email</label>
+                        <p class="text-white mb-0">{{ blood_request.contact_email }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Details -->
+            <div class="info-card">
+                <h5><i class="bi bi-info-circle me-2"></i>Request Details</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Required Units</label>
+                        <p class="text-white mb-0">{{ blood_request.required_units }} units</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Fulfilled Units</label>
+                        <p class="text-white mb-0">{{ blood_request.fulfilled_units }} units</p>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="text-gray-500 small">Progress</label>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <p class="text-gray-400 small mt-1">{{ blood_request.fulfilled_units }} of {{ blood_request.required_units }} units fulfilled</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Required By</label>
+                        <p class="text-white mb-0">{{ blood_request.required_by|date:"F j, Y, g:i A" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-gray-500 small">Expires At</label>
+                        <p class="text-white mb-0">{{ blood_request.expires_at|date:"F j, Y, g:i A" }}</p>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="text-gray-500 small">Reason</label>
+                        <p class="text-white mb-0">{{ blood_request.reason }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="info-card">
+                <h5><i class="bi bi-map me-2"></i>Location</h5>
+                <div class="map-container">
+                    <div id="map" data-lat="{{ blood_request.latitude|default:20.5937 }}" data-lng="{{ blood_request.longitude|default:78.9629 }}"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Responses -->
+        <div class="col-lg-4">
+            <div class="info-card">
+                <h5><i class="bi bi-people me-2"></i>Donor Responses</h5>
+                <p class="text-gray-400 small mb-3">{{ all_responses|length }} donor(s) have responded</p>
+                
+                {% if all_responses %}
+                <div id="responses-list">
+                    {% for response in all_responses %}
+                    <div class="response-card">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                                {{ response.donor.first_name|default:response.donor.username|make_list|first|upper }}
+                            </div>
+                            <div class="flex-1">
+                                <h6 class="fw-bold mb-0">{{ response.donor.get_full_name|default:response.donor.username }}</h6>
+                                <p class="text-gray-400 small mb-0">
+                                    {% if response.distance_km %}
+                                    <i class="bi bi-geo-alt me-1"></i>{{ response.distance_km|floatformat:1 }} km away
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <span class="badge bg-success">Accepted</span>
+                        </div>
+                        <p class="text-gray-300 small mt-2 mb-0">{{ response.message|default:"No message provided" }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 2rem; color: #6b7280;"></i>
+                    <p class="text-gray-400 mt-2 mb-0">No responses yet</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Requester Info -->
+            {% if blood_request.requester %}
+            <div class="info-card">
+                <h5><i class="bi bi-person-circle me-2"></i>Requester</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 50px; height: 50px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        {{ blood_request.requester.first_name|default:blood_request.requester.username|make_list|first|upper }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ blood_request.requester.get_full_name|default:blood_request.requester.username }}</h6>
+                        <p class="text-gray-400 small mb-0">{{ blood_request.requester.email }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="info-card">
+                <h5><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-outline-light">
+                        <i class="bi bi-grid me-2"></i>View All Requests
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="shareRequest()">
+                        <i class="bi bi-share me-2"></i>Share Request
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="reportIssue()">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Report Issue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize Leaflet map
+document.addEventListener('DOMContentLoaded', function() {
+    const mapElement = document.getElementById('map');
+    const lat = parseFloat(mapElement.dataset.lat);
+    const lng = parseFloat(mapElement.dataset.lng);
+
+    if (typeof L !== 'undefined' && lat && lng) {
+        const map = L.map('map').setView([lat, lng], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add marker for hospital location
+        const marker = L.marker([lat, lng]).addTo(map);
+        const hospitalName = "{{ blood_request.hospital_name|escapejs }}";
+        const hospitalAddress = "{{ blood_request.hospital_address|escapejs }}";
+        const city = "{{ blood_request.city|escapejs }}";
+        const state = "{{ blood_request.state|escapejs }}";
+        
+        marker.bindPopup(
+            `<strong>${hospitalName}</strong><br>${hospitalAddress}<br>${city}, ${state}`
+        ).openPopup();
+    }
+
+    // Set progress bar width
+    const fulfilled = {{ blood_request.fulfilled_units|default:0 }};
+    const required = {{ blood_request.required_units|default:1 }};
+    const progressFill = document.getElementById('progress-fill');
+    if (progressFill && required > 0) {
+        const percentage = Math.min((fulfilled / required) * 100, 100);
+        progressFill.style.width = percentage + '%';
+    }
+});
+
+async function acceptRequest(requestId) {
+    if (!confirm('Are you sure you want to accept this blood donation request?')) {
+        return;
+    }
+
+    try {
+        const csrfToken = getCookie('csrftoken');
+        const response = await fetch(`/requests/${requestId}/respond/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                action: 'accept'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('success', 'Request Accepted! Thank you for your willingness to donate.');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showNotification('error', data.message || 'Failed to accept request');
+        }
+    } catch (error) {
+        console.error('Error accepting request:', error);
+        showNotification('error', 'An error occurred. Please try again.');
+    }
+}
+
+function shareRequest() {
+    const url = window.location.href;
+    const bloodGroup = "{{ blood_request.patient_blood_group|escapejs }}";
+    const hospitalName = "{{ blood_request.hospital_name|escapejs }}";
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Blood Donation Request - BloodLife',
+            text: 'Urgent blood donation request for ' + bloodGroup + ' blood at ' + hospitalName,
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url);
+        showNotification('success', 'Link copied to clipboard!');
+    }
+}
+
+function reportIssue() {
+    const message = prompt('Please describe the issue with this request:');
+    if (message) {
+        // In production, send this to your backend
+        showNotification('success', 'Issue reported. Thank you for your feedback.');
+    }
+}
+
+function showNotification(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

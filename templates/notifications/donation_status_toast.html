@@ -1,6 +1,6 @@
 {# Enhanced Donation Status Toast Notification - Modern Redesign #}
 {% if user.is_authenticated and show_donation_popup %}
-<div id="donation-status-toast" class="donation-toast toast-hidden">
+<div id="donation-status-toast" class="donation-toast toast-hidden" data-aos="slide-in-left" data-aos-duration="800">
     <!-- Decorative Background Elements -->
     <div class="toast-bg-decoration"></div>
     
@@ -421,6 +421,15 @@
 // Auto-show toast after page load
 document.addEventListener('DOMContentLoaded', function() {
     const toast = document.getElementById('donation-status-toast');
+    
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
     
     // Check if user dismissed this session
     if (sessionStorage.getItem('donationToastDismissed') === 'true') {

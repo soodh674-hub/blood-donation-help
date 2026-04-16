@@ -161,6 +161,12 @@
         height: 100%;
         background: #10b981;
         transition: width 0.3s ease;
+        width: 0%;
+    }
+
+    .analytics-subtitle {
+        color: #6b7280;
+        font-size: 14px;
     }
 
     .main-grid {
@@ -685,9 +691,40 @@
         border-radius: 4px;
     }
 
+    .skeleton-medium {
+        height: 100px;
+    }
+
     @keyframes loading {
         0% { background-position: 200% 0; }
         100% { background-position: -200% 0; }
+    }
+
+    /* Status Badges */
+    .status-badge {
+        font-size: 14px;
+    }
+
+    .status-live {
+        color: #10b981;
+    }
+
+    .donor-count-badge {
+        background: #10b981;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .panel-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .contact-badge {
+        color: #dc2626;
+        font-size: 14px;
     }
 
     /* Empty State */
@@ -705,133 +742,163 @@
 {% endblock %}
 
 {% block content %}
-<div class="track-container" id="track-container" data-request-id="{{ request_id }}">
+<div class="py-4 py-md-5" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);" id="track-container" data-request-id="{{ request_id }}" data-aos="fade-in" data-aos-duration="800">
     <!-- Track Request Header -->
-    <div class="track-header">
-        <div class="track-title">📍 Track Blood Request</div>
-        <div class="track-subtitle">Real-time donor tracking and coordination</div>
+    <div class="text-center mb-4 mb-md-5" data-aos="fade-down" data-aos-delay="100">
+        <h1 class="display-5 display-md-4 fw-bold text-gradient-red mb-2">📍 Track Blood Request</h1>
+        <p class="fs-6 fs-md-5" style="color: var(--text-secondary);">Real-time donor tracking and coordination</p>
     </div>
 
     <!-- Request Management Options -->
-    <div class="management-section">
-        <div class="management-buttons">
-            <button onclick="showCreateRequestModal()" class="manage-btn create">
-                <span class="btn-icon">➕</span>
-                <span class="btn-text">Create New Request</span>
-            </button>
-            <button onclick="showManageRequestsModal()" class="manage-btn manage">
-                <span class="btn-icon">📋</span>
-                <span class="btn-text">Manage My Requests</span>
-            </button>
-            <button onclick="showAnalyticsModal()" class="manage-btn manage">
-                <span class="btn-icon">📊</span>
-                <span class="btn-text">View Analytics</span>
-            </button>
+    <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <button onclick="showCreateRequestModal()" class="btn btn-success w-100">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    <span>Create New Request</span>
+                </button>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <button onclick="showManageRequestsModal()" class="btn btn-primary w-100">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    <span>Manage My Requests</span>
+                </button>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <button onclick="showAnalyticsModal()" class="btn btn-info w-100">
+                    <i class="bi bi-graph-up me-2"></i>
+                    <span>View Analytics</span>
+                </button>
+            </div>
             {% if user.is_authenticated %}
-            <button onclick="confirmDeleteRequest()" class="manage-btn delete">
-                <span class="btn-icon">🗑️</span>
-                <span class="btn-text">Delete This Request</span>
-            </button>
+            <div class="col-12 col-md-6 col-lg-3">
+                <button onclick="confirmDeleteRequest()" class="btn btn-danger w-100">
+                    <i class="bi bi-trash me-2"></i>
+                    <span>Delete This Request</span>
+                </button>
+            </div>
             {% endif %}
         </div>
     </div>
 
     <!-- Analytics Section -->
-    <div class="analytics-section">
-        <div class="panel-header">
-            <h2 class="panel-title">📊 Request Analytics</h2>
-            <span style="color: #6b7280; font-size: 14px;">Live statistics</span>
+    <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">📊 Request Analytics</h2>
+            <span class="badge bg-primary">Live statistics</span>
         </div>
-        <div class="analytics-grid">
-            <div class="analytics-card success">
-                <div class="analytics-value" id="total-donors">0</div>
-                <div class="analytics-label">Total Donors</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="donor-progress" style="width: 0%"></div>
+        <div class="row g-3 g-md-4">
+            <div class="col-6 col-md-3">
+                <div class="glass-card p-3 text-center" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2)); border-color: rgba(16, 185, 129, 0.3);">
+                    <div class="fs-2 fs-md-1 fw-bold text-success mb-1" id="total-donors">0</div>
+                    <div class="small" style="color: var(--text-secondary);">Total Donors</div>
+                    <div class="progress mt-2" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
+                        <div class="progress-bar bg-success" id="donor-progress" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
-            <div class="analytics-card warning">
-                <div class="analytics-value" id="en-route-donors">0</div>
-                <div class="analytics-label">En Route</div>
+            <div class="col-6 col-md-3">
+                <div class="glass-card p-3 text-center" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2)); border-color: rgba(245, 158, 11, 0.3);">
+                    <div class="fs-2 fs-md-1 fw-bold mb-1" style="color: #fbbf24;" id="en-route-donors">0</div>
+                    <div class="small" style="color: var(--text-secondary);">En Route</div>
+                </div>
             </div>
-            <div class="analytics-card danger">
-                <div class="analytics-value" id="time-remaining">--:--</div>
-                <div class="analytics-label">Time Remaining</div>
+            <div class="col-6 col-md-3">
+                <div class="glass-card p-3 text-center" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2)); border-color: rgba(239, 68, 68, 0.3);">
+                    <div class="fs-2 fs-md-1 fw-bold text-danger mb-1" id="time-remaining">--:--</div>
+                    <div class="small" style="color: var(--text-secondary);">Time Remaining</div>
+                </div>
             </div>
-            <div class="analytics-card">
-                <div class="analytics-value" id="fulfillment-rate">0%</div>
-                <div class="analytics-label">Fulfillment Rate</div>
+            <div class="col-6 col-md-3">
+                <div class="glass-card p-3 text-center" style="background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(126, 34, 206, 0.2)); border-color: rgba(147, 51, 234, 0.3);">
+                    <div class="fs-2 fs-md-1 fw-bold mb-1" style="color: #a78bfa;" id="fulfillment-rate">0%</div>
+                    <div class="small" style="color: var(--text-secondary);">Fulfillment Rate</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Main Grid -->
-    <div class="main-grid">
+    <div class="row g-4 g-md-5 mb-4">
         <!-- Map Section -->
-        <div class="panel map-section">
-            <div class="panel-header">
-                <h2 class="panel-title">Live Tracking Map</h2>
-                <span style="color: #10b981; font-size: 14px;">● Real-time</span>
-            </div>
-            
-            <div class="map-container">
-                <div id="tracking-map" class="h-96 w-full rounded-xl"></div>
-            </div>
-            
-            <div class="request-details" id="request-details">
-                <!-- Dynamic request details will be loaded here -->
-                <div class="loading-skeleton" style="height: 100px;"></div>
+        <div class="col-12 col-lg-8" data-aos="fade-right" data-aos-delay="400">
+            <div class="glass-card p-4 p-md-5 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">Live Tracking Map</h2>
+                    <span class="badge bg-danger">● Real-time</span>
+                </div>
+                
+                <div id="tracking-map" class="rounded-3 mb-3" style="height: 500px;" data-lat="{{ blood_request.latitude|default:20.5937 }}" data-lng="{{ blood_request.longitude|default:78.9629 }}"></div>
+                
+                <div id="request-details">
+                    <!-- Dynamic request details will be loaded here -->
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Donors Panel -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2 class="panel-title">Interested Donors</h2>
-                <span id="donor-count" style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">0 Available</span>
-            </div>
-            
-            <div class="donor-list" id="donor-list">
-                <!-- Dynamic donor list will be loaded here -->
-                <div class="loading-skeleton" style="height: 100px;"></div>
+        <div class="col-12 col-lg-4" data-aos="fade-left" data-aos-delay="400">
+            <div class="glass-card p-4 p-md-5 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">Interested Donors</h2>
+                    <span id="donor-count" class="badge bg-primary">0 Available</span>
+                </div>
+                
+                <div id="donor-list" style="max-height: 500px; overflow-y: auto;">
+                    <!-- Dynamic donor list will be loaded here -->
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Timeline Section -->
-    <div class="timeline-section">
-        <div class="panel-header">
-            <h2 class="panel-title">Request Timeline</h2>
-            <span style="color: #6b7280; font-size: 14px;">Live updates</span>
+    <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">Request Timeline</h2>
+            <span class="badge bg-info">Live updates</span>
         </div>
         
-        <div class="timeline-container">
-            <div class="timeline-line"></div>
-            <div id="timeline-items">
-                <!-- Dynamic timeline items will be loaded here -->
-                <div class="loading-skeleton" style="height: 100px;"></div>
+        <div id="timeline-items">
+            <!-- Dynamic timeline items will be loaded here -->
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
     </div>
 
     <!-- Contact Section -->
-    <div class="contact-section">
-        <div class="panel-header">
-            <h2 class="panel-title">Emergency Contact</h2>
-            <span style="color: #dc2626; font-size: 14px;">24/7 Available</span>
+    <div class="glass-card p-4 p-md-5" data-aos="fade-up" data-aos-delay="600">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">Emergency Contact</h2>
+            <span class="badge bg-success">24/7 Available</span>
         </div>
         
-        <div class="contact-info" id="contact-info">
+        <div id="contact-info">
             <!-- Dynamic contact info will be loaded here -->
-            <div class="loading-skeleton" style="height: 100px;"></div>
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Notification Toast -->
-<div class="notification-toast" id="notification-toast">
-    <div class="notification-title" id="notification-title"></div>
-    <div class="notification-message" id="notification-message"></div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+    <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="notification-title">Notification</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="notification-message">
+            Message content
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -849,10 +916,14 @@ let wsConnection = null;
 // Get request ID from URL
 const requestId = window.location.pathname.split('/').filter(Boolean).pop();
 
+// Get coordinates from data attributes
+const requestLat = parseFloat(document.getElementById('tracking-map').dataset.lat || '20.5937');
+const requestLng = parseFloat(document.getElementById('tracking-map').dataset.lng || '78.9629');
+
 // Initialize map
 function initMap() {
     try {
-        map = L.map('tracking-map').setView([28.6139, 77.2090], 12); // Default to Delhi
+        map = L.map('tracking-map').setView([requestLat, requestLng], 12); // Use request coordinates
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
@@ -1303,6 +1374,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load contact info
     loadContactInfo();
+    
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
 });
 
 // Load contact info

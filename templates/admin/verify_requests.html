@@ -270,35 +270,35 @@
 {% endblock %}
 
 {% block content %}
-<div class="verification-container">
+<div class="verification-container" data-aos="fade-in" data-aos-duration="800">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header" data-aos="fade-down" data-aos-delay="100">
         <h1 class="text-3xl font-bold mb-2">🔍 Blood Request Verification</h1>
         <p class="text-red-100">Review and verify pending blood donation requests</p>
     </div>
     
     <!-- Statistics -->
-    <div class="stats-grid">
-        <div class="stat-card">
+    <div class="stats-grid" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-card" data-aos="zoom-in" data-aos-delay="250">
             <div class="stat-number">{{ pending_count }}</div>
             <div class="stat-label">Pending Verification</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-aos="zoom-in" data-aos-delay="300">
             <div class="stat-number">{{ approved_today }}</div>
             <div class="stat-label">Approved Today</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-aos="zoom-in" data-aos-delay="350">
             <div class="stat-number">{{ rejected_today }}</div>
             <div class="stat-label">Rejected Today</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-aos="zoom-in" data-aos-delay="400">
             <div class="stat-number">{{ avg_response_time }}</div>
             <div class="stat-label">Avg Response (min)</div>
         </div>
     </div>
     
     <!-- Filter Bar -->
-    <div class="filter-bar">
+    <div class="filter-bar" data-aos="fade-in" data-aos-delay="450">
         <select id="priorityFilter" class="filter-select">
             <option value="all">All Priorities</option>
             <option value="emergency">🔴 Emergency</option>
@@ -319,7 +319,7 @@
     <!-- Pending Requests List -->
     {% if pending_requests %}
         {% for request in pending_requests %}
-        <div class="request-card {{ request.priority }}" data-priority="{{ request.priority }}" data-id="{{ request.id }}">
+        <div class="request-card {{ request.priority }}" data-priority="{{ request.priority }}" data-id="{{ request.id }}" data-aos="fade-up" data-aos-delay="500">
             <!-- Card Header -->
             <div class="card-header">
                 <div>
@@ -465,6 +465,17 @@
 
 {% block extra_js %}
 <script>
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out-cubic',
+                once: true
+            });
+        }
+    });
+
     // Event Delegation for all button clicks
     document.addEventListener('click', function(e) {
         const button = e.target.closest('button[data-action]');

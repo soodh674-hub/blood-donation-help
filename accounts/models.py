@@ -477,6 +477,22 @@ class FavoriteDonor(models.Model):
         return f"{self.user.username} → {self.favorite_donor.username}"
 
 
+class Follow(models.Model):
+    """Track user follows (Instagram-style social connections)"""
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+        ordering = ['-created_at']
+        verbose_name = 'Follow'
+        verbose_name_plural = 'Follows'
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.following.username}"
+
+
 # Auto-create settings when user is created
 from django.db.models.signals import post_save
 from django.dispatch import receiver

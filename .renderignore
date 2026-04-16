@@ -1,0 +1,82 @@
+# Exclude unnecessary files from Render deployment
+
+# Development files
+*.pyc
+__pycache__/
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files (should be set in Render dashboard)
+.env
+.env.local
+.env.production
+
+# Database files (use PostgreSQL on Render)
+db.sqlite3
+*.sqlite3
+
+# Log files
+logs/
+*.log
+
+# Media files (will be created during runtime)
+media/
+
+# Static files (will be collected during build)
+staticfiles/
+
+# Node modules (not needed for Django backend)
+node_modules/
+
+# Documentation
+*.md
+docs/
+
+# Scripts (not needed for production)
+*.bat
+*.ps1
+fix_migrations.py
+generate_pending_migrations.py
+diagnose_email_delivery.py
+emergency_db_fix.py
+verify_database_columns.py
+
+# Shell scripts (except render_build.sh)
+deploy.sh
+deploy_enhanced.sh
+start_server.sh
+
+# Git files
+.git/
+.gitignore
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Python bytecode
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp

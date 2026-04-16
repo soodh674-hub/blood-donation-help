@@ -10,8 +10,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 import logging
+import warnings
 from pathlib import Path
 from decouple import config
+
+# Suppress common deprecation warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', message='pkg_resources is deprecated')
+warnings.filterwarnings('ignore', message='pkg_resources')
 
 # Set up logging for settings
 logging.basicConfig(level=logging.INFO)
@@ -20,8 +26,13 @@ logger = logging.getLogger(__name__)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Check if we're running on Render
-IS_RENDER = 'RENDER' in os.environ
+# Check if we're running on Render (multiple detection methods)
+IS_RENDER = any([
+    'RENDER' in os.environ,
+    'RENDER_SERVICE_ID' in os.environ,
+    'RENDER_SERVICE_NAME' in os.environ,
+    os.environ.get('DYNO'),  # Also detect Heroku-like environments
+])
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -163,7 +174,7 @@ else:
     REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/1')
     try:
         import redis
-        redis_client = redis.Redis.from_url(REDIS_URL)
+        redis_client = redis.Redis.from_url(REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
         redis_client.ping()
         # Redis is available, use it for channels
         CHANNEL_LAYERS = {
@@ -254,13 +265,14 @@ if IS_RENDER:
             }
 
 else:
-    # Local development - use SQLite
+    # Local development - use SQLite for now (add Supabase credentials to .env to switch)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    logger.info("⚠️ Using SQLite (Add SUPABASE_HOST and SUPABASE_PASSWORD to .env to use Supabase)")
 
 # Cache configuration
 if IS_RENDER:
@@ -290,7 +302,7 @@ else:
     REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/1')
     try:
         import redis
-        redis_client = redis.Redis.from_url(REDIS_URL)
+        redis_client = redis.Redis.from_url(REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
         redis_client.ping()
         # Redis is available
         CACHES = {
@@ -331,7 +343,7 @@ else:
     REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
     try:
         import redis
-        redis_client = redis.Redis.from_url(REDIS_URL)
+        redis_client = redis.Redis.from_url(REDIS_URL, socket_connect_timeout=2, socket_timeout=2)
         redis_client.ping()
         # Redis is available
         CELERY_BROKER_URL = REDIS_URL
@@ -534,6 +546,14 @@ if IS_RENDER:
     else:
         logger.info(f"✅ Brevo HTTP API configured - using HTTPS for reliable email delivery (key length: {len(BREVO_API_KEY)})")
     
+    # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
+    # Optional: Google Maps API key if you prefer Google over OpenStreetMap
+    GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
+    if GOOGLE_MAPS_API_KEY and GOOGLE_MAPS_API_KEY != 'your-google-maps-api-key-here':
+        logger.info(f"ℹ️ Google Maps API configured (optional) - key length: {len(GOOGLE_MAPS_API_KEY)}")
+    else:
+        logger.info("✅ Using FREE OpenStreetMap + Leaflet (no API key required)")
+    
     # No SMTP settings needed - using HTTP API instead
     # This avoids port 587 blocking on Render free tier
 else:
@@ -546,6 +566,9 @@ else:
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='soodh674@gmail.com')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='buod vlpk ltrg awpv')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='soodh674@gmail.com')
+    
+    # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
+    GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
@@ -566,7 +589,7 @@ if IS_RENDER:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True  # HTTPS only in production
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
@@ -575,6 +598,8 @@ else:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    CSRF_COOKIE_SECURE = False  # Allow HTTP in development
+    SESSION_COOKIE_SECURE = False  # Allow HTTP in development
 
 # Session Security Settings
 SESSION_COOKIE_AGE = 1800  # 30 minutes
@@ -638,28 +663,18 @@ if not IS_RENDER:
 GDPR_COMPLIANCE_ENABLED = True
 
 # Django Channels Configuration
-ASGI_APPLICATION = 'blood_donation.asgi.application'
+# Note: CHANNEL_LAYERS is already configured above based on IS_RENDER
+# The configuration below is deprecated and kept for reference only
+# ASGI_APPLICATION = 'blood_donation.asgi.application'  # Already set above
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('redis://localhost:6379')],  # For local dev
-        },
-    },
-}
-
-# For production (Render)
-import os
-if os.environ.get('REDIS_URL'):
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [os.environ.get('REDIS_URL')],
-            },
-        },
-    }
+# ========================================================================
+# DEPRECATED CHANNEL_LAYERS CONFIGURATION (DO NOT USE)
+# ========================================================================
+# The CHANNEL_LAYERS is already configured dynamically above based on:
+# - IS_RENDER environment detection
+# - REDIS_URL availability
+# - Development vs Production settings
+# ========================================================================
 
 # Django Axes Configuration - Login Rate Limiting (Modern Settings)
 AXES_FAILURE_LIMIT = 5  # Lock out after 5 failed attempts
@@ -668,7 +683,8 @@ AXES_RESET_ON_SUCCESS = True  # Reset counter on successful login
 AXES_LOCKOUT_TEMPLATE = 'axes/lockout.html'  # Custom lockout template
 AXES_VERBOSE = True  # Enable verbose logging for debugging
 AXES_DISABLE_ACCESS_LOG = False  # Enable access logging
-AXES_ONLY_USER_FAILURES = False  # Track all failures, not just user-specific
+# Remove deprecated AXES_ONLY_USER_FAILURES setting
+# AXES_ONLY_USER_FAILURES = False  # This setting is deprecated in AXES 8.x
 
 # Django Allauth Configuration - Email Verification
 SITE_ID = 1
@@ -680,18 +696,11 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 
-# Email configuration (update with your SMTP settings)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
-# For production, use:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+# Note: Email backend is already configured above based on IS_RENDER
+# The configuration below is deprecated and will be overridden
 
 # Django CAPTCHA Configuration
-CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_2d',)
+CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_arcs', 'captcha.helpers.noise_dots')
 CAPTCHA_LENGTH = 6
 CAPTCHA_FONT_SIZE = 30
 CAPTCHA_WIDTH = 200
@@ -702,27 +711,25 @@ CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'  # Use math challenge
 # ===========================================
 # SECURITY HEADERS - Production Hardening
 # ===========================================
+# Note: Security settings are already configured above based on IS_RENDER
+# The settings below are deprecated and will be overridden by the IS_RENDER logic
 
-# Security Middleware Settings
-SECURE_BROWSER_XSS_FILTER = True  # Enable browser XSS filter
-SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME-type sniffing
-X_FRAME_OPTIONS = 'DENY'  # Prevent clickjacking attacks
-SECURE_HSTS_SECONDS = 31536000  # 1 year HSTS (only enable when HTTPS is confirmed)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = False  # Let reverse proxy handle this (Render/Cloudflare)
+# Security Middleware Settings (Already set above)
+# SECURE_BROWSER_XSS_FILTER = True  # Already configured
+# SECURE_CONTENT_TYPE_NOSNIFF = True  # Already configured
+# X_FRAME_OPTIONS = 'DENY'  # Already configured
+# SECURE_HSTS_SECONDS = 31536000  # Already configured
+# SECURE_SSL_REDIRECT = False  # Already configured
 
-# CSRF Security
-CSRF_COOKIE_SECURE = True  # Only send CSRF cookies over HTTPS
-CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookie
-CSRF_COOKIE_SAMESITE = 'Lax'  # Prevent CSRF from cross-site requests
+# CSRF Security (Already configured above with IS_RENDER logic)
+# CSRF_COOKIE_SECURE - Set based on IS_RENDER
+# CSRF_COOKIE_HTTPONLY = False  # Already set above
+# CSRF_COOKIE_SAMESITE = 'Lax'  # Already set above
 
-# Session Security
-SESSION_COOKIE_SECURE = True  # Only send session cookies over HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
-SESSION_COOKIE_SAMESITE = 'Lax'  # Prevent session hijacking
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_AGE = 86400  # 24 hours
+# Session Security (Already configured above with IS_RENDER logic)
+# SESSION_COOKIE_SECURE - Set based on IS_RENDER
+# SESSION_COOKIE_HTTPONLY = True  # Already set above
+# SESSION_COOKIE_SAMESITE = 'Lax'  # Already set above
 
 # Additional Security Settings
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'  # Control referrer information

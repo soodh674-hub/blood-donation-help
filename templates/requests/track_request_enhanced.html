@@ -477,7 +477,34 @@
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
-    
+
+    /* Status Badges */
+    .status-badge {
+        font-size: 14px;
+    }
+
+    .status-live {
+        color: #10b981;
+    }
+
+    .donor-count-badge {
+        background: #10b981;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+
+    .panel-subtitle {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .contact-badge {
+        color: #dc2626;
+        font-size: 14px;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         .main-grid {
@@ -529,7 +556,7 @@
         <div class="panel map-section">
             <div class="panel-header">
                 <h2 class="panel-title">Live Tracking Map</h2>
-                <span style="color: #10b981; font-size: 14px;">● Real-time</span>
+                <span class="status-badge status-live">● Real-time</span>
             </div>
             
             <div class="map-container">
@@ -577,7 +604,7 @@
         <div class="panel">
             <div class="panel-header">
                 <h2 class="panel-title">Interested Donors</h2>
-                <span style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ donors|length|default:"2" }} Available</span>
+                <span class="donor-count-badge">{{ donors|length|default:"2" }} Available</span>
             </div>
             
             <div class="donor-list">
@@ -654,7 +681,7 @@
     <div class="timeline-section">
         <div class="panel-header">
             <h2 class="panel-title">Request Timeline</h2>
-            <span style="color: #6b7280; font-size: 14px;">Live updates</span>
+            <span class="panel-subtitle">Live updates</span>
         </div>
         
         <div class="timeline-item">
@@ -695,7 +722,7 @@
     <div class="contact-section">
         <div class="panel-header">
             <h2 class="panel-title">Emergency Contact</h2>
-            <span style="color: #dc2626; font-size: 14px;">24/7 Available</span>
+            <span class="contact-badge">24/7 Available</span>
         </div>
         
         <div class="contact-info">

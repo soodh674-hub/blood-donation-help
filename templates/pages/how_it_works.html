@@ -4,26 +4,26 @@
 {% block title %}How It Works - BloodLife{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black py-16">
-    <div class="container mx-auto px-4 max-w-5xl">
+<div class="py-5 py-sm-5" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, #111827, #1f2937, #000000);" data-aos="fade-in" data-aos-duration="800">
+    <div class="container" style="max-width: 1000px;">
         
         <!-- Header -->
-        <div class="text-center mb-16">
-            <h1 class="text-5xl md:text-6xl font-bold text-white mb-4">
-                How <span class="text-red-500">BloodLife</span> Works
+        <div class="text-center mb-5" data-aos="fade-down" data-aos-delay="100">
+            <h1 class="display-4 display-md-5 fw-bold text-white mb-3">
+                How <span class="text-danger">BloodLife</span> Works
             </h1>
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p style="color: var(--text-secondary);" class="fs-5">
                 A simple, transparent process connecting donors with those in need
             </p>
         </div>
 
         <!-- Process Steps -->
-        <div class="space-y-12">
+        <div class="">
             
             <!-- Step 1 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #ef4444, #db2777); font-size: 1.5rem;">
                         1
                     </div>
                     <div class="flex-1">
@@ -33,21 +33,21 @@
                             and upload a prescription for verification. Our system auto-fills your profile information 
                             to save time.
                         </p>
-                        <ul class="space-y-2 text-gray-400">
-                            <li class="flex items-center gap-2">
+                        <ul class="list-unstyled" style="color: var(--text-secondary);">
+                            <li class="d-flex align-items-center gap-2 mb-2">
                                 <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                                 Auto-fill from your profile
                             </li>
-                            <li class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <li class="d-flex align-items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                                 Prescription upload required
                             </li>
-                            <li class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <li class="d-flex align-items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                                 Date validation prevents past dates
@@ -58,9 +58,9 @@
             </div>
 
             <!-- Step 2 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #3b82f6, #0891b2); font-size: 1.5rem;">
                         2
                     </div>
                     <div class="flex-1">
@@ -69,8 +69,8 @@
                             Our admin team reviews your request and verifies the uploaded prescription. 
                             This ensures all requests are legitimate and helps maintain trust in our community.
                         </p>
-                        <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-                            <p class="text-blue-300 text-sm">
+                        <div class="bg-primary/30 border border-primary rounded-3 p-3">
+                            <p class="text-primary small">
                                 ⏱️ Typical verification time: 15-30 minutes during business hours
                             </p>
                         </div>
@@ -79,9 +79,9 @@
             </div>
 
             <!-- Step 3 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #a855f7, #4f46e5); font-size: 1.5rem;">
                         3
                     </div>
                     <div class="flex-1">
@@ -89,14 +89,14 @@
                         <p class="text-gray-300 mb-4">
                             Once approved, your request is broadcast to nearby registered donors based on:
                         </p>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-gray-700/50 rounded-lg p-4">
-                                <h4 class="text-white font-semibold mb-2">📍 Location Matching</h4>
-                                <p class="text-gray-400 text-sm">Donors within your city/area receive notifications</p>
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            <div class="bg-gray-700/50 rounded-3 p-3">
+                                <h4 class="text-white fw-semibold mb-2">📍 Location Matching</h4>
+                                <p style="color: var(--text-secondary);">Donors within your city/area receive notifications</p>
                             </div>
-                            <div class="bg-gray-700/50 rounded-lg p-4">
-                                <h4 class="text-white font-semibold mb-2">🩸 Blood Group Match</h4>
-                                <p class="text-gray-400 text-sm">Compatible blood group donors are prioritized</p>
+                            <div class="bg-gray-700/50 rounded-3 p-3">
+                                <h4 class="text-white fw-semibold mb-2">🩸 Blood Group Match</h4>
+                                <p style="color: var(--text-secondary);">Compatible blood group donors are prioritized</p>
                             </div>
                         </div>
                     </div>
@@ -104,9 +104,9 @@
             </div>
 
             <!-- Step 4 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="500">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #22c55e, #059669); font-size: 1.5rem;">
                         4
                     </div>
                     <div class="flex-1">
@@ -115,15 +115,15 @@
                             When a donor accepts your request, you can communicate directly through our 
                             integrated chat system to coordinate pickup/delivery details.
                         </p>
-                        <ul class="space-y-2 text-gray-400">
-                            <li class="flex items-center gap-2">
+                        <ul class="list-unstyled" style="color: var(--text-secondary);">
+                            <li class="d-flex align-items-center gap-2 mb-2">
                                 <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                                 Real-time messaging
                             </li>
-                            <li class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <li class="d-flex align-items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                 </svg>
                                 Share location & ETA
@@ -134,9 +134,9 @@
             </div>
 
             <!-- Step 5 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="600">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #f97316, #ca8a04); font-size: 1.5rem;">
                         5
                     </div>
                     <div class="flex-1">
@@ -144,20 +144,20 @@
                         <p class="text-gray-300 mb-4">
                             Monitor your request status through our Zomato-style tracking dashboard with live map updates.
                         </p>
-                        <div class="bg-gradient-to-r from-orange-900/30 to-yellow-900/30 border border-orange-700 rounded-lg p-4">
-                            <p class="text-orange-300 text-sm font-semibold mb-2">Status Timeline:</p>
-                            <div class="flex flex-wrap gap-2 text-xs">
-                                <span class="px-3 py-1 bg-gray-700 rounded-full">Submitted</span>
-                                <span class="text-gray-500">→</span>
-                                <span class="px-3 py-1 bg-blue-900 rounded-full">Verified</span>
-                                <span class="text-gray-500">→</span>
-                                <span class="px-3 py-1 bg-purple-900 rounded-full">Searching</span>
-                                <span class="text-gray-500">→</span>
-                                <span class="px-3 py-1 bg-green-900 rounded-full">Matched</span>
-                                <span class="text-gray-500">→</span>
-                                <span class="px-3 py-1 bg-orange-900 rounded-full">In Transit</span>
-                                <span class="text-gray-500">→</span>
-                                <span class="px-3 py-1 bg-emerald-900 rounded-full">Completed</span>
+                        <div class="rounded-3 p-3" style="background: linear-gradient(90deg, rgba(234, 88, 12, 0.3), rgba(202, 138, 4, 0.3)); border: 1px solid rgba(234, 88, 12, 0.5);">
+                            <p class="text-warning small fw-semibold mb-2">Status Timeline:</p>
+                            <div class="d-flex flex-wrap gap-2 small">
+                                <span class="px-3 py-1 bg-gray-700 rounded-pill">Submitted</span>
+                                <span style="color: var(--text-secondary);">→</span>
+                                <span class="px-3 py-1 bg-primary rounded-pill">Verified</span>
+                                <span style="color: var(--text-secondary);">→</span>
+                                <span class="px-3 py-1 bg-purple rounded-pill" style="background: #7c3aed;">Searching</span>
+                                <span style="color: var(--text-secondary);">→</span>
+                                <span class="px-3 py-1 bg-success rounded-pill">Matched</span>
+                                <span style="color: var(--text-secondary);">→</span>
+                                <span class="px-3 py-1 bg-warning rounded-pill">In Transit</span>
+                                <span style="color: var(--text-secondary);">→</span>
+                                <span class="px-3 py-1 bg-emerald rounded-pill" style="background: #059669;">Completed</span>
                             </div>
                         </div>
                     </div>
@@ -165,9 +165,9 @@
             </div>
 
             <!-- Step 6 -->
-            <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700 hover:border-red-500 transition-all">
-                <div class="flex items-start gap-6">
-                    <div class="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+            <div class="glass-card p-4 p-sm-5 mb-4" data-aos="fade-up" data-aos-delay="700">
+                <div class="d-flex align-items-start gap-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle fw-bold text-white shadow-lg" style="width: 64px; height: 64px; background: linear-gradient(135deg, #ec4899, #e11d48); font-size: 1.5rem;">
                         6
                     </div>
                     <div class="flex-1">
@@ -183,21 +183,21 @@
         </div>
 
         <!-- CTA Section -->
-        <div class="mt-16 text-center">
-            <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-8 shadow-2xl">
-                <h3 class="text-3xl font-bold text-white mb-4">Ready to Get Started?</h3>
-                <p class="text-red-100 mb-6 text-lg">
+        <div class="mt-5 text-center" data-aos="fade-up" data-aos-delay="800">
+            <div class="rounded-3 p-4 p-sm-5 shadow-lg" style="background: linear-gradient(135deg, #dc2626, #db2777);">
+                <h3 class="display-6 fw-bold text-white mb-3">Ready to Get Started?</h3>
+                <p class="text-white-80 mb-4 fs-5">
                     Join thousands of donors and recipients saving lives every day
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{% url 'blood-request-create-unified' %}" class="inline-flex items-center justify-center px-8 py-4 bg-white text-red-600 font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="{% url 'blood-request-create-unified' %}" class="btn btn-white text-danger fw-bold rounded-3 shadow-lg d-inline-flex align-items-center justify-content-center px-4 py-2 py-sm-3">
+                        <svg class="w-6 h-6 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         Create Blood Request
                     </a>
-                    <a href="{% url 'search-donors' %}" class="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white font-bold rounded-xl hover:bg-white/10 transition-all transform hover:scale-105">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'search-donors' %}" class="btn btn-outline-white text-white fw-bold rounded-3 d-inline-flex align-items-center justify-content-center px-4 py-2 py-sm-3">
+                        <svg class="w-6 h-6 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Find Donors
@@ -207,14 +207,27 @@
         </div>
 
         <!-- FAQ Link -->
-        <div class="mt-12 text-center">
-            <p class="text-gray-400">
+        <div class="mt-4 text-center">
+            <p style="color: var(--text-secondary);">
                 Have questions? Check our 
-                <a href="/faq/" class="text-red-400 hover:text-red-300 underline">FAQ page</a>
+                <a href="/faq/" class="text-danger text-decoration-none">FAQ page</a>
                 or contact support
             </p>
         </div>
 
     </div>
 </div>
+
+<script>
+// Initialize AOS
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+</script>
 {% endblock %}

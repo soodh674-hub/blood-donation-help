@@ -31,6 +31,7 @@ urlpatterns = [
     path("", views.create_request_unified_page, name="blood-request-create-page"),
     path("create/", views.create_request_unified_page, name="blood-request-create-unified"),
     path("track/", views.track_request_dashboard, name="track-request-dashboard"),
+    path("manage/<int:request_id>/", views.manage_request, name="manage-request"),
     path("my-requests/", views.my_requests_page, name="my-blood-requests"),
     
     # OLD create request page (kept for backward compatibility)
@@ -46,7 +47,7 @@ urlpatterns = [
     
     # User request tracking endpoints
     path("user-requests/", views_api.UserBloodRequestsView.as_view(), name="user-blood-requests"),
-    path("track/<int:request_id>/", views_api.TrackSpecificRequestView.as_view(), name="track-specific-request"),
+    path("track/<int:request_id>/", views.track_specific_request, name="track-specific-request"),
     
     # ========================================================================
     # NEW ENHANCED API ENDPOINTS FOR REAL-TIME TRACKING SYSTEM
@@ -61,6 +62,9 @@ urlpatterns = [
     
     # Donor selection by requester
     path("select-donor/<int:response_id>/", views.select_donor, name="select-donor"),
+
+    # Donor location tracking
+    path("response/<int:response_id>/location/", views.get_donor_location, name="get-donor-location"),
     
     # Location tracking
     path("update-location/", views.update_donor_location, name="update-donor-location"),
@@ -82,6 +86,9 @@ urlpatterns = [
     path("<int:request_id>/chat/", views_api.ChatHistoryView.as_view(), name='chat-history'),
     path("chat/mark-read/", views_api.MarkMessageReadView.as_view(), name='mark-read'),
     path("<int:request_id>/chat/send/", views_api.SendMessageView.as_view(), name='send-message'),  # HTTP fallback
+    
+    # Chatbot
+    path("chatbot/", views_api.ChatbotView.as_view(), name='chatbot'),
     
     # Rating system
     path("rate-user/", views_api.RateUserView.as_view(), name='rate-user'),
@@ -106,6 +113,57 @@ urlpatterns = [
     
     # Accept blood request (creates response and redirects to tracking)
     path("<int:request_id>/accept/", views.accept_request_view, name='accept-request'),
+    
+    # ========================================================================
+    # CHAT SYSTEM (Instagram-style Direct Messaging)
+    # ========================================================================
+    
+    # Chat inbox
+    path("chat/", views.chat_inbox, name='chat-inbox'),
+    
+    # Manage all requests
+    path("manage-all/", views.manage_all_requests, name='manage-all-requests'),
+    
+    # Chat conversation with specific user
+    path("chat/<int:user_id>/", views.chat_conversation, name='chat-conversation'),
+    
+    # Send chat message (AJAX)
+    path("chat/api/send/", views.send_chat_message, name='chat-send'),
+    
+    # Mark messages as read (AJAX)
+    path("chat/api/mark-read/", views.mark_messages_read, name='chat-mark-read'),
+    
+    # Get unread chat count (for navbar badge)
+    path("chat/api/unread-count/", views.unread_chat_count_api, name='unread-chat-count'),
+    
+    # ========================================================================
+    # BLOOD REQUEST WORKFLOW APIs (Complete 20-step process)
+    # ========================================================================
+    
+    # Activate request and notify donors (Steps 1-6)
+    path("<int:request_id>/activate/", views.activate_request_api, name='activate-request'),
+    
+    # Donor accept/decline request (Steps 7-10)
+    path("<int:request_id>/accept/", views.accept_request_api, name='accept-request-api'),
+    path("<int:request_id>/decline/", views.decline_request_api, name='decline-request'),
+    
+    # Update donor status (Steps 13-14)
+    path("response/<int:response_id>/update-status/", views.update_donor_status_api, name='update-donor-status'),
+    
+    # Contact sharing (Step 11)
+    path("response/<int:response_id>/contact/", views.get_contact_details_api, name='get-contact-details'),
+    
+    # Cancel request (Step 17)
+    path("<int:request_id>/cancel/", views.cancel_request_api, name='cancel-request-api'),
+    
+    # Request history (Step 18)
+    path("<int:request_id>/history/", views.get_request_history_api, name='request-history'),
+    
+    # Donor location tracking
+    path("donor/update-location/", views.update_donor_location_api, name='update-donor-location-api'),
+    
+    # Get nearby requests for donors
+    path("nearby-requests/", views.get_nearby_requests_api, name='nearby-requests'),
 ]
 
 

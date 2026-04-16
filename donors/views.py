@@ -55,15 +55,37 @@ class DonorSearchView(generics.ListAPIView):
             if not latitude or not longitude:
                 # Return all available donors with matching blood group regardless of location
                 # Optimized with select_related and prefetch_related to reduce database queries
-                donors = User.objects.filter(
-                    blood_group=blood_group,
-                    is_available=True,
-                    is_active=True
-                ).select_related('donor_profile').only(
-                    'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                    'phone', 'city', 'pincode', 'is_available', 'is_verified',
-                    'profile_photo', 'latitude', 'longitude', 'last_donation_date'
-                )
+                try:
+                    donors = User.objects.filter(
+                        blood_group=blood_group,
+                        is_available=True,
+                        is_active=True
+                    ).select_related('donor_profile').only(
+                        'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
+                        'latitude', 'longitude', 'last_donation_date',
+                        'donor_profile__profile_photo'
+                    )
+                except Exception:
+                    # If donor_profile doesn't exist, query without it
+                    donors = User.objects.filter(
+                        blood_group=blood_group,
+                        is_available=True,
+                        is_active=True
+                    ).only(
+                        'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified'
+                    )
+                
+                # EXCLUDE donors with anonymous_mode enabled
+                try:
+                    from accounts.models import PrivacySettings
+                    anonymous_user_ids = PrivacySettings.objects.filter(
+                        anonymous_mode=True
+                    ).values_list('user_id', flat=True)
+                    donors = donors.exclude(id__in=anonymous_user_ids)
+                except Exception as e:
+                    logger.warning(f'Could not filter anonymous donors: {str(e)}')
                 
                 # Apply additional filters
                 if pincode:
@@ -99,18 +121,41 @@ class DonorSearchView(generics.ListAPIView):
                 )
 
             # Get matches from BloodMatcher
-            matches = BloodMatcher.get_best_matching_donors(
-                blood_group=blood_group,
-                latitude=latitude,
-                longitude=longitude,
-                priority=priority,
-                limit=100,  # Increase limit to accommodate filtering
-            )
+            try:
+                matches = BloodMatcher.get_best_matching_donors(
+                    blood_group=blood_group,
+                    latitude=latitude,
+                    longitude=longitude,
+                    priority=priority,
+                    limit=100,  # Increase limit to accommodate filtering
+                )
+            except Exception as e:
+                logger.error(f'Error in BloodMatcher: {str(e)}', exc_info=True)
+                # Fall back to simple search without location matching
+                donors = User.objects.filter(
+                    blood_group=blood_group,
+                    is_available=True,
+                    is_active=True
+                ).only(
+                    'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
+                    'phone_number', 'city', 'pincode', 'is_available', 'is_verified'
+                )
+                matches = [{"donor": donor, "score": 100, "details": {"note": "Location matching unavailable"}} for donor in donors[:50]]
 
             # Apply additional filters
             filtered_matches = []
             for match in matches:
                 donor = match["donor"]
+                
+                # EXCLUDE donors with anonymous_mode enabled
+                try:
+                    from accounts.models import PrivacySettings
+                    if PrivacySettings.objects.filter(
+                        user=donor, anonymous_mode=True
+                    ).exists():
+                        continue
+                except Exception as e:
+                    logger.warning(f'Could not check anonymous status for donor {donor.id}: {str(e)}')
                 
                 # Filter by pincode if provided
                 if pincode and donor.pincode != pincode:
@@ -190,7 +235,8 @@ def donor_profile(request, user_id):
             User.objects.select_related('donor_profile').only(
                 'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
                 'phone', 'city', 'pincode', 'is_available', 'is_verified',
-                'profile_photo', 'bio', 'date_joined'
+                'bio', 'date_joined',
+                'donor_profile__profile_photo'
             ),
             id=user_id, user_type='donor', is_active=True
         )
@@ -267,8 +313,9 @@ def recommended_donors(request):
             blood_group__in=compatible_blood_groups
         ).exclude(id=request.user.id).select_related('donor_profile').only(
             'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-            'phone', 'city', 'is_available', 'is_verified', 'profile_photo',
-            'latitude', 'longitude', 'last_donation_date'
+            'phone', 'city', 'is_available', 'is_verified',
+            'latitude', 'longitude', 'last_donation_date',
+            'donor_profile__profile_photo'
         )
 
         # Calculate recommendation scores

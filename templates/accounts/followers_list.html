@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Followers - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="margin-top: 20px;" data-aos="fade-in" data-aos-duration="800">
+    <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
+        <div class="col-lg-8">
+            <div class="glass-card" data-aos="zoom-in" data-aos-delay="200">
+                <!-- Header -->
+                <div class="p-4 border-bottom border-secondary border-opacity-25" data-aos="fade-down" data-aos-delay="300">
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'accounts:public-profile' profile_user.id %}" class="btn btn-outline-light me-3">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                        <div>
+                            <h3 class="mb-1">
+                                <i class="bi bi-people me-2"></i>Followers
+                            </h3>
+                            <p class="text-secondary mb-0">
+                                People following @{{ profile_user.username }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Followers List -->
+                <div class="p-4">
+                    {% if followers %}
+                        <div class="list-group list-group-flush">
+                            {% for follow in followers %}
+                            <div class="list-group-item bg-transparent border-secondary border-opacity-25 py-3">
+                                <div class="d-flex align-items-center">
+                                    <!-- User Avatar -->
+                                    <a href="{% url 'accounts:public-profile' follow.follower.id %}" class="text-decoration-none me-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                             style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff3b3b, #ff6b6b); font-size: 1.25rem; color: white; font-weight: bold;">
+                                            {{ follow.follower.first_name|default:follow.follower.username|make_list|first|upper }}
+                                        </div>
+                                    </a>
+                                    
+                                    <!-- User Info -->
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{% url 'accounts:public-profile' follow.follower.id %}" class="text-decoration-none text-white">
+                                                {{ follow.follower.get_full_name|default:follow.follower.username }}
+                                            </a>
+                                        </h6>
+                                        <p class="text-secondary small mb-0">
+                                            @{{ follow.follower.username }}
+                                            {% if follow.follower.blood_group %}
+                                                <span class="badge bg-danger ms-1">{{ follow.follower.blood_group }}</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Follow Button -->
+                                    {% if follow.follower != request.user %}
+                                        <button class="btn btn-sm {% if follow.follower in request.user.following.all %}btn-outline-light{% else %}btn-gradient{% endif %}
+                                                toggle-follow-btn"
+                                                data-user-id="{{ follow.follower.id }}">
+                                            {% if follow.follower in request.user.following.all %}
+                                                <i class="bi bi-person-check"></i> Following
+                                            {% else %}
+                                                <i class="bi bi-person-plus"></i> Follow
+                                            {% endif %}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-people" style="font-size: 4rem; color: var(--text-secondary);"></i>
+                            <h5 class="mt-3">No followers yet</h5>
+                            <p class="text-secondary">When people follow this account, they'll appear here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+    
+    // Event delegation for follow buttons
+    document.querySelectorAll('.toggle-follow-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            toggleFollow(userId, this);
+        });
+    });
+});
+
+async function toggleFollow(userId, button) {
+    try {
+        const response = await fetch(`/accounts/toggle-follow/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update button
+            if (data.is_following) {
+                button.className = 'btn btn-sm btn-outline-light';
+                button.innerHTML = '<i class="bi bi-person-check"></i> Following';
+            } else {
+                button.className = 'btn btn-sm btn-gradient';
+                button.innerHTML = '<i class="bi bi-person-plus"></i> Follow';
+            }
+            
+            showToast(data.message, 'success');
+        } else {
+            showToast(data.error || 'Failed to update follow status', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Failed to update follow status', 'error');
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} position-fixed`;
+    toast.style.cssText = 'top: 80px; right: 20px; z-index: 1100; min-width: 300px; animation: slideIn 0.3s ease;';
+    toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+            <div class="flex-grow-1">${message}</div>
+            <button type="button" class="btn-close btn-close-white ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

@@ -4,38 +4,38 @@
 {% block title %}Terms of Service - BloodLife{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl">
-            <div class="text-center mb-10">
-                <h1 class="text-4xl font-bold text-white mb-4">Terms of Service</h1>
-                <p class="text-gray-400">Last updated: {{ current_date|date:"F d, Y" }}</p>
+<div class="py-5 py-sm-5" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);" data-aos="fade-in" data-aos-duration="800">
+    <div class="container" style="max-width: 900px;">
+        <div class="glass-card p-4 p-sm-5" data-aos="fade-down" data-aos-delay="100">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-white mb-3">Terms of Service</h1>
+                <p style="color: var(--text-secondary);">Last updated: {{ current_date|date:"F d, Y" }}</p>
             </div>
             
-            <div class="prose prose-invert max-w-none">
-                <div class="text-gray-300 space-y-6">
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
+            <div class="prose prose-invert max-w-none" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-gray-300">
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">1. Acceptance of Terms</h2>
                         <p class="leading-relaxed">
                             By accessing or using the BloodLife platform, you agree to be bound by these Terms of Service. 
                             If you do not agree to these terms, please do not use our services.
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">2. Description of Service</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">2. Description of Service</h2>
                         <p class="leading-relaxed">
                             BloodLife is a blood donation platform that connects blood donors with patients in need. 
                             Our service facilitates the process of finding compatible blood donors and managing blood requests.
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">3. User Responsibilities</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">3. User Responsibilities</h2>
                         <p class="leading-relaxed">
                             As a user of our platform, you agree to:
                         </p>
-                        <ul class="list-disc list-inside space-y-2 mt-3 ml-4">
+                        <ul class="list-unstyled ms-4">
                             <li>Provide accurate and truthful information when registering</li>
                             <li>Keep your account information up to date</li>
                             <li>Use the platform only for legitimate blood donation purposes</li>
@@ -44,8 +44,8 @@
                         </ul>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">4. Medical Disclaimer</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">4. Medical Disclaimer</h2>
                         <p class="leading-relaxed">
                             BloodLife is not a medical service provider. We do not provide medical advice, diagnosis, or treatment. 
                             All medical decisions should be made in consultation with qualified healthcare professionals. 
@@ -53,32 +53,32 @@
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">5. Privacy and Data Protection</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">5. Privacy and Data Protection</h2>
                         <p class="leading-relaxed">
                             We are committed to protecting your privacy. Please review our Privacy Policy to understand 
                             how we collect, use, and protect your personal information.
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">6. Limitation of Liability</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">6. Limitation of Liability</h2>
                         <p class="leading-relaxed">
                             BloodLife and its affiliates shall not be liable for any direct, indirect, incidental, 
                             special, or consequential damages resulting from the use or inability to use our services.
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">7. Changes to Terms</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">7. Changes to Terms</h2>
                         <p class="leading-relaxed">
                             We reserve the right to modify these terms at any time. We will notify users of any 
                             material changes through the platform or via email.
                         </p>
                     </section>
                     
-                    <section>
-                        <h2 class="text-2xl font-bold text-white mb-4">8. Contact Information</h2>
+                    <section class="mb-4">
+                        <h2 class="fs-4 fw-bold text-white mb-3">8. Contact Information</h2>
                         <p class="leading-relaxed">
                             For questions about these Terms of Service, please contact us at:
                             <a href="mailto:soodh674@gmail.com" class="text-red-400 hover:text-red-300">soodh674@gmail.com</a>
@@ -87,14 +87,15 @@
                 </div>
             </div>
             
-            <div class="mt-10 pt-6 border-t border-white/10">
-                <div class="flex flex-col sm:flex-row gap-4">
+            <div class="mt-5 pt-4 border-top border-white/10" data-aos="fade-in" data-aos-delay="300">
+                <div class="d-flex flex-column flex-sm-row gap-3">
                     <button onclick="window.history.back()" 
-                            class="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 border border-white/20">
+                            class="btn btn-outline-light flex-1">
                         Go Back
                     </button>
                     <a href="{% url 'privacy_policy' %}" 
-                       class="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all duration-200 text-center">
+                       class="btn btn-gradient flex-1 text-center" 
+                       style="background: linear-gradient(135deg, #ef4444, #dc2626);">
                         Privacy Policy
                     </a>
                 </div>
@@ -102,4 +103,17 @@
         </div>
     </div>
 </div>
+
+<script>
+// Initialize AOS
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out-cubic',
+            once: true
+        });
+    }
+});
+</script>
 {% endblock %}

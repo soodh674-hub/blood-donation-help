@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils import timezone
 import logging
+import math
 
 from .models import BloodRequest
 from .serializers import (
@@ -17,6 +18,29 @@ from .serializers import (
 
 # Setup logging
 logger = logging.getLogger(__name__)
+
+
+def _get_city_coordinates(city):
+    """Get approximate coordinates for major Indian cities"""
+    city_coordinates = {
+        'ambala': {'lat': 30.3782, 'lng': 76.7768},
+        'delhi': {'lat': 28.6139, 'lng': 77.2090},
+        'mumbai': {'lat': 19.0760, 'lng': 72.8777},
+        'bangalore': {'lat': 12.9716, 'lng': 77.5946},
+        'chennai': {'lat': 13.0827, 'lng': 80.2707},
+        'kolkata': {'lat': 22.5726, 'lng': 88.3639},
+        'hyderabad': {'lat': 17.3850, 'lng': 78.4867},
+        'pune': {'lat': 18.5204, 'lng': 73.8567},
+        'ahmedabad': {'lat': 23.0225, 'lng': 72.5714},
+        'jaipur': {'lat': 26.9124, 'lng': 75.7873},
+        'lucknow': {'lat': 26.8467, 'lng': 80.9462},
+        'chandigarh': {'lat': 30.7333, 'lng': 76.7794},
+        'haryana': {'lat': 29.0588, 'lng': 76.0856},
+    }
+
+    city_lower = city.lower().strip()
+    coords = city_coordinates.get(city_lower, {'lat': 20.5937, 'lng': 78.9629})  # Default to India center
+    return coords['lat'], coords['lng']
 
 
 def time_ago(dt):
@@ -47,17 +71,66 @@ def time_ago(dt):
 def create_request_unified_page(request):
     """
     Blood request creation page - handles both GET and POST
-    Uses original stable form with full functionality
+    Enhanced with GPS location detection and better validation
     """
     if not request.user.is_authenticated:
         return redirect('/accounts/login/?next=/requests/create/')
-    
+
     # Handle POST request (form submission)
     if request.method == 'POST':
         try:
-            logger.info('🟡 Processing blood request creation')
-            
+            logger.info('Processing blood request creation with multi-stage verification')
+
+            # Stage 1: CAPTCHA Verification
+            try:
+                from captcha.helpers import captcha_unserialize
+                from captcha.models import CaptchaStore
+                captcha_response = request.POST.get('captcha_1')
+                captcha_hashkey = request.POST.get('captcha_0')
+                
+                if captcha_response and captcha_hashkey:
+                    captcha = CaptchaStore.objects.get(hashkey=captcha_hashkey)
+                    if not captcha.response == captcha_response:
+                        from django.contrib import messages
+                        messages.error(request, 'CAPTCHA verification failed. Please try again.')
+                        return render(request, 'requests/create_request_unified.html', context)
+                    captcha.delete()
+                else:
+                    from django.contrib import messages
+                    messages.error(request, 'CAPTCHA verification required.')
+                    return render(request, 'requests/create_request_unified.html', context)
+            except Exception as captcha_error:
+                logger.warning(f'CAPTCHA verification skipped: {str(captcha_error)}')
+
             # Extract form data
+            city = request.POST.get('city', '')
+            state = request.POST.get('state', '')
+            hospital_address = request.POST.get('hospital_name', '')
+
+            # Geocoding: Convert address to latitude/longitude
+            latitude, longitude = 28.6139, 77.2090  # Default Delhi
+            if city and state:
+                try:
+                    import requests
+                    address_query = f"{hospital_address}, {city}, {state}, India"
+                    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
+                    headers = {'User-Agent': 'BloodDonationApp/1.0'}
+
+                    response = requests.get(url, headers=headers, timeout=5)
+                    if response.status_code == 200:
+                        geodata = response.json()
+                        if geodata and len(geodata) > 0:
+                            latitude = float(geodata[0]['lat'])
+                            longitude = float(geodata[0]['lon'])
+                            logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
+                        else:
+                            # Fallback to city coordinates
+                            latitude, longitude = _get_city_coordinates(city)
+                            logger.warning(f'Geocoding failed for {city}, using fallback')
+                except Exception as e:
+                    logger.error(f'Geocoding error: {e}')
+                    latitude, longitude = _get_city_coordinates(city)
+
             data = {
                 'patient_name': request.POST.get('patient_name'),
                 'patient_age': request.POST.get('patient_age'),
@@ -67,60 +140,131 @@ def create_request_unified_page(request):
                 'priority': request.POST.get('priority', 'normal'),
                 'required_by': request.POST.get('required_by'),
                 'hospital_name': request.POST.get('hospital_name'),
-                'city': request.POST.get('city'),
-                'state': request.POST.get('state'),
+                'city': city,
+                'state': state,
                 'pincode': request.POST.get('pincode', '110001'),
                 'contact_person': request.POST.get('contact_person'),
                 'contact_phone': request.POST.get('contact_phone'),
                 'contact_email': request.POST.get('contact_email'),
                 'requester_type': 'individual',
-                'latitude': 28.6139,  # Default Delhi coordinates
-                'longitude': 77.2090,
+                'latitude': latitude,
+                'longitude': longitude,
             }
-            
-            # Validate required fields
-            required_fields = ['patient_name', 'patient_age', 'patient_blood_group', 
+
+            # Enhanced validation
+            required_fields = ['patient_name', 'patient_age', 'patient_blood_group',
                              'required_units', 'reason', 'required_by', 'hospital_name',
                              'city', 'state', 'contact_person', 'contact_phone', 'contact_email']
-            
+
             missing_fields = [f for f in required_fields if not data.get(f)]
             if missing_fields:
                 logger.error(f'Missing required fields: {missing_fields}')
                 from django.contrib import messages
                 messages.error(request, f'Missing required fields: {", ".join(missing_fields)}')
-                return render(request, 'requests/create_request.html')
-            
+                return render(request, 'requests/create_request_unified.html', context)
+
+            # Validate patient age (must be between 0 and 120)
+            try:
+                patient_age = int(data['patient_age'])
+                if patient_age < 0 or patient_age > 120:
+                    messages.error(request, 'Patient age must be between 0 and 120')
+                    return render(request, 'requests/create_request_unified.html', context)
+            except ValueError:
+                messages.error(request, 'Invalid patient age')
+                return render(request, 'requests/create_request_unified.html', context)
+
+            # Validate required units (must be between 1 and 10)
+            try:
+                required_units = int(data['required_units'])
+                if required_units < 1 or required_units > 10:
+                    messages.error(request, 'Required units must be between 1 and 10')
+                    return render(request, 'requests/create_request_unified.html', context)
+            except ValueError:
+                messages.error(request, 'Invalid required units')
+                return render(request, 'requests/create_request_unified.html', context)
+
+            # Validate phone number
+            import re
+            phone = data['contact_phone']
+            if not re.match(r'^\+?1?\d{9,15}$', phone):
+                messages.error(request, 'Please enter a valid phone number')
+                return render(request, 'requests/create_request_unified.html', context)
+
             # Create serializer and validate
             from .serializers import BloodRequestCreateSerializer
             serializer = BloodRequestCreateSerializer(data=data)
-            
+
             if serializer.is_valid():
                 # Save the request
                 blood_request = serializer.save(requester=request.user)
-                logger.info(f'✅ Blood request created by user: {request.user.id}')
+                logger.info(f'Blood request created by user: {request.user.id}')
+
+                # Stage 2: Multi-stage verification process
+                priority = blood_request.priority
                 
-                # Send notifications
-                try:
-                    from notifications.services import BloodRequestNotificationService
-                    notification_service = BloodRequestNotificationService()
+                if priority in ['emergency', 'high']:
+                    # High priority requests require admin approval
+                    blood_request.status = 'pending_verification'
+                    blood_request.save()
+                    logger.info(f'Stage 2: High/emergency request {blood_request.id} requires admin approval')
                     
-                    if blood_request.priority == 'emergency':
-                        notifications_sent = notification_service.send_emergency_notification(blood_request)
-                    else:
-                        notifications_sent = notification_service.send_blood_request_notification(
-                            blood_request, 
-                            limit=50
-                        )
+                    # Notify admins for verification
+                    try:
+                        from django.contrib.auth import get_user_model
+                        User = get_user_model()
+                        admin_users = User.objects.filter(is_staff=True)
+                        
+                        from notifications.models import Notification
+                        for admin in admin_users:
+                            Notification.objects.create(
+                                user=admin,
+                                request=blood_request,
+                                notification_type='admin_verification_required',
+                                title=f'Verification Required: {priority.upper()} Blood Request',
+                                message=f'New {priority} priority blood request requires your approval. Patient: {blood_request.patient_name}, Hospital: {blood_request.hospital_name}'
+                            )
+                        logger.info(f'Notified {admin_users.count()} admins for verification')
+                    except Exception as admin_error:
+                        logger.error(f'Failed to notify admins: {str(admin_error)}')
                     
-                    logger.info(f'📧 Sent {notifications_sent} notifications for request {blood_request.id}')
-                except Exception as notif_error:
-                    logger.error(f'Failed to send notifications: {str(notif_error)}', exc_info=True)
+                    from django.contrib import messages
+                    messages.success(request, 'Blood request created successfully! It will be reviewed by admin within 30 minutes due to high priority.')
+                else:
+                    # Normal/low priority requests go through automatic verification
+                    blood_request.status = 'pending'
+                    blood_request.save()
+                    logger.info(f'Stage 2: Normal priority request {blood_request.id} marked as pending')
+                    
+                    from django.contrib import messages
+                    messages.success(request, 'Blood request created successfully! It will be activated shortly.')
+
+                # Stage 3: Medical certificate verification (if provided)
+                medical_certificate = request.FILES.get('medical_certificate')
+                if medical_certificate:
+                    logger.info(f'Stage 3: Medical certificate uploaded for request {blood_request.id}')
+                    # Certificate will be reviewed during admin verification
+
+                # Stage 4: Send notifications (only for approved/pending requests)
+                if blood_request.status in ['pending', 'active']:
+                    try:
+                        from notifications.services import BloodRequestNotificationService
+                        notification_service = BloodRequestNotificationService()
+
+                        if blood_request.priority == 'emergency':
+                            notifications_sent = notification_service.send_emergency_notification(blood_request)
+                        else:
+                            notifications_sent = notification_service.send_blood_request_notification(
+                                blood_request,
+                                limit=50
+                            )
+
+                        logger.info(f'Stage 4: Sent {notifications_sent} notifications for request {blood_request.id}')
+                    except Exception as notif_error:
+                        logger.error(f'Failed to send notifications: {str(notif_error)}', exc_info=True)
                 
                 # Redirect to success
                 from django.shortcuts import redirect
-                from django.contrib import messages
-                messages.success(request, '✅ Blood request created successfully! Donors will be notified.')
-                return redirect('/')
+                return redirect('/requests/my-requests/')
             else:
                 # Validation errors
                 logger.error(f'Form validation errors: {serializer.errors}')
@@ -129,36 +273,248 @@ def create_request_unified_page(request):
                 for field, errors in serializer.errors.items():
                     error_messages.append(f'{field}: {", ".join(errors)}')
                 messages.error(request, f'Validation errors: {" | ".join(error_messages)}')
-                return render(request, 'requests/create_request.html')
-        
+                return render(request, 'requests/create_request_unified.html', context)
+
         except Exception as e:
             logger.error(f'❌ Error processing POST request: {str(e)}', exc_info=True)
             from django.contrib import messages
             messages.error(request, f'Error creating request: {str(e)}')
-            return render(request, 'requests/create_request.html')
+            return render(request, 'requests/create_request_unified.html', context)
+
+    # GET request - render the form with auto-filled user data
     
-    # GET request - just render the form with auto-filled user data
+    # Initialize CAPTCHA form
+    captcha_form = None
+    try:
+        from captcha.fields import CaptchaField
+        from django import forms
+        
+        class RequestCaptchaForm(forms.Form):
+            captcha = CaptchaField()
+        
+        captcha_form = RequestCaptchaForm()
+    except Exception as captcha_error:
+        logger.warning(f'CAPTCHA form not available: {str(captcha_error)}')
+    
     context = {
         'user_name': request.user.get_full_name() or request.user.username,
-        'user_phone': getattr(request.user, 'phone', '') or '',
+        'user_phone': getattr(request.user, 'phone_number', '') or '',
         'user_email': request.user.email,
         'user_city': getattr(request.user, 'city', '') or '',
         'user_state': getattr(request.user, 'state', '') or '',
         'user_pincode': getattr(request.user, 'pincode', '') or '',
+        'user_latitude': getattr(request.user, 'latitude', 28.6139),
+        'user_longitude': getattr(request.user, 'longitude', 77.2090),
+        'blood_types': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        'urgency_levels': [
+            {'value': 'low', 'label': 'Low Priority', 'color': 'green', 'description': 'Within 3-5 days'},
+            {'value': 'normal', 'label': 'Normal', 'color': 'blue', 'description': 'Within 24-48 hours'},
+            {'value': 'high', 'label': 'High Priority', 'color': 'orange', 'description': 'Within 12-24 hours'},
+            {'value': 'emergency', 'label': 'Emergency', 'color': 'red', 'description': 'Immediate - Critical'},
+        ],
+        'captcha_form': captcha_form,
     }
-    return render(request, 'requests/create_request.html', context)
+    return render(request, 'requests/create_request_unified.html', context)
 
 
 def track_request_dashboard(request):
     """
-    Advanced unified tracking dashboard for blood requests
-    Shows all user's requests with management features
+    Enhanced unified tracking dashboard for blood requests
+    Shows user's own requests AND live requests they can respond to
     """
     if not request.user.is_authenticated:
         from django.shortcuts import redirect
         return redirect('/accounts/login/?next=/requests/track/')
-    
-    return render(request, 'requests/track_request_dashboard.html')
+
+    # Get all requests for the current user
+    from .models import BloodRequest, RequestResponse
+    from django.utils import timezone
+    from django.core.serializers.json import DjangoJSONEncoder
+    import json
+
+    now = timezone.now()
+
+    # User's own requests
+    user_requests = BloodRequest.objects.filter(
+        requester=request.user
+    ).order_by('-created_at')
+
+    # Live requests that user can respond to (not their own, active, not expired)
+    live_requests_qs = BloodRequest.objects.filter(
+        status__in=['pending', 'approved', 'active'],
+        expires_at__gt=now
+    ).exclude(
+        requester=request.user
+    ).order_by(
+        '-priority',
+        '-created_at'
+    )[:50]
+
+    # Serialize live requests for JavaScript
+    live_requests = []
+    for req in live_requests_qs:
+        live_requests.append({
+            'id': req.id,
+            'blood_group': req.patient_blood_group,
+            'hospital': req.hospital_name,
+            'city': req.city,
+            'state': req.state,
+            'priority': req.priority,
+            'status': req.status,
+            'latitude': req.latitude,
+            'longitude': req.longitude,
+            'created_at': req.created_at.isoformat() if req.created_at else None,
+            'required_by': req.required_by.isoformat() if req.required_by else None,
+        })
+
+    # Get user's responses for live requests
+    user_responses_qs = RequestResponse.objects.filter(
+        donor=request.user,
+        request__in=live_requests_qs
+    )
+
+    # Serialize user responses
+    user_responses = {}
+    for resp in user_responses_qs:
+        user_responses[resp.request_id] = {
+            'id': resp.id,
+            'status': resp.status,
+            'responded_at': resp.responded_at.isoformat() if resp.responded_at else None,
+        }
+
+    # Calculate statistics
+    total_requests = user_requests.count()
+    pending_requests = user_requests.filter(status='pending').count()
+    active_requests = user_requests.filter(status='active').count()
+    completed_requests = user_requests.filter(status='completed').count()
+    cancelled_requests = user_requests.filter(status='cancelled').count()
+
+    # Get recent activity
+    recent_requests = user_requests[:10]
+
+    context = {
+        'user_requests': user_requests,
+        'live_requests': live_requests,
+        'user_responses': user_responses,
+        'recent_requests': recent_requests,
+        'total_requests': total_requests,
+        'pending_requests': pending_requests,
+        'active_requests': active_requests,
+        'completed_requests': completed_requests,
+        'cancelled_requests': cancelled_requests,
+        'current_time': now,
+    }
+
+    return render(request, 'requests/track_request_dashboard.html', context)
+
+
+def track_specific_request(request, request_id):
+    """
+    Track a specific blood request by ID
+    Shows detailed information and allows donors to accept
+    """
+    from django.shortcuts import redirect, render
+    from .models import BloodRequest, RequestResponse
+    from django.utils import timezone
+
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login/?next=/requests/track/{}/'.format(request_id))
+
+    try:
+        blood_request = BloodRequest.objects.get(id=request_id)
+    except BloodRequest.DoesNotExist:
+        context = {
+            'error': 'Request not found',
+            'request_id': request_id
+        }
+        return render(request, 'requests/track_request_error.html', context)
+
+    # Check if user has already responded
+    user_response = None
+    if request.user.is_authenticated:
+        user_response = RequestResponse.objects.filter(
+            request=blood_request,
+            donor=request.user
+        ).first()
+
+    # Get all responses for this request
+    all_responses = RequestResponse.objects.filter(
+        request=blood_request
+    ).select_related('donor').order_by('-responded_at')
+
+    context = {
+        'blood_request': blood_request,
+        'user_response': user_response,
+        'all_responses': all_responses,
+        'current_time': timezone.now(),
+    }
+
+    return render(request, 'requests/track_specific_request.html', context)
+
+
+def manage_request(request, request_id):
+    """
+    Manage individual blood request (cancel, update, etc.)
+    """
+    if not request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('/accounts/login/?next=/requests/manage/{}/'.format(request_id))
+
+    from .models import BloodRequest
+
+    try:
+        blood_request = BloodRequest.objects.get(id=request_id, requester=request.user)
+    except BloodRequest.DoesNotExist:
+        from django.contrib import messages
+        messages.error(request, 'Request not found or you do not have permission to manage it.')
+        return redirect('/requests/track/')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'cancel':
+            # Cancel the request
+            if blood_request.status in ['pending', 'active']:
+                blood_request.status = 'cancelled'
+                blood_request.save()
+                from django.contrib import messages
+                messages.success(request, 'Request cancelled successfully.')
+            else:
+                from django.contrib import messages
+                messages.error(request, 'Cannot cancel a request that is already completed or cancelled.')
+
+        elif action == 'update_urgency':
+            # Update urgency/priority
+            new_priority = request.POST.get('priority')
+            if new_priority in ['low', 'normal', 'high', 'emergency']:
+                blood_request.priority = new_priority
+                blood_request.save()
+                from django.contrib import messages
+                messages.success(request, 'Request priority updated successfully.')
+            else:
+                from django.contrib import messages
+                messages.error(request, 'Invalid priority level.')
+
+        elif action == 'update_required_by':
+            # Update required by date
+            new_date = request.POST.get('required_by')
+            if new_date:
+                from datetime import datetime
+                try:
+                    blood_request.required_by = datetime.strptime(new_date, '%Y-%m-%d').date()
+                    blood_request.save()
+                    from django.contrib import messages
+                    messages.success(request, 'Required date updated successfully.')
+                except ValueError:
+                    from django.contrib import messages
+                    messages.error(request, 'Invalid date format.')
+
+        return redirect('/requests/track/')
+
+    context = {
+        'request': blood_request,
+    }
+    return render(request, 'requests/manage_request.html', context)
 
 
 class BloodRequestCreateView(generics.CreateAPIView):
@@ -178,7 +534,49 @@ class BloodRequestCreateView(generics.CreateAPIView):
             if not pincode or pincode.strip() == '':
                 # Set a default pincode if not provided
                 serializer.validated_data['pincode'] = '110001'  # Default Delhi pincode
-            
+
+            # Geocoding: Convert address to latitude/longitude
+            city = serializer.validated_data.get('city', '')
+            state = serializer.validated_data.get('state', '')
+            hospital_address = serializer.validated_data.get('hospital_address', '')
+
+            if city and state:
+                try:
+                    import requests
+                    # Use Nominatim (OpenStreetMap) for free geocoding
+                    address_query = f"{hospital_address}, {city}, {state}, India"
+                    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
+                    headers = {'User-Agent': 'BloodDonationApp/1.0'}
+
+                    response = requests.get(url, headers=headers, timeout=5)
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data and len(data) > 0:
+                            serializer.validated_data['latitude'] = float(data[0]['lat'])
+                            serializer.validated_data['longitude'] = float(data[0]['lon'])
+                            logger.info(f'Geocoded {city}, {state} to {data[0]["lat"]}, {data[0]["lon"]}')
+                        else:
+                            # Fallback to approximate city coordinates
+                            logger.warning(f'Geocoding failed for {city}, {state}, using fallback')
+                            lat, lng = _get_city_coordinates(city)
+                            serializer.validated_data['latitude'] = lat
+                            serializer.validated_data['longitude'] = lng
+                    else:
+                        logger.warning(f'Geocoding API error: {response.status_code}')
+                        lat, lng = _get_city_coordinates(city)
+                        serializer.validated_data['latitude'] = lat
+                        serializer.validated_data['longitude'] = lng
+                except Exception as e:
+                    logger.error(f'Geocoding error: {e}')
+                    lat, lng = _get_city_coordinates(city)
+                    serializer.validated_data['latitude'] = lat
+                    serializer.validated_data['longitude'] = lng
+            else:
+                # Set fallback if no city/state provided
+                lat, lng = _get_city_coordinates(city or 'Unknown')
+                serializer.validated_data['latitude'] = lat
+                serializer.validated_data['longitude'] = lng
+
             # Handle authenticated vs anonymous users
             if self.request.user.is_authenticated:
                 instance = serializer.save(requester=self.request.user)
@@ -255,6 +653,34 @@ def create_request_page(request):
             logger.info('🟡 Traditional POST form submission detected')
             
             # Extract form data
+            city = request.POST.get('city', '')
+            state = request.POST.get('state', '')
+            hospital_address = request.POST.get('hospital_name', '')
+
+            # Geocoding: Convert address to latitude/longitude
+            latitude, longitude = 28.6139, 77.2090  # Default Delhi
+            if city and state:
+                try:
+                    import requests
+                    address_query = f"{hospital_address}, {city}, {state}, India"
+                    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
+                    headers = {'User-Agent': 'BloodDonationApp/1.0'}
+
+                    response = requests.get(url, headers=headers, timeout=5)
+                    if response.status_code == 200:
+                        geodata = response.json()
+                        if geodata and len(geodata) > 0:
+                            latitude = float(geodata[0]['lat'])
+                            longitude = float(geodata[0]['lon'])
+                            logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
+                        else:
+                            # Fallback to city coordinates
+                            latitude, longitude = _get_city_coordinates(city)
+                            logger.warning(f'Geocoding failed for {city}, using fallback')
+                except Exception as e:
+                    logger.error(f'Geocoding error: {e}')
+                    latitude, longitude = _get_city_coordinates(city)
+
             data = {
                 'patient_name': request.POST.get('patient_name'),
                 'patient_age': request.POST.get('patient_age'),
@@ -264,15 +690,15 @@ def create_request_page(request):
                 'priority': request.POST.get('priority', 'normal'),
                 'required_by': request.POST.get('required_by'),
                 'hospital_name': request.POST.get('hospital_name'),
-                'city': request.POST.get('city'),
-                'state': request.POST.get('state'),
+                'city': city,
+                'state': state,
                 'pincode': request.POST.get('pincode', '110001'),
                 'contact_person': request.POST.get('contact_person'),
                 'contact_phone': request.POST.get('contact_phone'),
                 'contact_email': request.POST.get('contact_email'),
                 'requester_type': 'individual',
-                'latitude': 28.6139,  # Default Delhi coordinates
-                'longitude': 77.2090,
+                'latitude': latitude,
+                'longitude': longitude,
             }
             
             # Validate required fields
@@ -285,7 +711,7 @@ def create_request_page(request):
                 logger.error(f'Missing required fields: {missing_fields}')
                 from django.contrib import messages
                 messages.error(request, f'Missing required fields: {", ".join(missing_fields)}')
-                return render(request, 'requests/create_request.html')
+                return render(request, 'requests/create_request_unified.html', context)
             
             # Create serializer and validate
             from .serializers import BloodRequestCreateSerializer
@@ -330,16 +756,16 @@ def create_request_page(request):
                 for field, errors in serializer.errors.items():
                     error_messages.append(f'{field}: {", ".join(errors)}')
                 messages.error(request, f'Validation errors: {" | ".join(error_messages)}')
-                return render(request, 'requests/create_request.html')
+                return render(request, 'requests/create_request_unified.html', context)
         
         except Exception as e:
             logger.error(f'❌ Error processing POST request: {str(e)}', exc_info=True)
             from django.contrib import messages
             messages.error(request, f'Error creating request: {str(e)}')
-            return render(request, 'requests/create_request.html')
+            return render(request, 'requests/create_request_unified.html', context)
     
     # GET request - just render the form
-    return render(request, 'requests/create_request.html')
+    return render(request, 'requests/create_request_unified.html', context)
 
 
 def my_requests_page(request):
@@ -506,14 +932,22 @@ def get_live_requests(request):
             data.append({
                 'id': req.id,
                 'patient_blood_group': req.patient_blood_group,
+                'patient_name': req.patient_name,
                 'hospital_name': req.hospital_name,
                 'city': req.city,
                 'state': req.state,
                 'priority': req.priority,
+                'status': req.status,
                 'contact_phone': req.contact_phone,
+                'contact_person': req.contact_person,
                 'created_at': req.created_at.isoformat(),
+                'required_by': req.required_by.isoformat() if req.required_by else None,
+                'expires_at': req.expires_at.isoformat() if req.expires_at else None,
                 'required_units': req.required_units,
                 'fulfilled_units': req.fulfilled_units,
+                'reason': req.reason,
+                'is_critical': req.is_critical,
+                'is_owner': request.user.is_authenticated and req.requester == request.user,
                 'latitude': float(req.latitude) if req.latitude else 0,
                 'longitude': float(req.longitude) if req.longitude else 0,
             })
@@ -529,99 +963,144 @@ def get_live_requests(request):
 
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
 def respond_to_request(request, request_id):
     """
-    Donor responds to a blood request
-    Status: interested -> en_route -> arrived -> donated
+    Donor responds to a blood request (accept/reject)
     """
+    from django.http import JsonResponse
+    import json
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'message': 'Please login first'}, status=401)
+
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
-        
+        logger.info(f"User {request.user.username} responding to request {request_id}")
+
         # Check if request is still active
-        if not blood_request.is_active:
-            return Response(
-                {'error': 'This request is no longer active'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+        if blood_request.status in ['cancelled', 'fulfilled', 'expired']:
+            return JsonResponse({'success': False, 'message': 'This request is no longer active'})
+
         # Check if donor already responded
         existing_response = RequestResponse.objects.filter(
             request=blood_request,
             donor=request.user
         ).first()
-        
+
         if existing_response:
-            return Response(
-                {'error': 'You have already responded to this request'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+            return JsonResponse({'success': False, 'message': 'You have already responded to this request'})
+
+        # Parse request body
+        try:
+            data = json.loads(request.body)
+            action = data.get('action', 'accept')
+        except Exception as e:
+            logger.error(f"Error parsing request body: {e}")
+            action = 'accept'
+
+        if action == 'reject':
+            return JsonResponse({'success': True, 'message': 'Request declined'})
+
         # Check if max donors reached
-        if not blood_request.can_accept_more_donors:
-            return Response(
-                {'error': 'Maximum donor limit reached for this request'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+        try:
+            if not blood_request.can_accept_more_donors:
+                return JsonResponse({'success': False, 'message': 'Maximum donor limit reached'})
+        except Exception as e:
+            logger.error(f"Error checking max donors: {e}")
+            # Continue anyway if this check fails
+
         # Get donor location from request data or user profile
-        latitude = request.data.get('latitude')
-        longitude = request.data.get('longitude')
-        
+        try:
+            latitude = data.get('latitude', getattr(request.user, 'latitude', None))
+            longitude = data.get('longitude', getattr(request.user, 'longitude', None))
+        except Exception as e:
+            logger.error(f"Error getting location: {e}")
+            latitude = None
+            longitude = None
+
         # Calculate distance if location provided
         distance_km = None
-        if latitude and longitude:
-            distance_km = calculate_distance(
-                float(latitude), float(longitude),
-                float(blood_request.latitude), float(blood_request.longitude)
-            )
-        
+        try:
+            if latitude and longitude and blood_request.latitude and blood_request.longitude:
+                distance_km = calculate_distance(
+                    float(latitude), float(longitude),
+                    float(blood_request.latitude), float(blood_request.longitude)
+                )
+        except Exception as e:
+            logger.error(f"Error calculating distance: {e}")
+            distance_km = None
+
         # Create response
-        response_obj = RequestResponse.objects.create(
-            request=blood_request,
-            donor=request.user,
-            status='interested',
-            donor_latitude=latitude,
-            donor_longitude=longitude,
-            distance_km=distance_km,
-            last_location_update=timezone.now() if latitude else None
-        )
-        
+        try:
+            response_obj = RequestResponse.objects.create(
+                request=blood_request,
+                donor=request.user,
+                status='interested',
+                donor_latitude=latitude,
+                donor_longitude=longitude,
+                distance_km=distance_km,
+                last_location_update=timezone.now() if latitude else None
+            )
+            logger.info(f"Created response {response_obj.id} for request {request_id}")
+        except Exception as e:
+            logger.error(f"Error creating response: {e}")
+            return JsonResponse({'success': False, 'message': f'Failed to create response: {str(e)}'}, status=500)
+
         # Send notification to requester
         try:
             from notifications.services import NotificationService
             notification_service = NotificationService()
             notification_service.notify_user(
                 blood_request.requester,
-                f'New donor response!',
-                f'{request.user.get_full_name()} is interested in donating blood.',
+                'New donor response!',
+                f'{request.user.get_full_name() or request.user.username} is interested in donating blood.',
                 'donor_response',
                 related_object=response_obj
             )
         except Exception as notif_error:
             logger.error(f'Failed to send notification: {str(notif_error)}')
-        
-        serializer_data = {
-            'id': response_obj.id,
-            'status': response_obj.status,
-            'responded_at': response_obj.responded_at.isoformat(),
-            'distance_km': distance_km,
-            'message': 'Successfully responded to request!'
-        }
-        
-        return Response(serializer_data, status=status.HTTP_201_CREATED)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Successfully accepted request!',
+            'response_id': response_obj.id,
+            'distance_km': distance_km
+        })
     
     except BloodRequest.DoesNotExist:
-        return Response(
-            {'error': 'Request not found'},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return JsonResponse({'success': False, 'message': 'Request not found'}, status=404)
     except Exception as e:
-        logger.error(f'Error responding to request: {str(e)}', exc_info=True)
-        return Response(
-            {'error': 'Failed to respond to request'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error(f'Error in respond_to_request: {e}')
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_donor_location(request, response_id):
+    """
+    Get the current location of a donor for live tracking
+    """
+    try:
+        response_obj = RequestResponse.objects.get(id=response_id)
+
+        # Check if user has permission to view this location
+        if request.user != response_obj.request.requester and request.user != response_obj.donor:
+            return JsonResponse({'error': 'Permission denied'}, status=403)
+
+        data = {
+            'latitude': float(response_obj.donor_latitude) if response_obj.donor_latitude else None,
+            'longitude': float(response_obj.donor_longitude) if response_obj.donor_longitude else None,
+            'status': response_obj.status,
+            'last_updated': response_obj.last_location_update.isoformat() if response_obj.last_location_update else None,
+            'distance_km': float(response_obj.distance_km) if response_obj.distance_km else None,
+        }
+
+        return JsonResponse(data)
+    except RequestResponse.DoesNotExist:
+        return JsonResponse({'error': 'Response not found'}, status=404)
+    except Exception as e:
+        logger.error(f'Error getting donor location: {e}')
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])
@@ -722,6 +1201,7 @@ def select_donor(request, response_id):
         return Response({
             'message': 'Donor selected successfully',
             'donor_name': response_obj.donor.get_full_name(),
+            'donor_id': response_obj.donor.id,
             'request_id': blood_request.id
         }, status=status.HTTP_200_OK)
     
@@ -1143,3 +1623,563 @@ def accept_request_view(request, request_id):
     
     messages.success(request, '✅ You have accepted this blood request! Redirecting to tracking dashboard...')
     return redirect(f'/requests/track/{request_id}/')
+
+
+# ============================================================================
+# CHAT SYSTEM (Instagram-style Direct Messaging)
+# ============================================================================
+
+from django.db.models import Q, Max, Count
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+# Import ChatMessage from models_chat (user-to-user chat, not request-specific)
+from .models_chat import ChatMessage
+
+def get_unread_chat_count(user):
+    """Get unread chat message count for user"""
+    return ChatMessage.objects.filter(receiver=user, is_read=False).count()
+
+
+@login_required
+def unread_chat_count_api(request):
+    """API endpoint to get unread chat count for navbar badge"""
+    try:
+        # Return 0 for unauthenticated users
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                'success': True,
+                'unread_count': 0,
+            })
+        
+        unread_count = get_unread_chat_count(request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'unread_count': unread_count,
+        })
+    except Exception as e:
+        logger.error(f'Error getting unread chat count: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to get unread count'}, status=500)
+
+
+@login_required
+def chat_inbox(request):
+    """Show all conversations (like Instagram inbox)"""
+    # Get all users current user has chatted with
+    sent_messages = ChatMessage.objects.filter(sender=request.user).values('receiver')
+    received_messages = ChatMessage.objects.filter(receiver=request.user).values('sender')
+    
+    # Combine and get unique user IDs
+    all_conversations = set()
+    for msg in sent_messages:
+        all_conversations.add(msg['receiver'])
+    for msg in received_messages:
+        all_conversations.add(msg['sender'])
+    
+    # Build conversation list with details
+    conversations = []
+    from accounts.models import User
+    
+    for user_id in all_conversations:
+        try:
+            other_user = User.objects.get(id=user_id, is_active=True)
+            
+            # Get last message
+            last_message = ChatMessage.objects.filter(
+                Q(sender=request.user, receiver=other_user) |
+                Q(sender=other_user, receiver=request.user)
+            ).order_by('-created_at').first()
+            
+            # Get unread count
+            unread_count = ChatMessage.objects.filter(
+                sender=other_user, receiver=request.user, is_read=False
+            ).count()
+            
+            conversations.append({
+                'user': other_user,
+                'last_message': last_message,
+                'unread_count': unread_count,
+            })
+        except User.DoesNotExist:
+            continue
+    
+    # Sort by last message time
+    conversations.sort(
+        key=lambda x: x['last_message'].created_at if x['last_message'] else timezone.now(),
+        reverse=True
+    )
+    
+    context = {
+        'conversations': conversations,
+        'total_unread': sum(c['unread_count'] for c in conversations),
+    }
+    
+    return render(request, 'chat/inbox.html', context)
+
+
+@login_required
+def chat_conversation(request, user_id):
+    """Chat with specific user"""
+    from accounts.models import User
+    from accounts.models import PrivacySettings
+    
+    other_user = get_object_or_404(User, id=user_id, is_active=True)
+    
+    # Check if other user allows chat requests
+    try:
+        privacy_settings = other_user.privacy_settings
+        if not privacy_settings.enable_chat_requests and not request.user.is_staff:
+            messages.error(request, 'This user does not accept chat requests')
+            return redirect('chat-inbox')
+    except PrivacySettings.DoesNotExist:
+        pass  # Allow by default if no settings
+    
+    # Get messages between users
+    messages_list = ChatMessage.objects.filter(
+        Q(sender=request.user, receiver=other_user) |
+        Q(sender=other_user, receiver=request.user)
+    ).order_by('created_at')
+    
+    # Mark received messages as read
+    ChatMessage.objects.filter(
+        sender=other_user, receiver=request.user, is_read=False
+    ).update(is_read=True)
+    
+    context = {
+        'other_user': other_user,
+        'messages': messages_list,
+    }
+    
+    return render(request, 'chat/conversation.html', context)
+
+
+@login_required
+def send_chat_message(request):
+    """Send chat message (AJAX)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    try:
+        from accounts.models import User
+        from accounts.models import PrivacySettings
+        from notifications.models import Notification
+        
+        receiver_id = request.POST.get('receiver_id')
+        message_text = request.POST.get('message', '').strip()
+        
+        if not receiver_id or not message_text:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        
+        receiver = get_object_or_404(User, id=receiver_id, is_active=True)
+        
+        # Check if receiver allows chat requests
+        try:
+            privacy = receiver.privacy_settings
+            if not privacy.enable_chat_requests and not request.user.is_staff:
+                return JsonResponse({'error': 'User does not accept chat requests'}, status=403)
+        except PrivacySettings.DoesNotExist:
+            pass  # Allow by default
+        
+        # Create message
+        message = ChatMessage.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            message=message_text
+        )
+        
+        # Create notification for receiver
+        try:
+            Notification.objects.create(
+                user=receiver,
+                notification_type='chat_message',
+                title=f'New message from {request.user.first_name or request.user.username}',
+                message=message_text[:100],
+                priority='medium'
+            )
+        except Exception as e:
+            logger.error(f'Error creating chat notification: {str(e)}')
+        
+        return JsonResponse({
+            'success': True,
+            'message_id': message.id,
+            'created_at': message.created_at.isoformat(),
+        })
+        
+    except Exception as e:
+        logger.error(f'Error sending chat message: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to send message'}, status=500)
+
+
+@login_required
+def mark_messages_read(request):
+    """Mark messages as read (AJAX)"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    try:
+        from accounts.models import User
+        
+        sender_id = request.POST.get('sender_id')
+        sender = get_object_or_404(User, id=sender_id)
+        
+        # Mark messages as read
+        count = ChatMessage.objects.filter(
+            sender=sender, receiver=request.user, is_read=False
+        ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True,
+            'marked_read': count,
+        })
+        
+    except Exception as e:
+        logger.error(f'Error marking messages read: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to mark messages as read'}, status=500)
+
+
+# ============================================================================
+# BLOOD REQUEST WORKFLOW APIs (Complete 20-step process)
+# ============================================================================
+
+from .services import BloodRequestWorkflow
+
+@login_required
+def activate_request_api(request, request_id):
+    """Activate blood request and notify matching donors (Steps 1-6)"""
+    try:
+        blood_request = get_object_or_404(BloodRequest, id=request_id)
+        
+        # Check permission
+        if blood_request.requester != request.user and not request.user.is_staff:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        # Activate request
+        blood_request = BloodRequestWorkflow.activate_request(blood_request)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Request activated and donors notified',
+            'request_id': blood_request.id,
+            'status': blood_request.status,
+        })
+    except Exception as e:
+        logger.error(f'Error activating request: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to activate request'}, status=500)
+
+
+@login_required
+def accept_request_api(request, request_id):
+    """Donor accepts blood request (Steps 7-10)"""
+    try:
+        blood_request = get_object_or_404(BloodRequest, id=request_id, status='active')
+        
+        # Accept request
+        response, message = BloodRequestWorkflow.donor_accept_request(
+            blood_request, request.user
+        )
+        
+        if response:
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'response_id': response.id,
+                'status': response.status,
+            })
+        else:
+            return JsonResponse({'error': message}, status=400)
+            
+    except Exception as e:
+        logger.error(f'Error accepting request: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to accept request'}, status=500)
+
+
+@login_required
+def decline_request_api(request, request_id):
+    """Donor declines blood request"""
+    try:
+        blood_request = get_object_or_404(BloodRequest, id=request_id)
+        
+        BloodRequestWorkflow.donor_decline_request(blood_request, request.user)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Request declined',
+        })
+    except Exception as e:
+        logger.error(f'Error declining request: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to decline request'}, status=500)
+
+
+@login_required
+def update_donor_status_api(request, response_id):
+    """Update donor response status (Steps 13-14)"""
+    try:
+        from .models import RequestResponse
+        
+        response = get_object_or_404(RequestResponse, id=response_id)
+        
+        # Check permission
+        if response.donor != request.user:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        new_status = request.POST.get('status')
+        if not new_status:
+            return JsonResponse({'error': 'Status required'}, status=400)
+        
+        success, message = BloodRequestWorkflow.update_donor_status(response, new_status)
+        
+        if success:
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'status': new_status,
+            })
+        else:
+            return JsonResponse({'error': message}, status=400)
+            
+    except Exception as e:
+        logger.error(f'Error updating donor status: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to update status'}, status=500)
+
+
+@login_required
+def get_contact_details_api(request, response_id):
+    """Share contact details between requester and donor (Step 11)"""
+    try:
+        from .models import RequestResponse
+        
+        response = get_object_or_404(RequestResponse, id=response_id)
+        
+        contact_info, message = BloodRequestWorkflow.get_donor_contact(
+            response, request.user
+        )
+        
+        if contact_info:
+            return JsonResponse({
+                'success': True,
+                'contact': contact_info,
+                'message': message,
+            })
+        else:
+            return JsonResponse({'error': message}, status=403)
+            
+    except Exception as e:
+        logger.error(f'Error getting contact details: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to get contact details'}, status=500)
+
+
+@login_required
+def cancel_request_api(request, request_id):
+    """Cancel blood request (Step 17)"""
+    try:
+        blood_request = get_object_or_404(BloodRequest, id=request_id)
+        
+        reason = request.POST.get('reason', 'No longer needed')
+        
+        success, message = BloodRequestWorkflow.cancel_request(
+            blood_request, request.user, reason
+        )
+        
+        if success:
+            return JsonResponse({
+                'success': True,
+                'message': message,
+            })
+        else:
+            return JsonResponse({'error': message}, status=403)
+            
+    except Exception as e:
+        logger.error(f'Error cancelling request: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to cancel request'}, status=500)
+
+
+@login_required
+def get_request_history_api(request, request_id):
+    """Get complete request history (Step 18)"""
+    try:
+        blood_request = get_object_or_404(BloodRequest, id=request_id)
+        
+        # Check permission
+        if blood_request.requester != request.user and not request.user.is_staff:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        history = BloodRequestWorkflow.get_request_history(blood_request)
+        
+        # Serialize response data
+        responses_data = []
+        for response in history['responses']:
+            responses_data.append({
+                'id': response.id,
+                'donor_name': response.donor.get_full_name() or response.donor.username,
+                'donor_blood_group': response.donor.blood_group,
+                'status': response.status,
+                'responded_at': response.responded_at.isoformat(),
+                'distance_km': float(response.distance_km) if response.distance_km else None,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'request': {
+                'id': history['request'].id,
+                'patient_name': history['request'].patient_name,
+                'status': history['request'].status,
+                'created_at': history['request'].created_at.isoformat(),
+            },
+            'status_history': history['status_history'],
+            'responses': responses_data,
+            'total_responses': history['total_responses'],
+            'accepted_responses': history['accepted_responses'],
+            'completed_donations': history['completed_donations'],
+        })
+    except Exception as e:
+        logger.error(f'Error getting request history: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to get request history'}, status=500)
+
+
+@login_required
+def update_donor_location_api(request):
+    """Update donor location for live tracking"""
+    try:
+        from .models import RequestResponse, DonorLocationHistory
+        
+        response_id = request.POST.get('response_id')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        accuracy = request.POST.get('accuracy', 0)
+        
+        if not response_id or not latitude or not longitude:
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+        
+        response = get_object_or_404(RequestResponse, id=response_id)
+        
+        # Check permission
+        if response.donor != request.user:
+            return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+        # Update response location
+        response.update_location(float(latitude), float(longitude))
+        
+        # Log location history
+        DonorLocationHistory.objects.create(
+            donor=request.user,
+            request=response.request,
+            latitude=float(latitude),
+            longitude=float(longitude),
+            accuracy_meters=float(accuracy) if accuracy else None,
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Location updated',
+        })
+    except Exception as e:
+        logger.error(f'Error updating location: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to update location'}, status=500)
+
+
+@login_required
+def get_nearby_requests_api(request):
+    """Get nearby blood requests for donors"""
+    try:
+        from accounts.models import User
+        from math import radians, cos, sin, asin, sqrt
+        
+        # Get user location
+        user = request.user
+        if not user.latitude or not user.longitude:
+            return JsonResponse({
+                'error': 'Please update your location in profile',
+                'needs_location': True
+            }, status=400)
+        
+        # Get compatible blood groups
+        compatible_groups = BloodRequestWorkflow.get_compatible_blood_groups(user.blood_group) if user.blood_group else []
+        
+        # Get active requests
+        active_requests = BloodRequest.objects.filter(
+            status__in=['active', 'partially_fulfilled'],
+            patient_blood_group__in=compatible_groups if compatible_groups else ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+        )
+        
+        # Filter by distance
+        nearby_requests = []
+        user_lat = float(user.latitude)
+        user_lng = float(user.longitude)
+        
+        for req in active_requests:
+            # Calculate distance
+            lat1, lon1 = radians(user_lat), radians(user_lng)
+            lat2, lon2 = radians(float(req.latitude)), radians(float(req.longitude))
+            dlon = lon2 - lon1
+            dlat = lat2 - lat1
+            a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+            c = 2 * asin(sqrt(a))
+            distance = c * 6371  # km
+            
+            if distance <= 50:  # 50km radius
+                # Check if user already responded
+                already_responded = RequestResponse.objects.filter(
+                    request=req, donor=user
+                ).exists()
+                
+                nearby_requests.append({
+                    'id': req.id,
+                    'patient_name': req.patient_name,
+                    'blood_group': req.patient_blood_group,
+                    'hospital': req.hospital_name,
+                    'city': req.city,
+                    'priority': req.priority,
+                    'required_units': req.required_units,
+                    'distance_km': round(distance, 2),
+                    'already_responded': already_responded,
+                    'created_at': req.created_at.isoformat(),
+                })
+        
+        # Sort by distance
+        nearby_requests.sort(key=lambda x: x['distance_km'])
+        
+        return JsonResponse({
+            'success': True,
+            'requests': nearby_requests,
+            'total': len(nearby_requests),
+        })
+    except Exception as e:
+        logger.error(f'Error getting nearby requests: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to get nearby requests'}, status=500)
+
+
+@login_required
+def manage_all_requests(request):
+    """View to manage all blood requests with filtering and pagination"""
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    
+    # Get all requests
+    requests_list = BloodRequest.objects.all().order_by('-created_at')
+    
+    # Calculate stats
+    total_count = requests_list.count()
+    active_count = requests_list.filter(status='active').count()
+    pending_count = requests_list.filter(status='pending').count()
+    fulfilled_count = requests_list.filter(status='fulfilled').count()
+    
+    # Pagination
+    page = request.GET.get('page', 1)
+    paginator = Paginator(requests_list, 10)  # 10 requests per page
+    
+    try:
+        requests_page = paginator.page(page)
+    except PageNotAnInteger:
+        requests_page = paginator.page(1)
+    except EmptyPage:
+        requests_page = paginator.page(paginator.num_pages)
+    
+    context = {
+        'requests': requests_page,
+        'page_obj': requests_page,
+        'total_count': total_count,
+        'active_count': active_count,
+        'pending_count': pending_count,
+        'fulfilled_count': fulfilled_count,
+    }
+    
+    return render(request, 'requests/manage_all_requests.html', context)

@@ -125,7 +125,27 @@ class BloodRequest(models.Model):
                 self.expires_at = self.required_by + timezone.timedelta(days=1)
             else:
                 self.expires_at = self.required_by + timezone.timedelta(days=3)
-        
+
+        # Auto-approve emergency and urgent requests
+        if self.status == 'pending' and self.priority in ['emergency', 'urgent']:
+            self.status = 'approved'
+            self.approved_by = self.requester if self.requester else None
+            self.approved_at = timezone.now()
+            self.approval_notes = 'Auto-approved due to emergency/urgent priority'
+            self.activated_at = timezone.now()
+            logger.info(f"Auto-approved request #{self.pk} due to {self.priority} priority")
+
+        # Auto-approve normal requests after 5 minutes (for testing/demo)
+        elif self.status == 'pending' and self.priority == 'normal':
+            # Check if request is older than 5 minutes
+            if self.created_at and (timezone.now() - self.created_at).total_seconds() > 300:
+                self.status = 'approved'
+                self.approved_by = self.requester if self.requester else None
+                self.approved_at = timezone.now()
+                self.approval_notes = 'Auto-approved after 5 minutes'
+                self.activated_at = timezone.now()
+                logger.info(f"Auto-approved normal request #{self.pk} after 5 minutes")
+
         # Auto-activate when approved
         if self.status == 'active' and not self.activated_at:
             self.activated_at = timezone.now()
@@ -159,6 +179,22 @@ class BloodRequest(models.Model):
     def can_accept_more_donors(self):
         """Check if request can accept more donor responses"""
         return self.active_responses_count < self.max_donors
+    
+    def add_status_change(self, new_status, notes="", changed_by="system"):
+        """Manually add a status change entry to history"""
+        if not self.status_history:
+            self.status_history = []
+        
+        status_entry = {
+            'old_status': self.status,
+            'new_status': new_status,
+            'timestamp': timezone.now().isoformat(),
+            'changed_by': str(changed_by),
+            'notes': notes,
+        }
+        
+        self.status_history.append(status_entry)
+        logger.info(f"Status change recorded for request #{self.id}: {self.status} → {new_status}")
 
 
 class RequestResponse(models.Model):
@@ -294,24 +330,8 @@ class RequestUpdate(models.Model):
         return f"Request {self.request.id}: {self.status_from} → {self.status_to}"
 
 
-class ChatMessage(models.Model):
-    """Real-time chat between donor and requester"""
-    request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE, related_name='chat_messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
-    
-    class Meta:
-        ordering = ['timestamp']
-        indexes = [
-            models.Index(fields=['request', 'timestamp']),
-        ]
-    
-    def __str__(self):
-        return f"Message from {self.sender.username} at {self.timestamp}"
-
+# ChatMessage moved to models_chat.py to avoid conflicts
+from .models_chat import ChatMessage  # Import from separate file
 
 class DonorRating(models.Model):
     """Rating system for donors and requesters"""
