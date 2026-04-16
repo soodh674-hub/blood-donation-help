@@ -650,6 +650,21 @@ def register_donor_view(request):
             
             # Log the user in automatically after registration
             login(request, user)
+            
+            # Create "Update Profile" notification for new users
+            try:
+                from notifications.models import Notification
+                Notification.objects.create(
+                    user=user,
+                    notification_type='general',
+                    title='🎉 Complete Your Profile!',
+                    message='Welcome to BloodLife! Complete your profile to help us match you with blood requests in your area. Add your photo, location, and medical information.',
+                    priority='high',
+                    category='system'
+                )
+            except Exception as e:
+                logger.error(f"Failed to create profile update notification: {str(e)}")
+            
             messages.success(request, f'Registration successful! Welcome, {user.first_name or user.username}!')
             return redirect('/accounts/dashboard/')
             
@@ -924,12 +939,59 @@ def dashboard_page(request):
             'can_donate': False
         }
     
-    return render(request, 'accounts/dashboard.html', {'user': request.user, 'stats': stats})
+    # Get profile completion data
+    try:
+        profile_completion = request.user.get_profile_completion()
+    except:
+        profile_completion = {'percentage': 0, 'completed': 0, 'total': 10, 'is_complete': False}
+    
+    # Check if there's an unread "Update Profile" notification
+    has_update_profile_notification = False
+    try:
+        from notifications.models import Notification
+        has_update_profile_notification = Notification.objects.filter(
+            user=request.user,
+            title__icontains='complete your profile',
+            is_read=False
+        ).exists()
+    except:
+        pass
+    
+    return render(request, 'accounts/dashboard.html', {
+        'user': request.user,
+        'stats': stats,
+        'profile_completion': profile_completion,
+        'show_progress_bar': not request.user.profile_completion_seen or has_update_profile_notification
+    })
 
 
 def user_search_page(request):
     """Render the user search page (public access)"""
     return render(request, 'search/user_search.html')
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_profile_completion_seen(request):
+    """Mark profile completion bar as seen by user"""
+    try:
+        request.user.profile_completion_seen = True
+        request.user.save()
+        
+        # Also mark any "Update Profile" notifications as read
+        try:
+            from notifications.models import Notification
+            Notification.objects.filter(
+                user=request.user,
+                title__icontains='complete your profile',
+                is_read=False
+            ).update(is_read=True)
+        except:
+            pass
+        
+        return Response({'success': True, 'message': 'Profile completion marked as seen'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

@@ -68,6 +68,10 @@ class User(AbstractUser):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # Profile completion tracking
+    profile_completion_seen = models.BooleanField(default=False)  # Track if user has seen progress bar
+    last_notification_check = models.DateTimeField(blank=True, null=True)  # Track last notification check
+    
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"
     
@@ -171,6 +175,46 @@ class User(AbstractUser):
         else:
             months = diff.days // 30
             return f"{months} month{'s' if months > 1 else ''} ago"
+
+    def get_profile_completion(self):
+        """Calculate profile completion percentage"""
+        total_fields = 10
+        completed_fields = 0
+        
+        # Check basic fields
+        if self.first_name:
+            completed_fields += 1
+        if self.last_name:
+            completed_fields += 1
+        if self.email:
+            completed_fields += 1
+        if self.phone_number:
+            completed_fields += 1
+        if self.blood_group:
+            completed_fields += 1
+        if self.date_of_birth:
+            completed_fields += 1
+        if self.city:
+            completed_fields += 1
+        if self.state:
+            completed_fields += 1
+        if self.pincode:
+            completed_fields += 1
+        
+        # Check profile photo
+        try:
+            if hasattr(self, 'donor_profile') and self.donor_profile.profile_photo:
+                completed_fields += 1
+        except:
+            pass
+        
+        percentage = int((completed_fields / total_fields) * 100)
+        return {
+            'percentage': percentage,
+            'completed': completed_fields,
+            'total': total_fields,
+            'is_complete': percentage >= 80  # Consider 80%+ as complete
+        }
 
 class PasswordResetOTP(models.Model):
     """Model to store password reset OTP information"""

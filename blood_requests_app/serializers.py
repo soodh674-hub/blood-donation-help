@@ -3,7 +3,8 @@ from django.utils import timezone
 from datetime import timedelta
 
 from accounts.serializers import UserPublicSerializer
-from .models import BloodRequest, RequestMatch, ChatMessage, DonorRating
+from .models import BloodRequest, RequestMatch, DonorRating
+from .models_chat import ChatMessage
 from donors.models import DonorAvailability
 
 

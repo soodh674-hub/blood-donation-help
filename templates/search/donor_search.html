@@ -127,18 +127,18 @@
 </div>
 
 <!-- Donor Profile Modal -->
-<div id="donor-profile-modal" class="d-none fixed-top start-0 w-100 h-100 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+<div id="donor-profile-modal" class="d-none fixed-top start-0 w-100 h-100 overflow-y-auto" style="z-index: 1055 !important;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="d-flex align-items-center justify-content-center min-vh-100 p-4 text-center">
         <!-- Background overlay -->
         <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDonorProfile()"></div>
 
         <!-- This element is to trick the browser into centering the modal contents. -->
-        <span class="d-none d-sm-inline-block d-sm-align-middle d-sm-h-screen" aria-hidden="true">&#8203;</span>
+        <span class="d-none d-sm-inline-block d-sm-align-middle d-sm-vh-100" aria-hidden="true">&#8203;</span>
 
         <!-- Modal panel -->
-        <div class="relative inline-block align-bottom rounded-2xl text-left overflow-hidden shadow-lg transition-all my-4 align-middle mw-100 border" style="background: linear-gradient(135deg, #1f2937, #111827, #1f2937); max-width: 42rem; border-color: rgba(239, 68, 68, 0.3);">
+        <div class="position-relative d-inline-block align-bottom rounded-4 text-start overflow-hidden shadow-lg transition-all my-4 align-middle mw-100 border" style="background: linear-gradient(135deg, #1f2937, #111827, #1f2937); max-width: 42rem; border-color: rgba(239, 68, 68, 0.3);">
             <!-- Close button -->
-            <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none" onclick="closeDonorProfile()">
+            <button type="button" class="position-absolute text-white opacity-50 border-0 bg-transparent m-3" style="top: 0; right: 0; z-index: 10;" onclick="closeDonorProfile()" onmouseover="this.className='position-absolute text-white border-0 bg-transparent m-3'" onmouseout="this.className='position-absolute text-white opacity-50 border-0 bg-transparent m-3'">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -263,22 +263,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const isPublicSearch = !donor.distance_km;
         
         card.innerHTML = `
-            <div class="flex items-start justify-between mb-4">
+            <div class="d-flex align-items-start justify-content-between mb-4">
                 <div>
-                    <h3 class="text-lg font-semibold text-white">${donor.first_name} ${donor.last_name}</h3>
-                    <p class="text-red-400 font-medium">${donor.blood_group}</p>
-                    ${isPublicSearch ? '<span class="text-xs text-gray-400">Public Profile</span>' : ''}
+                    <h3 class="fs-5 fw-semibold text-white mb-1">${donor.first_name} ${donor.last_name}</h3>
+                    <p class="text-danger fw-medium mb-1">${donor.blood_group}</p>
+                    ${isPublicSearch ? '<span class="small text-white opacity-50">Public Profile</span>' : ''}
                 </div>
                 ${!isPublicSearch ? `
-                <div class="text-right">
-                    <div class="text-sm text-gray-400">Distance</div>
-                    <div class="text-white font-semibold">${formatDistance(donor.distance_km)}</div>
+                <div class="text-end">
+                    <div class="small text-white opacity-50">Distance</div>
+                    <div class="text-white fw-semibold">${formatDistance(donor.distance_km)}</div>
                 </div>
                 ` : ''}
             </div>
             
             <div class="d-flex flex-column gap-2 mb-4">
-                <div class="flex items-center text-gray-300">
+                <div class="d-flex align-items-center text-white opacity-75">
                     <svg class="me-2 text-secondary" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span>${donor.city}, ${donor.state}</span>
                 </div>
                 
-                <div class="flex items-center text-gray-300">
+                <div class="d-flex align-items-center text-white opacity-75">
                     <svg class="me-2 text-secondary" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                     </svg>
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 ${details && details.score ? `
-                <div class="flex items-center text-gray-300">
+                <div class="d-flex align-items-center text-white opacity-75">
                     <svg class="me-2 text-secondary" style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -303,18 +303,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 ` : ''}
             </div>
             
-            <div class="pt-4 border-t border-white/10 flex gap-2">
+            <div class="pt-3 mt-3 border-top border-secondary border-opacity-25 d-flex gap-2">
                 <button onclick="event.stopPropagation(); openDonorProfile('${donor.id}')" 
-                        class="btn btn-primary flex-1" style="background: linear-gradient(90deg, #3b82f6, #2563eb);">
+                        class="btn btn-primary flex-grow-1" style="background: linear-gradient(90deg, #3b82f6, #2563eb);">
                     View Profile
                 </button>
                 <button onclick="event.stopPropagation(); contactDonor('${donor.id}', '${donor.first_name} ${donor.last_name}', '${donor.phone_number || 'Not available'}', '${donor.email || 'Not available'}')" 
-                        class="btn btn-danger flex-1" style="background: linear-gradient(90deg, #ef4444, #dc2626);">
+                        class="btn btn-danger flex-grow-1" style="background: linear-gradient(90deg, #ef4444, #dc2626);">
                     Contact
                 </button>
             </div>
             ${isPublicSearch ? `
-            <p class="text-xs text-gray-400 text-center mt-2">Showing all ${donor.blood_group} donors in system</p>
+            <p class="small text-white opacity-50 text-center mt-2 mb-0">Showing all ${donor.blood_group} donors in system</p>
             ` : ''}
         `;
         
@@ -573,11 +573,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalInnerContent.innerHTML = `
                     <div class="d-flex flex-column gap-4">
                         <!-- Profile Header with Gradient Background -->
-                        <div class="p-4 p-md-5 rounded-top-2 mb-4" style="background: linear-gradient(135deg, #dc2626, #b91c1c, #991b1b); margin: -2rem -2rem 1rem -2rem;"
-                            <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                        <div class="p-4 p-md-5 rounded-top-2 mb-4" style="background: linear-gradient(135deg, #dc2626, #b91c1c, #991b1b); margin: -2rem -2rem 1rem -2rem;">
+                            <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
                                 <!-- Avatar with Blood Group Badge -->
-                                <div class="relative">
-                                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center fw-bold text-danger shadow-lg border border-white" style="width: 96px; height: 96px; font-size: 2.5rem; border-width: 4px;"
+                                <div class="position-relative">
+                                    <div class="bg-white rounded-circle d-flex align-items-center justify-content-center fw-bold text-danger shadow-lg border border-white" style="width: 96px; height: 96px; font-size: 2.5rem; border-width: 4px;">
                                         ${initials}
                                     </div>
                                     <div class="position-absolute bottom-0 end-0 translate-middle text-white px-3 py-1 rounded-circle fw-bold shadow-lg border border-white" style="background: linear-gradient(90deg, #ef4444, #dc2626);">
@@ -586,9 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 
                                 <!-- Donor Info -->
-                                <div class="text-white text-center md:text-left flex-1">
-                                    <h2 class="text-2xl md:text-3xl font-bold mb-2">${donorData.first_name} ${donorData.last_name}</h2>
-                                    <p class="text-red-100 text-sm md:text-base mb-3 flex items-center justify-center md:justify-start gap-2">
+                                <div class="text-white text-center text-md-start flex-grow-1">
+                                    <h2 class="fs-3 fw-bold mb-2">${donorData.first_name} ${donorData.last_name}</h2>
+                                    <p class="text-danger fw-medium small mb-3 d-flex align-items-center justify-content-center justify-content-md-start gap-2">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         </svg>
@@ -596,23 +596,23 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </p>
                                     
                                     <!-- Availability Status -->
-                                    <div class="flex items-center justify-center md:justify-start gap-2 mb-4">
+                                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-4">
                                         <span class="position-relative d-flex" style="width: 12px; height: 12px;">
                                             <span class="position-absolute top-0 start-0 w-100 h-100 rounded-circle opacity-75" style="background: ${donorData.is_available ? '#4ade80' : '#9ca3af'}; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
                                             <span class="position-relative d-inline-flex rounded-circle" style="width: 12px; height: 12px; background: ${donorData.is_available ? '#22c55e' : '#6b7280'};"></span>
                                         </span>
-                                        <span class="text-sm font-medium">${donorData.is_available ? 'Available to Donate' : 'Currently Unavailable'}</span>
+                                        <span class="small fw-medium">${donorData.is_available ? 'Available to Donate' : 'Currently Unavailable'}</span>
                                     </div>
                                     
                                     <!-- Quick Action Buttons -->
-                                    <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-                                        <a href="tel:${donorData.phone_number}" class="px-4 py-2 bg-white text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors flex items-center gap-2">
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                                        <a href="tel:${donorData.phone_number}" class="btn bg-white text-danger fw-semibold transition-all d-flex align-items-center gap-2">
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                             </svg>
                                             Call
                                         </a>
-                                        <a href="mailto:${donorData.email}" class="px-4 py-2 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-colors flex items-center gap-2">
+                                        <a href="mailto:${donorData.email}" class="btn bg-white bg-opacity-25 text-white fw-semibold hover-opacity-100 transition-all d-flex align-items-center gap-2">
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                             </svg>
@@ -664,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Contact Information -->
                         <div class="d-flex flex-column gap-3">
-                            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                            <h3 class="fs-5 fw-semibold text-white mb-3 d-flex align-items-center gap-2">
                                 <svg class="text-danger" fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px;">
                                     <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -673,40 +673,40 @@ document.addEventListener('DOMContentLoaded', function() {
                             </h3>
                             
                             <div class="glass-card p-3 d-flex flex-column gap-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.2);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.2);">
                                         <svg class="text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                         </svg>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs text-gray-400">Phone Number</p>
-                                        <p class="text-white font-medium">${donorData.phone_number || 'Not provided'}</p>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <p class="small text-white opacity-50 mb-0">Phone Number</p>
+                                        <p class="text-white fw-medium mb-0">${donorData.phone_number || 'Not provided'}</p>
                                     </div>
                                 </div>
                                 
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.2);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(34, 197, 94, 0.2);">
                                         <svg class="text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs text-gray-400">Email Address</p>
-                                        <p class="text-white font-medium truncate">${donorData.email || 'Not provided'}</p>
+                                    <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                                        <p class="small text-white opacity-50 mb-0">Email Address</p>
+                                        <p class="text-white fw-medium text-truncate mb-0">${donorData.email || 'Not provided'}</p>
                                     </div>
                                 </div>
                                 
                                 ${donorData.date_of_birth ? `
-                                <div class="flex items-center gap-3">
-                                    <div class="rounded-lg d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(168, 85, 247, 0.2);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: rgba(168, 85, 247, 0.2);">
                                         <svg class="text-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs text-gray-400">Date of Birth</p>
-                                        <p class="text-white font-medium">${new Date(donorData.date_of_birth).toLocaleDateString()}</p>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <p class="small text-white opacity-50 mb-0">Date of Birth</p>
+                                        <p class="text-white fw-medium mb-0">${new Date(donorData.date_of_birth).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                                 ` : ''}
@@ -715,16 +715,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Blood Compatibility -->
                         <div class="d-flex flex-column gap-3">
-                            <h3 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                            <h3 class="fs-5 fw-semibold text-white mb-3 d-flex align-items-center gap-2">
                                 <svg class="text-danger" fill="currentColor" viewBox="0 0 20 20" style="width: 20px; height: 20px;">
                                     <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
                                 </svg>
                                 Can Donate To
                             </h3>
                             
-                            <div class="flex flex-wrap gap-2">
+                            <div class="d-flex flex-wrap gap-2">
                                 ${canDonateTo.map(bg => `
-                                    <span class="px-3 py-1.5 rounded-lg fw-semibold small text-danger" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.3);">
+                                    <span class="px-3 py-1 rounded-3 fw-semibold small text-danger" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3);">
                                         ${bg}
                                     </span>
                                 `).join('')}
@@ -732,9 +732,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
 
                         <!-- Close Button -->
-                        <div class="pt-4 border-t border-white/10">
+                        <div class="pt-4 border-top border-secondary border-opacity-25">
                             <button onclick="closeDonorProfile()" 
-                                    class="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2">
+                                    class="btn w-100 text-white py-2 rounded-3 fw-semibold transition-all d-flex align-items-center justify-content-center gap-2" style="background: rgba(255,255,255,0.1);" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>

@@ -163,7 +163,7 @@ def enhanced_chat_view(request, contact_id=None):
             contact = get_object_or_404(User, id=contact_id)
             
             # Get chat history
-            from .models import ChatMessage
+            from .models_chat import ChatMessage
             messages = ChatMessage.objects.filter(
                 Q(sender=request.user, receiver=contact) |
                 Q(sender=contact, receiver=request.user)
@@ -201,7 +201,7 @@ def enhanced_chat_view(request, contact_id=None):
             return render(request, 'requests/chat_enhanced.html', context)
         else:
             # Show contacts list
-            from .models import ChatMessage
+            from .models_chat import ChatMessage
             contacts = User.objects.filter(
                 Q(is_donor=True) | Q(id__in=ChatMessage.objects.filter(
                     Q(sender=request.user) | Q(receiver=request.user)

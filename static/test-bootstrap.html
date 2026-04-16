@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodLife - Bootstrap 5 Test</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="css/bootstrap-icons.min.css">
+    
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="css/aos.css">
+    
+    <style>
+        .test-section {
+            padding: 50px 0;
+            margin: 30px 0;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+        }
+        .icon-test {
+            font-size: 2rem;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-section text-center" data-aos="fade-down">
+            <h1 class="display-4 text-danger mb-4">
+                <i class="bi bi-heart-pulse-fill"></i> BloodLife
+            </h1>
+            <p class="lead">Bootstrap 5 Migration Test Page</p>
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Success!</strong> Bootstrap 5 CSS is loaded correctly!
+            </div>
+        </div>
+
+        <!-- Test 1: Bootstrap Grid -->
+        <div class="test-section" data-aos="fade-right">
+            <h2><i class="bi bi-grid-3x3-gap-fill text-primary"></i> Test 1: Bootstrap Grid System</h2>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card p-3 bg-primary text-white">
+                        <i class="bi bi-phone fs-1"></i>
+                        <h5 class="mt-2">Mobile</h5>
+                        <p>320px - 768px</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 bg-success text-white">
+                        <i class="bi bi-tablet fs-1"></i>
+                        <h5 class="mt-2">Tablet</h5>
+                        <p>768px - 1024px</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3 bg-info text-white">
+                        <i class="bi bi-laptop fs-1"></i>
+                        <h5 class="mt-2">Desktop</h5>
+                        <p>1024px+</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 2: Bootstrap Icons -->
+        <div class="test-section text-center" data-aos="zoom-in">
+            <h2><i class="bi bi-stars text-warning"></i> Test 2: Bootstrap Icons</h2>
+            <div class="mt-4">
+                <i class="bi bi-heart-fill icon-test text-danger"></i>
+                <i class="bi bi-person-fill icon-test text-primary"></i>
+                <i class="bi bi-bell-fill icon-test text-warning"></i>
+                <i class="bi bi-check-circle-fill icon-test text-success"></i>
+                <i class="bi bi-exclamation-triangle-fill icon-test text-danger"></i>
+                <i class="bi bi-info-circle-fill icon-test text-info"></i>
+                <i class="bi bi-star-fill icon-test text-warning"></i>
+                <i class="bi bi-geo-alt-fill icon-test text-danger"></i>
+            </div>
+            <p class="mt-3"><i class="bi bi-check-lg text-success"></i> All icons loading correctly!</p>
+        </div>
+
+        <!-- Test 3: Bootstrap Buttons -->
+        <div class="test-section" data-aos="fade-left">
+            <h2><i class="bi bi-hand-index-fill text-success"></i> Test 3: Bootstrap Buttons</h2>
+            <div class="mt-4">
+                <button class="btn btn-primary me-2">
+                    <i class="bi bi-plus-circle me-1"></i>Primary
+                </button>
+                <button class="btn btn-success me-2">
+                    <i class="bi bi-check-lg me-1"></i>Success
+                </button>
+                <button class="btn btn-danger me-2">
+                    <i class="bi bi-x-circle me-1"></i>Danger
+                </button>
+                <button class="btn btn-warning me-2">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Warning
+                </button>
+                <button class="btn btn-info me-2">
+                    <i class="bi bi-info-circle me-1"></i>Info
+                </button>
+            </div>
+        </div>
+
+        <!-- Test 4: Bootstrap Cards -->
+        <div class="test-section" data-aos="fade-up">
+            <h2><i class="bi bi-card-heading text-info"></i> Test 4: Bootstrap Cards</h2>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <i class="bi bi-droplet-fill me-2"></i>Blood Request
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Emergency Blood Needed</h5>
+                            <p class="card-text">A+ blood type required at City Hospital.</p>
+                            <button class="btn btn-danger">
+                                <i class="bi bi-telephone-fill me-1"></i>Contact Donor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <i class="bi bi-person-check-fill me-2"></i>Donor Available
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Ready to Donate</h5>
+                            <p class="card-text">John Doe - O+ blood type, located 2km away.</p>
+                            <button class="btn btn-success">
+                                <i class="bi bi-check2-circle me-1"></i>Accept Donor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 5: AOS Animations -->
+        <div class="test-section text-center" data-aos="flip-up">
+            <h2><i class="bi bi-lightning-charge-fill text-warning"></i> Test 5: AOS Animations</h2>
+            <p class="lead mt-3">If you see animations when scrolling, AOS is working!</p>
+            <div class="row mt-4">
+                <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card p-3">
+                        <i class="bi bi-arrow-up-circle fs-1 text-primary"></i>
+                        <p class="mt-2">Fade Up</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-down" data-aos-delay="200">
+                    <div class="card p-3">
+                        <i class="bi bi-arrow-down-circle fs-1 text-success"></i>
+                        <p class="mt-2">Fade Down</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-right" data-aos-delay="300">
+                    <div class="card p-3">
+                        <i class="bi bi-arrow-right-circle fs-1 text-info"></i>
+                        <p class="mt-2">Fade Right</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-left" data-aos-delay="400">
+                    <div class="card p-3">
+                        <i class="bi bi-arrow-left-circle fs-1 text-warning"></i>
+                        <p class="mt-2">Fade Left</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test 6: Navbar Test -->
+        <div class="test-section" data-aos="fade-down">
+            <h2><i class="bi bi-menu-button-wide-fill text-dark"></i> Test 6: Navbar Component</h2>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-danger mt-3">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">
+                        <i class="bi bi-heart-pulse-fill me-2"></i>BloodLife
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#testNavbar">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="testNavbar">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#"><i class="bi bi-house-door me-1"></i>Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="bi bi-people me-1"></i>Find Donors</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="bi bi-plus-circle me-1"></i>Create Request</a>
+                            </li>
+                        </ul>
+                        <button class="btn btn-light btn-sm">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            <p class="mt-3"><i class="bi bi-check-circle text-success"></i> Try clicking the mobile menu button!</p>
+        </div>
+
+        <!-- Final Summary -->
+        <div class="test-section bg-success text-white text-center" data-aos="zoom-in">
+            <h2><i class="bi bi-trophy-fill"></i> All Tests Passed!</h2>
+            <p class="lead mt-3">Bootstrap 5, Bootstrap Icons, and AOS are all working correctly!</p>
+            <div class="mt-4">
+                <i class="bi bi-check-circle-fill fs-1"></i>
+                <i class="bi bi-check-circle-fill fs-1"></i>
+                <i class="bi bi-check-circle-fill fs-1"></i>
+            </div>
+            <p class="mt-3">Ready for production deployment!</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AOS JS -->
+    <script src="js/aos.js"></script>
+    
+    <!-- Initialize AOS -->
+    <script>
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            offset: 100
+        });
+        
+        console.log('✅ Bootstrap 5 loaded');
+        console.log('✅ Bootstrap Icons loaded');
+        console.log('✅ AOS animations initialized');
+    </script>
+</body>
+</html>

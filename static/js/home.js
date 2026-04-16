@@ -1,4 +1,4 @@
-// Enhanced home page animations and functionality
+// Enhanced home page animations and functionality with AOS
 (function () {
   // Home page search functionality
   document.addEventListener('DOMContentLoaded', function() {
@@ -161,11 +161,21 @@
     setTimeout(initEnhancedScrollAnimations, 200);
   });
 
-  // Enhanced scroll animations for sections and images - only for elements not handled by base template
+  // Enhanced scroll animations for sections and images - using AOS
   function initEnhancedScrollAnimations() {
-    // Check if GSAP is available
-    if (typeof gsap === 'undefined') {
-      // Fallback to simple scroll animations if GSAP is not available
+    // Use AOS for scroll animations
+    if (typeof AOS !== 'undefined') {
+      // Add AOS to elements that need scroll animations
+      const animateElements = document.querySelectorAll('.animate-on-scroll:not([data-aos])');
+      
+      animateElements.forEach((element, index) => {
+        element.setAttribute('data-aos', 'fade-up');
+        element.setAttribute('data-aos-delay', (index * 100).toString());
+      });
+      
+      AOS.refresh();
+    } else {
+      // Fallback to simple scroll animations if AOS is not available
       function onScroll() {
         const fadeElems = document.querySelectorAll(".scroll-fade");
         const parallaxElems = document.querySelectorAll(".scroll-parallax");
@@ -188,41 +198,8 @@
 
       window.addEventListener("scroll", onScroll, { passive: true });
       window.addEventListener("load", onScroll);
-      setTimeout(onScroll, 50); // Small delay to catch elements already in view
-      return;
+      setTimeout(onScroll, 50);
     }
-
-    // Use GSAP for enhanced animations if available
-    gsap.registerPlugin(ScrollTrigger);
-
-    // Enhanced scroll-triggered animations for home page specific elements
-    const animateElements = document.querySelectorAll('.animate-on-scroll:not(.home-animated)');
-    
-    animateElements.forEach((element, index) => {
-      // Check if element is already animated by other scripts
-      if (!element.classList.contains('animated')) {
-        // Add delay based on element's existing animation-delay property
-        const delay = parseFloat(element.style.animationDelay || 0);
-        
-        gsap.fromTo(element,
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            delay: delay,
-            scrollTrigger: {
-              trigger: element,
-              start: "top 85%",
-              toggleActions: "play none none reverse"
-            },
-            onComplete: function() {
-              element.classList.add('home-animated'); // Mark as animated by this script
-            }
-          }
-        );
-      }
-    });
   }
 
   // Initialize periodic animations for cards that appear every 2 seconds
@@ -230,36 +207,11 @@
     // Check if we have the "every 2 seconds" card elements to animate
     const statCard = document.querySelector('.hero-media-card');
     if (statCard) {
-      // Create a pulsating effect for the "every 2 seconds" message
-      let isVisible = true;
-      setInterval(() => {
-        if (isVisible) {
-          gsap.to(statCard, {
-            opacity: 0.7,
-            scale: 0.98,
-            duration: 0.8,
-            ease: "power2.inOut"
-          });
-        } else {
-          gsap.to(statCard, {
-            opacity: 1,
-            scale: 1,
-            duration: 0.8,
-            ease: "power2.inOut"
-          });
-        }
-        isVisible = !isVisible;
-      }, 2000); // Every 2 seconds
-
-      // Add floating animation to the card
-      gsap.to(statCard, {
-        y: -15,
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: 0.5
-      });
+      // Add CSS animation for pulsating effect
+      statCard.style.animation = 'pulse 2s ease-in-out infinite';
+      
+      // Add CSS animation for floating effect
+      statCard.style.animation = 'float 3s ease-in-out infinite';
     }
 
     // Add animations to other cards that should cycle periodically
@@ -273,85 +225,41 @@
     if (needsBloodElements.length > 0) {
       // Add subtle periodic animation to highlight these cards
       needsBloodElements.forEach((element, index) => {
-        // Add a subtle glow effect every 2 seconds
-        setInterval(() => {
-          gsap.fromTo(element, 
-            { 
-              boxShadow: "0 0 0 0 rgba(239, 68, 68, 0.4)",
-              borderColor: "rgba(239, 68, 68, 0.3)"
-            },
-            { 
-              boxShadow: "0 0 0 10px rgba(239, 68, 68, 0)",
-              borderColor: "rgba(239, 68, 68, 0.5)",
-              duration: 2,
-              ease: "power2.out"
-            }
-          );
-        }, 4000 + (index * 1000)); // Stagger the animations
+        // Add CSS animation for glow effect
+        element.style.animation = `glow 4s ease-in-out ${index}s infinite`;
         
-        // Also add a subtle pulse effect to the background
-        gsap.to(element, {
-          backgroundColor: "rgba(255, 255, 255, 0.08)",
-          duration: 1.5,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: index * 0.2
-        });
+        // Add CSS animation for background pulse
+        element.style.animation = `pulse-bg 1.5s ease-in-out ${index * 0.2}s infinite`;
       });
     }
   }
 
-  // Enhanced GSAP animations with element existence checks
-  if (typeof gsap !== 'undefined') {
+  // Enhanced AOS animations with element existence checks
+  if (typeof AOS !== 'undefined') {
     // Ensure DOM is ready before running animations
     setTimeout(() => {
       // Hero section entrance animation - only if elements exist
       const heroTitle = document.querySelector('.hero h1');
       if (heroTitle && !heroTitle.classList.contains('animated') && !heroTitle.classList.contains('home-animated')) {
-        gsap.from(heroTitle, {
-          opacity: 0,
-          y: 50,
-          duration: 1,
-          delay: 0.2,
-          ease: 'power3.out',
-          onComplete: function() {
-            heroTitle.classList.add('home-animated');
-          }
-        });
+        heroTitle.setAttribute('data-aos', 'fade-up');
+        heroTitle.setAttribute('data-aos-delay', '200');
+        heroTitle.classList.add('home-animated');
       }
       
       const heroCopy = document.querySelector('.hero-copy');
       if (heroCopy && !heroCopy.classList.contains('animated') && !heroCopy.classList.contains('home-animated')) {
-        gsap.from(heroCopy, {
-          opacity: 0,
-          y: 30,
-          duration: 1,
-          delay: 0.4,
-          ease: 'power2.out',
-          onComplete: function() {
-            heroCopy.classList.add('home-animated');
-          }
-        });
+        heroCopy.setAttribute('data-aos', 'fade-up');
+        heroCopy.setAttribute('data-aos-delay', '400');
+        heroCopy.classList.add('home-animated');
       }
       
       // Staggered button animations - only if elements exist
-      const heroButtons = gsap.utils.toArray('.hero-actions a');
-      if (heroButtons.length > 0) {
-        gsap.from(heroButtons, {
-          opacity: 0,
-          y: 20,
-          duration: 0.8,
-          delay: 0.6,
-          stagger: 0.1,
-          ease: 'back.out(1.7)',
-          onComplete: function() {
-            heroButtons.forEach(btn => {
-              btn.classList.add('home-animated');
-            });
-          }
-        });
-      }
+      const heroButtons = document.querySelectorAll('.hero-actions a');
+      heroButtons.forEach((btn, index) => {
+        btn.setAttribute('data-aos', 'fade-up');
+        btn.setAttribute('data-aos-delay', (600 + index * 100).toString());
+        btn.classList.add('home-animated');
+      });
       
       // Animated counter for impact section - only if elements exist
       const counters = document.querySelectorAll('.impact-number');
@@ -359,89 +267,64 @@
         if (counter && !counter.dataset.animated) {
           const target = parseInt(counter.getAttribute('data-count-to'));
           if (target) {
-            const duration = 2;
-            const increment = target / (duration * 60);
-            let current = 0;
+            counter.setAttribute('data-aos', 'fade-up');
+            counter.setAttribute('data-aos-once', 'true');
             
-            const updateCounter = () => {
-              current += increment;
-              if (current < target) {
-                counter.textContent = Math.floor(current);
-                requestAnimationFrame(updateCounter);
-              } else {
-                counter.textContent = target;
-              }
-            };
-            
-            // Start counter when element comes into view
-            const observer = new IntersectionObserver((entries) => {
-              entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                  updateCounter();
-                  counter.dataset.animated = 'true'; // Mark as animated
-                  observer.unobserve(entry.target);
+            counter.addEventListener('aos:in', () => {
+              const duration = 2;
+              const increment = target / (duration * 60);
+              let current = 0;
+              
+              const updateCounter = () => {
+                current += increment;
+                if (current < target) {
+                  counter.textContent = Math.floor(current);
+                  requestAnimationFrame(updateCounter);
+                } else {
+                  counter.textContent = target;
                 }
-              });
+              };
+              
+              updateCounter();
+              counter.dataset.animated = 'true';
             });
-            
-            observer.observe(counter);
           }
         }
       });
 
       // Add periodic animations to hero background elements
       animateHeroBackground();
+      
+      // Refresh AOS after adding attributes
+      AOS.refresh();
     }, 150); // Small delay to ensure DOM is ready
   }
 
-  // Animate hero background elements continuously
+  // Animate hero background elements continuously with CSS
   function animateHeroBackground() {
     const bgElement1 = document.querySelector('.hero .absolute:nth-child(2) .absolute:nth-child(1)');
     if (bgElement1) {
-      gsap.to(bgElement1, {
-        x: -50,
-        y: -30,
-        scale: 1.05,
-        duration: 8,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
+      bgElement1.style.animation = 'float-bg 8s ease-in-out infinite';
     }
 
     const bgElement2 = document.querySelector('.hero .absolute:nth-child(2) .absolute:nth-child(2)');
     if (bgElement2) {
-      gsap.to(bgElement2, {
-        x: 30,
-        y: 40,
-        scale: 1.1,
-        duration: 10,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
+      bgElement2.style.animation = 'float-bg 10s ease-in-out infinite';
     }
     
     // Add pulse animation to the hero background circles
     const heroCircles = document.querySelectorAll('.hero .absolute div.bg-red-500\\/10, .hero .absolute div.bg-blue-500\\/10');
     heroCircles.forEach((circle, index) => {
-      gsap.to(circle, {
-        scale: 1.1,
-        opacity: 0.7,
-        duration: 2.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: index * 0.5
-      });
+      circle.style.animation = `pulse-circle 2.5s ease-in-out ${index * 0.5}s infinite`;
     });
   }
 
-  // 3D Card Tilt Effect on Hover
+  // 3D Card Tilt Effect on Hover with CSS
   function initCardTiltEffect() {
-    if (typeof gsap === 'undefined') return;
-    
-    gsap.utils.toArray('.glass-card').forEach(card => {
+    const cards = document.querySelectorAll('.glass-card');
+    cards.forEach(card => {
+      card.style.transition = 'transform 0.3s ease-out';
+      
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -453,92 +336,58 @@
         const rotateX = (y - centerY) / 20;
         const rotateY = (centerX - x) / 20;
         
-        gsap.to(card, {
-          rotationX: rotateX,
-          rotationY: rotateY,
-          transformPerspective: 1000,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
       });
       
       card.addEventListener('mouseleave', () => {
-        gsap.to(card, {
-          rotationX: 0,
-          rotationY: 0,
-          duration: 0.5,
-          ease: 'elastic.out(1, 0.5)'
-        });
+        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
       });
     });
   }
 
-  // Magnetic Button Effect
+  // Magnetic Button Effect with CSS
   function initMagneticButtons() {
-    if (typeof gsap === 'undefined') return;
-    
-    gsap.utils.toArray('.btn-animated, button[type="submit"]').forEach(button => {
+    const buttons = document.querySelectorAll('.btn-animated, button[type="submit"]');
+    buttons.forEach(button => {
+      button.style.transition = 'transform 0.3s ease-out';
+      
       button.addEventListener('mousemove', (e) => {
         const rect = button.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
         
-        gsap.to(button, {
-          x: x * 0.2,
-          y: y * 0.2,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
+        button.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
       });
       
       button.addEventListener('mouseleave', () => {
-        gsap.to(button, {
-          x: 0,
-          y: 0,
-          duration: 0.5,
-          ease: 'elastic.out(1, 0.3)'
-        });
+        button.style.transform = 'translate(0, 0)';
       });
       
       // Button press effect
       button.addEventListener('mousedown', () => {
-        gsap.to(button, {
-          scale: 0.95,
-          duration: 0.1
-        });
+        button.style.transform = 'scale(0.95)';
       });
       
       button.addEventListener('mouseup', () => {
-        gsap.to(button, {
-          scale: 1,
-          duration: 0.3,
-          ease: 'elastic.out(1, 0.5)'
-        });
+        button.style.transform = 'scale(1)';
       });
     });
   }
 
-  // Input Field Focus Glow Effect
+  // Input Field Focus Glow Effect with CSS
   function initInputFocusEffects() {
-    if (typeof gsap === 'undefined') return;
-    
-    gsap.utils.toArray('input, select, textarea').forEach(input => {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      input.style.transition = 'box-shadow 0.3s ease-out, border-color 0.3s ease-out';
+      
       input.addEventListener('focus', () => {
-        gsap.to(input, {
-          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.3)',
-          borderColor: 'rgba(239, 68, 68, 0.6)',
-          duration: 0.3,
-          ease: 'power2.out'
-        });
+        input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.3)';
+        input.style.borderColor = 'rgba(239, 68, 68, 0.6)';
       });
       
       input.addEventListener('blur', () => {
-        gsap.to(input, {
-          boxShadow: '0 0 0 0px rgba(239, 68, 68, 0)',
-          borderColor: 'rgba(255, 255, 255, 0.2)',
-          duration: 0.3,
-          ease: 'power2.out'
-        });
+        input.style.boxShadow = '0 0 0 0px rgba(239, 68, 68, 0)';
+        input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
       });
     });
   }

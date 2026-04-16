@@ -75,4 +75,7 @@ urlpatterns = [
     path('<int:user_id>/followers/', views.followers_list, name='followers-list'),
     path('<int:user_id>/following/', views.following_list, name='following-list'),
 
+    # Profile completion tracking
+    path('api/profile/mark-completion-seen/', views.mark_profile_completion_seen, name='mark-profile-completion-seen'),
+
 ]
