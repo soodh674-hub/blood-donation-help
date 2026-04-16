@@ -98,6 +98,102 @@ p, .body-text {
     line-height: 1.6;
 }
 
+/* ===== 5. BOOTSTRAP ICONS - GLOBAL CONTROL ===== */
+
+/* Prevent icons from becoming too large */
+[class^="bi-"],
+[class*=" bi-"] {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1;
+    max-width: 2rem;
+    max-height: 2rem;
+}
+
+/* Navbar icons - strict sizing */
+.navbar [class^="bi-"],
+.navbar [class*=" bi-"] {
+    font-size: 1rem !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* Navigation link icons */
+.nav-link-custom i,
+.nav-link-custom [class^="bi-"],
+.nav-link-custom [class*=" bi-"] {
+    font-size: 0.875rem !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Icon buttons (bell, chat, etc.) */
+.nav-icon i,
+.nav-icon [class^="bi-"],
+.nav-icon [class*=" bi-"] {
+    font-size: 1.125rem !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Mobile menu icons */
+.mobile-nav-link i,
+.mobile-nav-link [class^="bi-"],
+.mobile-nav-link [class*=" bi-"] {
+    font-size: 1.125rem !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Dropdown menu icons */
+.dropdown-item i,
+.dropdown-item [class^="bi-"],
+.dropdown-item [class*=" bi-"] {
+    font-size: 1rem !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* Button icons */
+.btn i,
+.btn [class^="bi-"],
+.btn [class*=" bi-"] {
+    font-size: 1rem !important;
+}
+
+/* Emergency button icons */
+.btn-emergency i,
+.btn-emergency [class^="bi-"],
+.btn-emergency [class*=" bi-"] {
+    font-size: 0.875rem !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Mobile toggle icon */
+.navbar-toggler i,
+.navbar-toggler [class^="bi-"],
+.navbar-toggler [class*=" bi-"] {
+    font-size: 1.5rem !important;
+}
+
+/* Logo icon */
+.navbar .rounded-circle i,
+.navbar .rounded-circle [class^="bi-"],
+.navbar .rounded-circle [class*=" bi-"] {
+    font-size: 1.125rem !important;
+}
+
+/* User avatar dropdown chevron */
+.user-dropdown .bi-chevron-down {
+    font-size: 0.75rem !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+
 /* ===== 5. RESPONSIVE SPACING ===== */
 
 /* Section padding */

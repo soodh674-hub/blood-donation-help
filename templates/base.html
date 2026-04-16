@@ -148,6 +148,98 @@
             }
         }
 
+        /* =========================================
+           BOOTSTRAP ICONS - GLOBAL SIZE CONTROL
+           Prevents icons from becoming too large
+           ========================================= */
+        
+        /* Global Bootstrap Icons base sizing */
+        [class^="bi-"],
+        [class*=" bi-"] {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+        
+        /* Navbar icons - controlled size */
+        .navbar [class^="bi-"],
+        .navbar [class*=" bi-"] {
+            font-size: 1rem !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        /* Specific navbar icon sizes */
+        .nav-link-custom [class^="bi-"],
+        .nav-link-custom [class*=" bi-"] {
+            font-size: 0.875rem !important;
+            width: 16px !important;
+            height: 16px !important;
+        }
+        
+        .nav-icon [class^="bi-"],
+        .nav-icon [class*=" bi-"] {
+            font-size: 1.125rem !important;
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
+        /* Mobile menu icons */
+        .mobile-nav-link [class^="bi-"],
+        .mobile-nav-link [class*=" bi-"] {
+            font-size: 1.125rem !important;
+            width: 20px !important;
+            height: 20px !important;
+        }
+        
+        /* Dropdown icons */
+        .dropdown-item [class^="bi-"],
+        .dropdown-item [class*=" bi-"] {
+            font-size: 1rem !important;
+            width: 18px !important;
+            height: 18px !important;
+        }
+        
+        /* Button icons */
+        .btn [class^="bi-"],
+        .btn [class*=" bi-"] {
+            font-size: 1rem !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        /* Emergency button icons */
+        .btn-emergency [class^="bi-"],
+        .btn-emergency [class*=" bi-"] {
+            font-size: 0.875rem !important;
+            width: 16px !important;
+            height: 16px !important;
+        }
+        
+        /* Mobile toggle button */
+        .navbar-toggler [class^="bi-"],
+        .navbar-toggler [class*=" bi-"] {
+            font-size: 1.5rem !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        /* Logo icon */
+        .navbar .rounded-circle [class^="bi-"],
+        .navbar .rounded-circle [class*=" bi-"] {
+            font-size: 1.125rem !important;
+            width: auto !important;
+            height: auto !important;
+        }
+        
+        /* User dropdown chevron */
+        .user-dropdown [class^="bi-"],
+        .user-dropdown [class*=" bi-"] {
+            font-size: 0.75rem !important;
+            width: 16px !important;
+            height: 16px !important;
+        }
+
         @media (min-width: 768px) {
             .responsive-section {
                 padding: 4rem 2rem;

@@ -1,303 +1,246 @@
-<!-- Modern Professional Navigation Bar -->
-<nav x-data="{ isOpen: false, scrolled: false }" 
-     @scroll.window="scrolled = window.scrollY > 50" 
-     class="sticky top-0 z-50 
-            bg-[#0b1220]/80 
-            backdrop-blur-md 
-            border-b border-red-500/20 
-            shadow-sm 
-            transition-all duration-300">
-    
-    <div class="container mx-auto max-w-screen-2xl px-4 h-16 flex items-center justify-between">
+<!-- Modern Professional Navigation Bar - Bootstrap 5 Version -->
+<nav class="navbar fixed-top navbar-expand-lg" id="mainNavbar" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 9999 !important; background: rgba(15, 20, 25, 0.98) !important; backdrop-filter: blur(12px); border-bottom: 2px solid rgba(59, 130, 246, 0.4); height: 64px; box-shadow: 0 4px 30px rgba(59, 130, 246, 0.2), 0 2px 10px rgba(0, 0, 0, 0.5);">
+    <div class="container-fluid px-3 px-sm-4 px-md-5" style="max-width: 1536px;">
         <!-- Logo -->
-        <div class="flex items-center gap-2">
-            <a href="/" class="flex items-center gap-2 group">
-                <div class="w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200">
-                    ❤️
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <div class="d-flex align-items-center justify-content-center rounded-circle bg-gradient-red text-white shadow-lg" 
+                     style="width: 36px; height: 36px; font-size: 1.125rem; background: linear-gradient(to right, #3b82f6, #60a5fa); transition: transform 0.2s;">
+                    <i class="bi bi-heart-fill"></i>
                 </div>
-                <span class="text-lg font-semibold text-red-400">BloodLife</span>
+                <span class="fs-6 fs-sm-5 fw-semibold" style="color: #60a5fa;">BloodLife</span>
             </a>
         </div>
 
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation" style="color: #60a5fa;">
+            <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+        </button>
+
         <!-- Desktop Menu -->
-        <div class="hidden md:flex items-center space-x-6">
-            {% if user.is_authenticated %}
-            <a href="/requests/create/" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 relative group focus-ring">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Create Request
-                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-300 group-hover:w-full"></span>
+        <div class="d-none d-md-flex align-items-center" id="desktopMenu">
+            <a href="{% url 'home' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-house-door me-1"></i>
+                Home
             </a>
-            
-            <a href="/requests/track/" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 relative group focus-ring">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                </svg>
+
+            <a href="{% url 'requests:track-request-dashboard' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-grid-fill me-1"></i>
+                Feed
+            </a>
+
+            <a href="{% url 'accounts:search-donors' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-compass me-1"></i>
+                Explore
+            </a>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'requests:blood-request-create-unified' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-plus-circle me-1"></i>
+                Create Request
+            </a>
+
+            <a href="{% url 'requests:manage-all-requests' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-list-check me-1"></i>
+                My Requests
+            </a>
+
+            <a href="{% url 'requests:track-request-dashboard' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-broadcast me-1"></i>
                 Track Requests
-                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
             {% endif %}
-            
-            <a href="/accounts/search/" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 relative group focus-ring">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
+
+            <a href="{% url 'accounts:search-donors' %}" class="nav-link-custom d-flex align-items-center">
+                <i class="bi bi-people me-1"></i>
                 Find Donors
-                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
-            
-            <a href="/about/" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 relative group focus-ring">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                About
-                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-red-400 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            
+
             <!-- Auth Links - Guest User -->
             {% if not user.is_authenticated %}
-            <div class="flex items-center space-x-3">
-                <a href="/accounts/login/" class="text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus-ring">
+            <div class="d-flex align-items-center ms-3">
+                <a href="{% url 'accounts:login' %}" class="nav-link-custom">
                     Login
                 </a>
-                <a href="/accounts/register/" class="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl focus-ring">
+                <a href="{% url 'accounts:register' %}" class="btn-gradient ms-3">
                     Get Started
                 </a>
             </div>
             {% else %}
             <!-- Auth Links - Logged-in User -->
-            <div class="flex items-center space-x-3">
+            <div class="d-flex align-items-center ms-3">
                 <!-- Emergency Button -->
-                <a href="/requests/create/?emergency=true" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl focus-ring flex items-center">
-                    <svg class="w-4 h-4 mr-1 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
+                <a href="{% url 'requests:blood-request-create-unified' %}?emergency=true" class="btn-emergency d-flex align-items-center me-2">
+                    <i class="bi bi-exclamation-triangle-fill me-1 animate-pulse"></i>
                     Emergency
                 </a>
                 
                 <!-- Notification Bell -->
-                <a href="/notifications/" class="relative text-gray-300 hover:text-red-400 p-2 rounded-md transition-colors duration-200 focus-ring" id="notification-bell">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span id="notification-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center{% if not unread_notifications or unread_notifications == 0 %} hidden{% endif %}">{{ unread_notifications|default:0 }}</span>
+                <a href="{% url 'notifications:notification-list-full' %}" class="nav-icon position-relative me-2" id="notification-bell" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <span id="notification-badge" class="position-absolute badge-notification{% if not unread_notifications or unread_notifications == 0 %} d-none{% endif %}">{{ unread_notifications|default:0 }}</span>
+                </a>
+                
+                <!-- Chat Icon with Unread Count -->
+                <a href="{% url 'requests:chat-inbox' %}" class="nav-icon position-relative me-2" id="chat-bell" title="Messages">
+                    <i class="bi bi-chat-dots"></i>
+                    <span id="chat-badge" class="position-absolute badge-notification d-none" style="background: #10b981;">0</span>
                 </a>
                 
                 <!-- User Dropdown -->
-                <div class="relative" x-data="{ dropdownOpen: false }">
-                    <button @click="dropdownOpen = !dropdownOpen" 
-                            class="flex items-center space-x-2 text-gray-300 hover:text-red-400 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus-ring">
-                        <div class="w-7 h-7 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div class="dropdown" id="userDropdownContainer">
+                    <button class="btn-user-dropdown d-flex align-items-center user-dropdown" type="button" data-bs-toggle="dropdown" data-user-authenticated="true" aria-expanded="false">
+                        <div class="user-avatar-sm d-flex align-items-center justify-content-center">
                             {{ user.first_name|default:user.username|make_list|first|upper }}
                         </div>
-                        <span class="hidden lg:inline">{{ user.first_name|default:user.username }}</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
+                        <span class="d-none d-lg-inline me-1">{{ user.first_name|default:user.username }}</span>
+                        <i class="bi bi-chevron-down"></i>
                     </button>
                     
                     <!-- Dropdown Menu -->
-                    <div x-show="dropdownOpen" 
-                         @click.away="dropdownOpen = false"
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-700">
+                    <ul class="dropdown-menu dropdown-menu-end">
                         <!-- User Info -->
-                        <div class="px-4 py-3 border-b border-gray-700">
-                            <p class="text-sm text-white font-medium">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
-                        </div>
+                        <li class="px-3 py-2 border-bottom-custom">
+                            <p class="mb-0 text-white small fw-medium">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="mb-0 text-secondary" style="font-size: 0.75rem;">{{ user.email }}</p>
+                        </li>
                         
                         <!-- Menu Items -->
-                        <a href="/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                            </svg>
-                            Home
-                        </a>
-                        <a href="/accounts/profile/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            View Profile
-                        </a>
-                        <a href="/accounts/near-me/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Find Users Near Me
-                        </a>
-                        <a href="/accounts/search/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            Search Donors
-                        </a>
-                        <a href="/accounts/settings/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Settings
-                        </a>
-                        <a href="/accounts/dashboard/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                            </svg>
-                            Dashboard
-                        </a>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i>Home</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:chat-inbox' %}"><i class="bi bi-chat-dots me-2"></i>Messages</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:near_me' %}"><i class="bi bi-geo-alt me-2"></i>Find Users Near Me</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart me-2"></i>Favorites</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2"></i>Search Donors</a></li>
+                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2"></i>Create Request</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:manage-all-requests' %}"><i class="bi bi-list-check me-2"></i>My Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-dashboard' %}"><i class="bi bi-broadcast me-2"></i>Track Requests</a></li>
+                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:settings' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'notifications:notification-list-full' %}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:dashboard' %}"><i class="bi bi-grid-3x3-gap me-2"></i>Dashboard</a></li>
                         {% if user.is_staff %}
-                        <a href="/admin/" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                            Admin Panel
-                        </a>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Admin Panel</a></li>
                         {% endif %}
-                        <hr class="border-gray-700 my-1">
-                        <a href="/accounts/logout/" class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-red-500 hover:text-white transition-colors duration-200 focus-ring">
-                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            Logout
-                        </a>
-                    </div>
+                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li>
+                            <form method="POST" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item dropdown-item-logout">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </div>
             {% endif %}
         </div>
 
         <!-- Mobile menu button -->
-        <div class="md:hidden flex items-center">
-            <button 
-                @click="isOpen = !isOpen"
-                type="button" 
-                class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-red-400 hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-colors duration-200 focus-ring"
-                aria-controls="mobile-menu" 
-                :aria-expanded="isOpen ? 'true' : 'false'">
+        <div class="d-flex d-md-none align-items-center">
+            <button id="mobileMenuToggle" type="button" class="btn-mobile-toggle" aria-controls="mobileMenu" aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
-                <!-- Icon when menu is closed -->
-                <svg x-show="!isOpen" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <!-- Icon when menu is open -->
-                <svg x-show="isOpen" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <i class="bi bi-list mobile-icon-menu" style="width: 24px; height: 24px;"></i>
+                <i class="bi bi-x-lg mobile-icon-close d-none" style="width: 24px; height: 24px;"></i>
             </button>
         </div>
     </div>
 
     <!-- Mobile Menu -->
-    <div x-show="isOpen" 
-         x-transition:enter="transition ease-out duration-100"
-         x-transition:enter-start="transform opacity-0 scale-95"
-         x-transition:enter-end="transform opacity-100 scale-100"
-         x-transition:leave="transition ease-in duration-75"
-         x-transition:leave-start="transform opacity-100 scale-100"
-         x-transition:leave-end="transform opacity-0 scale-95"
-         class="md:hidden bg-gray-900/95 backdrop-blur-md"
-         id="mobile-menu">
-        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+    <div class="mobile-menu d-md-none" id="mobileMenu">
+        <div class="px-2 pt-2 pb-3">
+            <a href="{% url 'home' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-house-door me-2" style="width: 20px; height: 20px;"></i>
+                Home
+            </a>
+
             {% if user.is_authenticated %}
-            <a href="/requests/create/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
+            <a href="{% url 'requests:blood-request-create-unified' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-plus-circle me-2" style="width: 20px; height: 20px;"></i>
                 Create Request
             </a>
-            <a href="/requests/track/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                </svg>
+            <a href="{% url 'requests:manage-all-requests' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-list-check me-2" style="width: 20px; height: 20px;"></i>
+                My Requests
+            </a>
+            <a href="{% url 'requests:track-request-dashboard' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-broadcast me-2" style="width: 20px; height: 20px;"></i>
                 Track Requests
             </a>
             {% endif %}
-            <a href="/accounts/search/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
+
+            <a href="{% url 'accounts:search-donors' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-people me-2" style="width: 20px; height: 20px;"></i>
                 Find Donors
             </a>
-            <a href="/about/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                About
-            </a>
-            
+
             <!-- Mobile Auth Links -->
             {% if not user.is_authenticated %}
-            <div class="pt-4 pb-3 border-t border-gray-700">
-                <div class="flex items-center px-5 space-x-4">
-                    <a href="/accounts/login/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 focus-ring">Login</a>
-                    <a href="/accounts/register/" class="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 focus-ring w-full text-center">Get Started</a>
+            <div class="pt-3 pb-2 mt-2 border-top-custom">
+                <div class="px-3 d-flex align-items-center">
+                    <a href="{% url 'accounts:login' %}" class="mobile-nav-link flex-grow-1">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn-gradient ms-2 flex-grow-1 text-center">Get Started</a>
                 </div>
             </div>
             {% else %}
-            <div class="pt-4 pb-3 border-t border-gray-700">
-                <div class="px-5 py-2">
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-10 h-10 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
+            <div class="pt-3 pb-2 mt-2 border-top-custom">
+                <div class="px-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="user-avatar-lg d-flex align-items-center justify-content-center me-2">
                             {{ user.first_name|default:user.username|make_list|first|upper }}
                         </div>
                         <div>
-                            <p class="text-white text-sm font-medium">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="text-gray-400 text-xs">{{ user.email }}</p>
+                            <p class="mb-0 text-white small fw-medium">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="mb-0 text-secondary" style="font-size: 0.75rem;">{{ user.email }}</p>
                         </div>
                     </div>
-                    <a href="/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                        </svg>
+                    <a href="{% url 'home' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-house-door me-2"></i>
                         Home
                     </a>
-                    <a href="/accounts/search/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                    <a href="{% url 'accounts:profile' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-person me-2"></i>
+                        Profile
+                    </a>
+                    <a href="{% url 'requests:chat-inbox' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Messages
+                    </a>
+                    <a href="{% url 'accounts:near_me' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        Find Users Near Me
+                    </a>
+                    <a href="{% url 'accounts:favorites_list' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-heart me-2"></i>
+                        Favorites
+                    </a>
+                    <a href="{% url 'accounts:search-donors' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-search me-2"></i>
                         Search Donors
                     </a>
-                    <a href="/accounts/settings/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+                    <a href="{% url 'accounts:settings' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-gear me-2"></i>
                         Settings
                     </a>
-                    <a href="/notifications/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                        </svg>
+                    <a href="{% url 'notifications:notification-list-full' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-bell me-2"></i>
                         Notifications
                     </a>
-                    <a href="/accounts/dashboard/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                        </svg>
+                    <a href="{% url 'accounts:dashboard' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-grid-3x3-gap me-2"></i>
                         Dashboard
                     </a>
                     {% if user.is_staff %}
-                    <a href="/admin/" class="text-gray-300 hover:text-red-400 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+                    <a href="{% url 'admin:index' %}" class="mobile-nav-link d-flex align-items-center">
+                        <i class="bi bi-shield-lock me-2"></i>
                         Admin Panel
                     </a>
                     {% endif %}
                     <hr class="border-gray-700 my-2">
-                    <a href="/accounts/logout/" class="text-red-400 hover:text-white hover:bg-red-500 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 flex items-center focus-ring">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
+                    <a href="{% url 'accounts:logout' %}" class="mobile-nav-link mobile-nav-link-logout d-flex align-items-center">
+                        <i class="bi bi-box-arrow-right me-2"></i>
                         Logout
                     </a>
                 </div>
@@ -306,3 +249,359 @@
         </div>
     </div>
 </nav>
+
+<!-- Navbar Styles -->
+<style>
+    /* Desktop Menu */
+    #desktopMenu {
+        display: flex;
+        align-items: center;
+    }
+    
+    .nav-link-custom {
+        color: #d1d5db;
+        padding: 0.5rem 0.875rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        position: relative;
+        border: 1px solid transparent;
+    }
+    
+    .nav-link-custom:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .nav-link-custom::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+    
+    .nav-link-custom:hover::after {
+        width: 80%;
+    }
+
+    .btn-gradient {
+        background: linear-gradient(to right, #f87171, #ef4444);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-gradient:hover {
+        background: linear-gradient(to right, #ef4444, #dc2626);
+        transform: scale(1.05);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+    
+    .btn-emergency {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    
+    .btn-emergency:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        color: white;
+    }
+    
+    .nav-icon {
+        color: #d1d5db;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+    
+    .nav-icon:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .badge-notification {
+        top: -0.25rem;
+        right: -0.25rem;
+        background: #ef4444;
+        color: white;
+        font-size: 0.75rem;
+        border-radius: 9999px;
+        height: 1.25rem;
+        width: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-user-dropdown {
+        background: transparent;
+        border: 1px solid transparent;
+        color: #d1d5db;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn-user-dropdown:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        border-radius: 50%;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    
+    .dropdown-menu {
+        background: #1f2937;
+        border: 1px solid #374151;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0;
+        margin-top: 0.5rem;
+    }
+    
+    .border-bottom-custom {
+        border-bottom: 1px solid #374151;
+    }
+    
+    .border-gray-700 {
+        border-color: #374151;
+    }
+    
+    .dropdown-item-custom {
+        color: #d1d5db;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .dropdown-item-custom:hover {
+        background: #374151;
+        color: white;
+    }
+    
+    .dropdown-item-logout {
+        color: #f87171;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        background: transparent;
+        border: none;
+        width: 100%;
+        transition: all 0.2s;
+    }
+    
+    .dropdown-item-logout:hover {
+        background: #ef4444;
+        color: white;
+    }
+    
+    /* Mobile Menu */
+    .btn-mobile-toggle {
+        background: transparent;
+        border: 1px solid transparent;
+        color: #9ca3af;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn-mobile-toggle:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .mobile-menu {
+        background: rgba(15, 20, 25, 0.98);
+        backdrop-filter: blur(12px);
+        display: none;
+        border-top: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .mobile-menu.show {
+        display: block;
+    }
+    
+    .mobile-nav-link {
+        color: #d1d5db;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        border: 1px solid transparent;
+        margin: 0.25rem 0.5rem;
+    }
+    
+    .mobile-nav-link:hover {
+        color: #60a5fa;
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .mobile-nav-link-logout {
+        color: #f87171;
+    }
+    
+    .mobile-nav-link-logout:hover {
+        color: white;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-color: rgba(239, 68, 68, 0.5);
+    }
+    
+    .border-top-custom {
+        border-top: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .user-avatar-lg {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        border-radius: 50%;
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+    
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+</style>
+
+<!-- Navbar Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const iconMenu = mobileMenuToggle.querySelector('.mobile-icon-menu');
+        const iconClose = mobileMenuToggle.querySelector('.mobile-icon-close');
+        
+        // Mobile menu toggle
+        mobileMenuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.classList.contains('show');
+            
+            if (isOpen) {
+                mobileMenu.classList.remove('show');
+                iconMenu.classList.remove('d-none');
+                iconClose.classList.add('d-none');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            } else {
+                mobileMenu.classList.add('show');
+                iconMenu.classList.add('d-none');
+                iconClose.classList.remove('d-none');
+                mobileMenuToggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                mobileMenu.classList.remove('show');
+                iconMenu.classList.remove('d-none');
+                iconClose.classList.add('d-none');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+        
+        // Navbar scroll effect
+        const navbar = document.getElementById('mainNavbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(11, 18, 32, 0.95)';
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+            } else {
+                navbar.style.background = 'rgba(11, 18, 32, 0.8)';
+                navbar.style.boxShadow = 'none';
+            }
+        });
+        
+        // Fetch unread chat count
+        async function fetchUnreadChatCount() {
+            try {
+                const response = await fetch('/requests/chat/api/unread-count/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                // Check if response is JSON (not HTML redirect page)
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // User is not authenticated, skip updating badge
+                    return;
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const chatBadge = document.getElementById('chat-badge');
+                    
+                    if (data.unread_count > 0) {
+                        chatBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        chatBadge.classList.remove('d-none');
+                    } else {
+                        chatBadge.classList.add('d-none');
+                    }
+                }
+            } catch (error) {
+                // Silently fail - user is probably not authenticated
+                // console.error('Error fetching chat count:', error);
+            }
+        }
+        
+        // Fetch chat count on page load and every 10 seconds
+        fetchUnreadChatCount();
+        setInterval(fetchUnreadChatCount, 10000);
+    });
+</script>
