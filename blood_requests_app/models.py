@@ -195,6 +195,42 @@ class BloodRequest(models.Model):
         
         self.status_history.append(status_entry)
         logger.info(f"Status change recorded for request #{self.id}: {self.status} → {new_status}")
+    
+    def check_and_expire(self):
+        """Check if request should be expired based on time"""
+        if self.status in ['fulfilled', 'cancelled', 'expired']:
+            return False
+        
+        if timezone.now() > self.expires_at:
+            old_status = self.status
+            self.status = 'expired'
+            self.add_status_change('expired', 'Request expired due to time limit')
+            self.save(update_fields=['status', 'updated_at', 'status_history'])
+            logger.info(f"Request #{self.id} expired: {old_status} → expired")
+            return True
+        return False
+    
+    def activate_request(self):
+        """Activate the request and start searching for donors"""
+        if self.status == 'approved':
+            self.status = 'active'
+            self.activated_at = timezone.now()
+            self.add_status_change('active', 'Request activated and searching for donors')
+            self.save(update_fields=['status', 'activated_at', 'updated_at', 'status_history'])
+            logger.info(f"Request #{self.id} activated")
+            return True
+        return False
+    
+    def mark_as_fulfilled(self):
+        """Mark request as fully fulfilled"""
+        if self.fulfilled_units >= self.required_units:
+            old_status = self.status
+            self.status = 'fulfilled'
+            self.add_status_change('fulfilled', f'All {self.required_units} units fulfilled')
+            self.save(update_fields=['status', 'updated_at', 'status_history'])
+            logger.info(f"Request #{self.id} fulfilled: {old_status} → fulfilled")
+            return True
+        return False
 
 
 class RequestResponse(models.Model):
