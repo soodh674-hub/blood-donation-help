@@ -75,13 +75,8 @@ echo "✅ Environment check complete"
 
 # Run migrations
 echo "\n🗄️  Running database migrations..."
-echo "Running makemigrations..."
-python manage.py makemigrations --noinput
-MIGRATE_EXIT_CODE=$?
-if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
-    echo "⚠️  makemigrations failed with exit code: $MIGRATE_EXIT_CODE"
-    echo "This is OK if no new migrations are needed"
-fi
+echo "Skipping makemigrations in production (migrations should be pre-committed)"
+# python manage.py makemigrations --noinput  # Disabled: migrations must be committed to git
 
 echo "Running migrate..."
 python manage.py migrate --noinput --verbosity=2
