@@ -359,20 +359,53 @@ def track_request_dashboard(request):
 
     # Serialize live requests for JavaScript
     live_requests = []
-    for req in live_requests_qs:
-        live_requests.append({
-            'id': req.id,
-            'blood_group': req.patient_blood_group,
-            'hospital': req.hospital_name,
-            'city': req.city,
-            'state': req.state,
-            'priority': req.priority,
-            'status': req.status,
-            'latitude': req.latitude,
-            'longitude': req.longitude,
-            'created_at': req.created_at.isoformat() if req.created_at else None,
-            'required_by': req.required_by.isoformat() if req.required_by else None,
-        })
+
+    # TEMPORARY: Add dummy data if no requests in DB for testing
+    if BloodRequest.objects.count() == 0:
+        logger.warning('No requests in database, adding dummy data for testing')
+        live_requests = [
+            {
+                'id': 999,
+                'blood_group': 'A+',
+                'hospital': 'City Hospital',
+                'city': 'Delhi',
+                'state': 'Delhi',
+                'priority': 'emergency',
+                'status': 'active',
+                'latitude': 28.6139,
+                'longitude': 77.2090,
+                'created_at': timezone.now().isoformat(),
+                'required_by': (timezone.now() + timezone.timedelta(hours=24)).isoformat(),
+            },
+            {
+                'id': 998,
+                'blood_group': 'O+',
+                'hospital': 'Apollo Hospital',
+                'city': 'Mumbai',
+                'state': 'Maharashtra',
+                'priority': 'urgent',
+                'status': 'active',
+                'latitude': 19.0760,
+                'longitude': 72.8777,
+                'created_at': timezone.now().isoformat(),
+                'required_by': (timezone.now() + timezone.timedelta(hours=12)).isoformat(),
+            }
+        ]
+    else:
+        for req in live_requests_qs:
+            live_requests.append({
+                'id': req.id,
+                'blood_group': req.patient_blood_group,
+                'hospital': req.hospital_name,
+                'city': req.city,
+                'state': req.state,
+                'priority': req.priority,
+                'status': req.status,
+                'latitude': req.latitude,
+                'longitude': req.longitude,
+                'created_at': req.created_at.isoformat() if req.created_at else None,
+                'required_by': req.required_by.isoformat() if req.required_by else None,
+            })
 
     # Get user's responses for live requests
     user_responses_qs = RequestResponse.objects.filter(
@@ -798,6 +831,49 @@ def live_blood_requests(request):
         # Debug: Check total requests in database
         total_requests = BloodRequest.objects.count()
         logger.info(f'Total blood requests in database: {total_requests}')
+
+        # TEMPORARY: Return dummy data for testing if no requests in DB
+        if total_requests == 0:
+            logger.warning('No requests in database, returning dummy data for testing')
+            dummy_data = [
+                {
+                    'id': 999,
+                    'patient_blood_group': 'A+',
+                    'hospital_name': 'City Hospital',
+                    'city': 'Delhi',
+                    'state': 'Delhi',
+                    'priority': 'emergency',
+                    'status': 'active',
+                    'created_at': timezone.now().isoformat(),
+                    'latitude': 28.6139,
+                    'longitude': 77.2090
+                },
+                {
+                    'id': 998,
+                    'patient_blood_group': 'O+',
+                    'hospital_name': 'Apollo Hospital',
+                    'city': 'Mumbai',
+                    'state': 'Maharashtra',
+                    'priority': 'urgent',
+                    'status': 'active',
+                    'created_at': timezone.now().isoformat(),
+                    'latitude': 19.0760,
+                    'longitude': 72.8777
+                },
+                {
+                    'id': 997,
+                    'patient_blood_group': 'B+',
+                    'hospital_name': 'Fortis Hospital',
+                    'city': 'Bangalore',
+                    'state': 'Karnataka',
+                    'priority': 'normal',
+                    'status': 'pending',
+                    'created_at': timezone.now().isoformat(),
+                    'latitude': 12.9716,
+                    'longitude': 77.5946
+                }
+            ]
+            return JsonResponse(dummy_data, safe=False)
         
         # Get active requests - remove expiry filter for debugging
         # Show ALL requests regardless of expiry
