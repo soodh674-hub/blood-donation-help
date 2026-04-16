@@ -525,13 +525,18 @@ def register_donor_view(request):
     # Check if captcha is available and import CaptchaForm
     has_captcha = 'captcha' in settings.INSTALLED_APPS
     CaptchaForm = None
+    
     if has_captcha:
         try:
             from captcha.forms import CaptchaForm as CF
+            from captcha.models import CaptchaStore
+            # Test if captcha table exists
+            CaptchaStore.objects.exists()
             CaptchaForm = CF
-        except (ImportError, Exception) as e:
-            logger.debug(f"Captcha form not available: {e}")
+        except Exception as e:
+            logger.debug(f"Captcha not available (table may not exist yet): {e}")
             has_captcha = False
+            CaptchaForm = None
     
     if request.method == 'POST':
         # Extract all form data
@@ -587,7 +592,7 @@ def register_donor_view(request):
             except Exception as captcha_db_error:
                 logger.warning(f'CAPTCHA database error: {str(captcha_db_error)}')
                 # Continue without captcha if table doesn't exist
-                pass
+                has_captcha = False  # Disable captcha if table missing
             
         # Check if username or email already exists
         User = get_user_model()
@@ -697,13 +702,18 @@ def login_view(request):
     # Check if captcha is available and import CaptchaForm
     has_captcha = 'captcha' in settings.INSTALLED_APPS
     CaptchaForm = None
+    
     if has_captcha:
         try:
             from captcha.forms import CaptchaForm as CF
+            from captcha.models import CaptchaStore
+            # Test if captcha table exists
+            CaptchaStore.objects.exists()
             CaptchaForm = CF
-        except (ImportError, Exception) as e:
-            logger.debug(f"Captcha form not available: {e}")
+        except Exception as e:
+            logger.debug(f"Captcha not available (table may not exist yet): {e}")
             has_captcha = False
+            CaptchaForm = None
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -735,7 +745,7 @@ def login_view(request):
             except Exception as captcha_db_error:
                 logger.warning(f'CAPTCHA database error in login: {str(captcha_db_error)}')
                 # Continue without captcha if table doesn't exist
-                pass
+                has_captcha = False  # Disable captcha if table missing
 
         # Handle both username and email login
         # Try authenticating with username first
