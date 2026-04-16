@@ -13,19 +13,26 @@ from datetime import timedelta
 
 from accounts.models import User
 from accounts.serializers import UserPublicSerializer
-from blood_requests_app.models import BloodRequest, RequestMatch, ChatMessage, DonorRating
-from donors.models import DonorAvailability
+from blood_requests_app.models import BloodRequest, RequestMatch, DonorRating
+from blood_requests_app.models_chat import ChatMessage
 from blood_requests_app.serializers import (
-    BloodRequestSerializer, 
+    BloodRequestSerializer,
     BloodRequestDetailSerializer,
     BloodRequestCreateSerializer,
     ChatMessageSerializer,
     DonorRatingSerializer,
-    DonorAvailabilitySerializer,
     RequestMatchSerializer
 )
 from notifications.models import Notification
-from donors.models import DonorHistory, DonorAvailability as DonorAvailabilityModel
+
+# Try to import donor models, but don't fail if they don't exist
+DonorAvailabilityModel = None
+DonorHistory = None
+try:
+    from donors.models import DonorAvailability, DonorHistory
+    DonorAvailabilityModel = DonorAvailability
+except ImportError:
+    print("ℹ️ Donors app or models not available, donor location features disabled")
 
 logger = logging.getLogger(__name__)
 
@@ -71,10 +78,8 @@ class LiveRequestsView(APIView):
             blood_group = request.query_params.get('blood_group')
             city = request.query_params.get('city')
             
-            # Filter active requests
-            queryset = BloodRequest.objects.filter(
-                status__in=['active', 'urgent', 'pending']
-            ).order_by('-created_at')[:limit]
+            # Filter active requests - show ALL for debugging
+            queryset = BloodRequest.objects.all().order_by('-created_at')[:limit]
             
             # Optional filters
             if blood_group:
@@ -102,68 +107,84 @@ class LiveRequestsView(APIView):
 class DonorSearchView(APIView):
     """Search for available donors by blood group and location"""
     permission_classes = [permissions.AllowAny]
-    
+
     def get(self, request):
         try:
             blood_group = request.query_params.get('blood_group')
             city = request.query_params.get('city')
             latitude = request.query_params.get('latitude')
             longitude = request.query_params.get('longitude')
-            radius_km = float(request.query_params.get('radius', 50))
-            
+            max_distance = float(request.query_params.get('max_distance', 50))
+
             # Start with verified donors who are available
             donors = User.objects.filter(
                 user_type='donor',
-                is_verified=True,
                 is_available=True
             )
-            
+
             # Filter by blood group
             if blood_group:
                 donors = donors.filter(blood_group=blood_group)
-            
+
             # Filter by city
             if city:
                 donors = donors.filter(city__icontains=city)
-            
-            # Get donor availability with locations
+
+            # Get donor list with basic info
             donor_list = []
             for donor in donors[:20]:  # Limit to 20 results
                 try:
-                    availability = DonorAvailabilityModel.objects.get(donor=donor)
-                    
                     donor_data = {
                         'id': donor.id,
                         'name': donor.get_full_name() or donor.username,
                         'blood_group': donor.blood_group,
                         'city': donor.city,
-                        'is_available': availability.is_available,
-                        'last_updated': availability.last_updated,
+                        'state': donor.state,
+                        'is_available': donor.is_available,
+                        'is_verified': getattr(donor, 'is_verified', False),
                     }
-                    
-                    # Calculate distance if coordinates provided
-                    if latitude and longitude and availability.current_latitude and availability.current_longitude:
-                        from math import radians, cos, sin, sqrt, atan2
-                        
-                        lat1, lon1 = float(latitude), float(longitude)
-                        lat2, lon2 = float(availability.current_latitude), float(availability.current_longitude)
-                        
-                        R = 6371  # Earth radius in km
-                        dlat = radians(lat2 - lat1)
-                        dlon = radians(lon2 - lon1)
-                        a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
-                        c = 2 * atan2(sqrt(a), sqrt(1-a))
-                        distance = round(R * c, 2)
-                        
-                        if distance <= radius_km:
-                            donor_data['distance_km'] = distance
+
+                    # Try to get location from DonorAvailabilityModel if it exists
+                    if DonorAvailabilityModel:
+                        try:
+                            availability = DonorAvailabilityModel.objects.get(donor=donor)
+                            donor_data['last_updated'] = availability.last_updated
+
+                            # Calculate distance if coordinates provided
+                            if latitude and longitude and availability.current_latitude and availability.current_longitude:
+                                from math import radians, cos, sin, sqrt, atan2
+
+                                lat1, lon1 = float(latitude), float(longitude)
+                                lat2, lon2 = float(availability.current_latitude), float(availability.current_longitude)
+
+                                R = 6371  # Earth radius in km
+                                dlat = radians(lat2 - lat1)
+                                dlon = radians(lon2 - lon1)
+                                a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+                                c = 2 * atan2(sqrt(a), sqrt(1-a))
+                                distance = round(R * c, 2)
+
+                                if distance <= max_distance:
+                                    donor_data['distance_km'] = distance
+                                    donor_list.append(donor_data)
+                            else:
+                                # No distance calculation, add anyway
+                                donor_list.append(donor_data)
+                        except DonorAvailabilityModel.DoesNotExist:
+                            # Model doesn't exist, add donor without location data
+                            donor_list.append(donor_data)
+                        except Exception:
+                            # Any other error with availability model, add donor without location
                             donor_list.append(donor_data)
                     else:
+                        # DonorAvailabilityModel not available, add donor without location
                         donor_list.append(donor_data)
-                        
-                except DonorAvailabilityModel.DoesNotExist:
+
+                except Exception as e:
+                    # Skip this donor if there's an error
+                    print(f"ℹ️ Error processing donor {donor.id}: {e}")
                     continue
-            
+
             return Response({
                 'success': True,
                 'donors': donor_list,
@@ -304,7 +325,14 @@ class UserProfileView(APIView):
             user = request.user
             
             # Get donation history
-            donation_history = DonorHistory.objects.filter(donor=user).order_by('-donation_date')[:10]
+            donation_history = []
+            if DonorHistory:
+                try:
+                    donation_history = DonorHistory.objects.filter(
+                        donor=user
+                    ).order_by('-donation_date')[:10]
+                except Exception:
+                    donation_history = []
             
             history_data = [{
                 'id': dh.id,
@@ -316,14 +344,16 @@ class UserProfileView(APIView):
             } for dh in donation_history]
             
             # Get availability status
-            try:
-                availability = DonorAvailabilityModel.objects.get(donor=user)
-                availability_data = {
-                    'is_available': availability.is_available,
-                    'last_updated': availability.last_updated.isoformat(),
-                }
-            except DonorAvailabilityModel.DoesNotExist:
-                availability_data = None
+            availability_data = None
+            if DonorAvailabilityModel:
+                try:
+                    availability = DonorAvailabilityModel.objects.get(donor=user)
+                    availability_data = {
+                        'is_available': availability.is_available,
+                        'last_updated': availability.last_updated.isoformat(),
+                    }
+                except DonorAvailabilityModel.DoesNotExist:
+                    availability_data = None
             
             return Response({
                 'success': True,

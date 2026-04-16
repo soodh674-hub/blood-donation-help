@@ -345,14 +345,17 @@ def track_request_dashboard(request):
     ).order_by('-created_at')
 
     # Live requests that user can respond to (not their own, active, not expired)
-    live_requests_qs = BloodRequest.objects.filter(
-        status__in=['pending', 'approved', 'active', 'partially_fulfilled']
-    ).exclude(
+    # Show ALL requests for debugging - remove status filter temporarily
+    live_requests_qs = BloodRequest.objects.all().exclude(
         requester=request.user
     ).order_by(
         '-priority',
         '-created_at'
     )[:50]
+
+    logger.info(f'Total requests in DB: {BloodRequest.objects.count()}')
+    logger.info(f'Live requests query count: {live_requests_qs.count()}')
+    logger.info(f'Current user: {request.user.id}')
 
     # Serialize live requests for JavaScript
     live_requests = []
@@ -796,13 +799,10 @@ def live_blood_requests(request):
         total_requests = BloodRequest.objects.count()
         logger.info(f'Total blood requests in database: {total_requests}')
         
-        # Get active, non-expired requests (more inclusive filter)
-        now = timezone.now()
-        
-        # Start with base queryset
+        # Get active requests - remove expiry filter for debugging
+        # Show ALL requests regardless of expiry
         queryset = BloodRequest.objects.filter(
-            status__in=['active', 'approved', 'pending', 'partially_fulfilled'],
-            expires_at__gt=now,
+            status__in=['active', 'approved', 'pending', 'partially_fulfilled', 'fulfilled', 'cancelled']
         )
         
         # PRIVACY: Exclude current user's own requests
