@@ -15,52 +15,58 @@ class BloodDonationChatbot:
         self.context = {}
         self.conversation_history = []
         
-        # Define response patterns
+        # Define response patterns - ORDER MATTERS (more specific patterns first)
         self.patterns = {
+            # Greetings (check first)
+            r'^(hello|hi|hey|good morning|good afternoon|good evening|howdy|greetings)': self.handle_greeting,
+            r'(thank|thanks|thx)': self.handle_thanks,
+            r'(bye|goodbye|see you)': self.handle_goodbye,
+            
             # Blood donation eligibility
-            r'(can|eligible|who).*donat(e|ing)': self.handle_eligibility,
-            r'(age|old).*donat(e|ing)': self.handle_age_requirement,
-            r'(weight|weigh).*donat(e|ing)': self.handle_weight_requirement,
-            r'(medical|condition|disease).*donat(e|ing)': self.handle_medical_conditions,
+            r'(can.*donat|eligible.*donat|who.*donat|am i eligible)': self.handle_eligibility,
+            r'(age|old).*donat': self.handle_age_requirement,
+            r'(weight|weigh).*donat': self.handle_weight_requirement,
+            r'(medical|condition|disease|health).*donat': self.handle_medical_conditions,
             
             # Blood types
-            r'(blood.*type|blood.*group|which.*blood)': self.handle_blood_types,
-            r'(universal|o[-+]?)': self.handle_universal_donor,
+            r'(blood.*type|blood.*group|which.*blood|compatibility)': self.handle_blood_types,
+            r'(universal.*donor|o[-+]?\s*negative|o-)': self.handle_universal_donor,
             
             # Donation process
-            r'(how.*donat(e|ing)|process|procedure)': self.handle_donation_process,
-            r'(long|time|duration).*donat(e|ing)': self.handle_donation_duration,
-            r'(pain|hurt).*donat(e|ing)': self.handle_pain_concerns,
-            r'(after|side.*effect|recover)': self.handle_after_effects,
+            r'(how.*donat|process|procedure|steps|what happens)': self.handle_donation_process,
+            r'(long|time|duration|how long).*donat': self.handle_donation_duration,
+            r'(pain|hurt|needle|scared)': self.handle_pain_concerns,
+            r'(after|side.*effect|recover|post.*donat)': self.handle_after_effects,
             
             # Location and timing
-            r'(where|near|location|center)': self.handle_location,
-            r'(when|time|hour|open)': self.handle_timing,
+            r'(where|near|location|center|blood bank|find.*donor)': self.handle_location,
+            r'(when|time|hour|open|schedule)': self.handle_timing,
             
             # Emergency requests
-            r'(emergency|urgent|critical)': self.handle_emergency,
-            r'(create|make|new).*request': self.handle_create_request,
+            r'(emergency|urgent|critical|immediate|asap)': self.handle_emergency,
+            r'(create|make|new|submit).*request': self.handle_create_request,
             
             # Account and profile
-            r'(profile|account|update|change)': self.handle_profile,
-            r'(login|signin|password)': self.handle_account_issues,
+            r'(profile|account|update|change|edit|settings)': self.handle_profile,
+            r'(login|signin|sign.*in|password|forgot)': self.handle_account_issues,
             
             # Matching and finding donors
-            r'(find|search|match).*donor': self.handle_find_donor,
-            r'(track|status).*request': self.handle_track_request,
+            r'(find|search|look.*for|match).*donor': self.handle_find_donor,
+            r'(track|status|where.*donor|update).*request': self.handle_track_request,
             
             # Health and safety
-            r'(safe|safety|risk|hiv|aids)': self.handle_safety,
-            r'(test|screen|check)': self.handle_testing,
+            r'(safe|safety|risk|hiv|aids|infect|sterile)': self.handle_safety,
+            r'(test|screen|check|tested)': self.handle_testing,
             
             # General information
-            r'(benefit|why|good|help)': self.handle_benefits,
-            r'(contact|help|support)': self.handle_contact,
+            r'(benefit|why|good|help|advantage)': self.handle_benefits,
+            r'(contact|help|support|email|phone|call)': self.handle_contact,
             
-            # Greetings
-            r'(hello|hi|hey|good)': self.handle_greeting,
-            r'(thank|thanks)': self.handle_thanks,
-            r'(bye|goodbye)': self.handle_goodbye,
+            # Registration
+            r'(register|signup|sign.*up|join|create.*account)': self.handle_registration,
+            
+            # Donation frequency
+            r'(how.*often|frequency|how.*many.*times|interval)': self.handle_donation_frequency,
         }
     
     def get_response(self, user_message, user_context=None):
@@ -531,24 +537,84 @@ How can I help you today?"""
 
 Thank you for using BloodLife. Take care!"""
     
+    def handle_registration(self, message):
+        return """To register on BloodLife:
+
+**Steps:**
+1. Click **Sign Up** or **Register** on the homepage
+2. Fill in your details:
+   • Username and email
+   • Password (min 8 characters)
+   • Blood type (if known)
+   • Phone number
+3. Verify your email address
+4. Complete your profile with additional information
+
+**User types:**
+• **Donor** - Want to donate blood
+• **Hospital** - Represent a medical facility
+• **Individual** - Need blood for personal use
+
+**Benefits of registering:**
+• Get matched with compatible donors/requests
+• Receive real-time notifications
+• Track your donation history
+• Chat with other users
+
+Would you like help with any specific step?"""
+    
+    def handle_donation_frequency(self, message):
+        return """Blood donation frequency depends on the type of donation:
+
+**Whole Blood:**
+• Every 3 months (90 days)
+• Maximum 4 times per year
+• Most common type
+
+**Platelets (Apheresis):**
+• Every 2 weeks (14 days)
+• Maximum 24 times per year
+• Takes longer (1.5-2 hours)
+
+**Plasma:**
+• Every 28 days
+• Maximum 13 times per year
+
+**Double Red Cells:**
+• Every 4 months (112 days)
+• Maximum 3 times per year
+
+**Important:**
+• Wait at least 8 weeks between whole blood donations
+• Your body replaces plasma within 24-48 hours
+• Red blood cells take 4-6 weeks to fully recover
+• Stay hydrated and eat iron-rich foods between donations
+
+Would you like to know about eligibility requirements?"""
+    
     def handle_default(self, message):
-        return """I'm not sure I understand. Here are some things I can help with:
+        """Default fallback response when no pattern matches"""
+        # Log unmatched messages for improvement
+        print(f"⚠️ Unmatched chatbot message: {message}")
+        
+        return """I'm not sure I understand your question. Here are some things I can help with:
 
 **Blood donation:**
-• Eligibility requirements
-• Donation process
-• After-effects and recovery
+• "Am I eligible to donate?"
+• "What is the donation process?"
+• "How often can I donate?"
+• "Is blood donation safe?"
 
 **Using the platform:**
-• Finding donors
-• Creating blood requests
-• Tracking requests
-• Profile management
+• "How do I find a donor?"
+• "How do I create a blood request?"
+• "How do I register?"
+• "How do I track my request?"
 
-**General information:**
-• Blood types and compatibility
-• Safety and testing
-• Location and timing
+**Information:**
+• "What are blood types?"
+• "What is a universal donor?"
+• "Where can I donate blood?"
 
 Try asking about any of these topics, or contact our support team for more help.
 

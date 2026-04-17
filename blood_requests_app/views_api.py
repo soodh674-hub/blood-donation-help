@@ -378,6 +378,9 @@ class ChatbotView(APIView):
 
     def post(self, request):
         """Get chatbot response to user query"""
+        import time
+        start_time = time.time()
+        
         try:
             from .chatbot_service import get_chatbot_response
             import uuid
@@ -391,6 +394,9 @@ class ChatbotView(APIView):
                     'error': 'Message is required'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+            # Log the incoming message for debugging
+            logger.info(f'🤖 Chatbot received message: "{message[:50]}..."' if len(message) > 50 else f'🤖 Chatbot received message: "{message}"')
+
             # Build user context
             user_context = {
                 'user_id': request.user.id if request.user.is_authenticated else None,
@@ -403,6 +409,10 @@ class ChatbotView(APIView):
 
             # Get chatbot response
             response_data = get_chatbot_response(message, user_context)
+            
+            # Log response time
+            response_time = time.time() - start_time
+            logger.info(f'✅ Chatbot response generated in {response_time:.2f}s (confidence: {response_data.get("confidence", "unknown")})')
 
             # Try to save conversation to database (optional, don't fail if model doesn't exist)
             try:
@@ -418,7 +428,7 @@ class ChatbotView(APIView):
                 )
             except ImportError as e:
                 # Model doesn't exist - this is OK
-                print(f"ℹ️ Chatbot conversation model not available: {e}")
+                logger.debug(f"Chatbot conversation model not available: {e}")
             except Exception as e:
                 # Log but don't fail if there are any database issues
                 logger.warning(f'Could not save chatbot conversation to database: {e}')
@@ -440,8 +450,32 @@ class ChatbotView(APIView):
 
             return Response(response_dict)
         except Exception as e:
-            logger.error(f'Chatbot error: {e}', exc_info=True)
-            return Response({
-                'success': False,
-                'error': 'Failed to process your request. Please try again.'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_time = time.time() - start_time
+            logger.error(f'❌ Chatbot error after {response_time:.2f}s: {e}', exc_info=True)
+            
+            # Return a friendly fallback response instead of error
+            from .chatbot_service import get_chatbot_response
+            try:
+                fallback = get_chatbot_response(message)
+                return Response({
+                    'success': True,
+                    'response': fallback['response'],
+                    'confidence': 'low',
+                    'suggestions': fallback.get('suggestions', []),
+                    'session_id': session_id,
+                    'note': 'Response may be limited due to technical issues'
+                })
+            except:
+                # Ultimate fallback
+                return Response({
+                    'success': True,
+                    'response': "I'm sorry, I'm having technical difficulties right now. Please try again in a moment, or contact our support team at support@bloodlife.com for immediate assistance.",
+                    'confidence': 'low',
+                    'suggestions': [
+                        'How do I donate blood?',
+                        'How do I create a blood request?',
+                        'Contact support'
+                    ],
+                    'session_id': session_id,
+                    'note': 'Using emergency fallback response'
+                }, status=status.HTTP_200_OK)
