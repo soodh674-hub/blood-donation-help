@@ -33,7 +33,7 @@ class User(AbstractUser):
         blank=True,
         null=True
     )
-    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=True, null=True)
+    blood_group = models.CharField(max_length=3, choices=BLOOD_GROUP_CHOICES, blank=True, null=True, db_index=True)
     date_of_birth = models.DateField(blank=True, null=True)
     last_donation_date = models.DateField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
@@ -50,7 +50,7 @@ class User(AbstractUser):
     )
     
     # Location fields
-    city = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True, db_index=True)
     state = models.CharField(max_length=100, blank=True)
     country = models.CharField(max_length=100, default='India')
     pincode = models.CharField(max_length=10, blank=True, null=True)

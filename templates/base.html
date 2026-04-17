@@ -125,15 +125,122 @@
             }
         }
 
-        @media (min-width: 1920px) {
+        @media (min-width: 1600px) {
             .container-fluid {
                 max-width: 1600px;
             }
         }
 
-        @media (min-width: 2560px) {
+        @media (min-width: 1920px) {
             .container-fluid {
                 max-width: 1800px;
+            }
+        }
+
+        @media (min-width: 2560px) {
+            .container-fluid {
+                max-width: 2000px;
+            }
+        }
+
+        /* Navbar spacing optimization for large screens */
+        .navbar {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        @media (min-width: 1400px) {
+            .navbar {
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .navbar {
+                padding-left: 60px;
+                padding-right: 60px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .navbar {
+                padding-left: 80px;
+                padding-right: 80px;
+            }
+        }
+
+        /* Live feed grid layout optimization for large screens */
+        .feed-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        @media (min-width: 1400px) {
+            .feed-container {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .feed-container {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        /* Footer width alignment for large screens */
+        footer .container-fluid {
+            max-width: 1600px;
+        }
+
+        @media (min-width: 1920px) {
+            footer .container-fluid {
+                max-width: 1800px;
+            }
+        }
+
+        /* Donor card grid layout optimization for large screens */
+        .donor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        @media (min-width: 1400px) {
+            .donor-grid {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            .donor-grid {
+                grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+                gap: 30px;
+            }
+        }
+
+        /* Results container grid for donor search */
+        #results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        @media (min-width: 1400px) {
+            #results-container {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 24px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            #results-container {
+                grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+                gap: 30px;
             }
         }
 
