@@ -15,6 +15,16 @@ fi
 
 echo "✅ ASGI configuration found"
 
+# Run database migrations before starting server
+echo "🔄 Running database migrations..."
+python manage.py migrate --noinput
+if [ $? -eq 0 ]; then
+    echo "✅ Migrations applied successfully"
+else
+    echo "❌ ERROR: Migrations failed!"
+    exit 1
+fi
+
 # Try to start Daphne with full error output
 echo "🚀 Starting Daphne server..."
 exec daphne -b 0.0.0.0 -p $PORT blood_donation.asgi:application 2>&1
