@@ -456,7 +456,13 @@ async function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const message = input.value.trim();
 
-    if (!message) return;
+    if (!message) {
+        console.warn('⚠️ Empty message, not sending');
+        return;
+    }
+
+    console.log('🟢 ========== CHATBOT MESSAGE START ==========');
+    console.log('🟢 User message:', message);
 
     // Add user message to chat
     addMessageToChat(message, 'user');
@@ -468,9 +474,11 @@ async function sendChatMessage() {
     showTypingIndicator();
 
     try {
-        console.log('Sending message to chatbot API:', message);
+        const apiUrl = '/api/requests/chatbot/';
+        console.log('🟢 Sending POST request to:', apiUrl);
+        console.log('🟢 Request payload:', { message, session_id: chatSessionId });
 
-        const response = await fetch('/api/requests/chatbot/', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -482,14 +490,31 @@ async function sendChatMessage() {
             })
         });
 
-        console.log('API response status:', response.status);
+        console.log('🟢 Response status:', response.status);
+        console.log('🟢 Response OK:', response.ok);
 
+        // Check if response is OK before parsing
+        if (!response.ok) {
+            console.error('🔴 Server returned error status:', response.status);
+            const errorText = await response.text();
+            console.error('🔴 Error response:', errorText);
+            removeTypingIndicator();
+            
+            // Show friendly error
+            addMessageToChat(
+                `Sorry, I'm having technical difficulties (Error ${response.status}). Please try again in a moment.`,
+                'bot'
+            );
+            return;
+        }
+
+        // Parse JSON response
         let data;
         try {
             data = await response.json();
-            console.log('API response data:', data);
+            console.log('🟢 Response data:', data);
         } catch (jsonError) {
-            console.error('Failed to parse JSON response:', jsonError);
+            console.error('🔴 Failed to parse JSON:', jsonError);
             removeTypingIndicator();
             addMessageToChat('Sorry, I encountered a server error. Please try again.', 'bot');
             return;
@@ -498,7 +523,12 @@ async function sendChatMessage() {
         // Remove typing indicator
         removeTypingIndicator();
 
-        if (response.ok && data.success && data.response) {
+        // Check if response has success flag and response text
+        if (data.success && data.response) {
+            console.log('✅ Chatbot response received successfully');
+            console.log('✅ Confidence:', data.confidence);
+            console.log('✅ Response length:', data.response.length);
+            
             // Update session ID
             chatSessionId = data.session_id || chatSessionId;
 
@@ -507,31 +537,35 @@ async function sendChatMessage() {
 
             // Update suggestions if provided
             if (data.suggestions && data.suggestions.length > 0) {
+                console.log('✅ Updating suggestions:', data.suggestions);
                 updateSuggestions(data.suggestions);
             }
         } else {
-            console.error('API returned error:', data.error || 'Unknown error');
-            // Show user-friendly error message
-            const errorMessage = data.error || 'Sorry, I encountered an error. Please try again.';
-            addMessageToChat(errorMessage, 'bot');
-
-            // If it's a 500 error, provide a fallback response
-            if (response.status === 500) {
-                console.warn('Using fallback response due to server error');
-                setTimeout(() => {
-                    addMessageToChat(getFallbackResponse(message), 'bot');
-                }, 500);
-            }
+            console.error('🔴 Response missing success flag or response text');
+            console.error('🔴 Data received:', data);
+            addMessageToChat('Sorry, I could not process your request. Please try again.', 'bot');
         }
     } catch (error) {
-        console.error('Chatbot API error:', error);
+        console.error('🔴 ========== CHATBOT ERROR ==========');
+        console.error('🔴 Error type:', error.name);
+        console.error('🔴 Error message:', error.message);
+        console.error('🔴 Full error:', error);
+        
         removeTypingIndicator();
-        addMessageToChat('Sorry, I encountered an error. Please try again.', 'bot');
+        
+        // Show user-friendly error
+        addMessageToChat(
+            'Sorry, I encountered a network error. Please check your internet connection and try again.',
+            'bot'
+        );
 
-        // Provide fallback response
+        // Provide fallback response after a delay
         setTimeout(() => {
+            console.log('🟡 Using fallback response');
             addMessageToChat(getFallbackResponse(message), 'bot');
         }, 500);
+    } finally {
+        console.log('🟢 ========== CHATBOT MESSAGE END ==========');
     }
 }
 
@@ -691,14 +725,62 @@ function getCSRFToken() {
     return '';
 }
 
-// Initialize AOS
+// Initialize AOS and test chatbot API
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🤖 ========== CHATBOT INITIALIZATION ==========');
+    
+    // Initialize AOS
     if (typeof AOS !== 'undefined') {
         AOS.init({
             duration: 800,
             easing: 'ease-out-cubic',
             once: true
         });
+        console.log('✅ AOS initialized');
     }
+    
+    // Test if chatbot API is accessible
+    testChatbotAPI();
+    
+    console.log('🤖 Chatbot widget loaded successfully');
+    console.log('🤖 ========== CHATBOT INITIALIZATION COMPLETE ==========');
 });
+
+// Test chatbot API connectivity
+async function testChatbotAPI() {
+    try {
+        console.log('🟡 Testing chatbot API connectivity...');
+        
+        const response = await fetch('/api/requests/chatbot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                message: 'test',
+                session_id: 'test-session'
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                console.log('✅ Chatbot API is working correctly');
+                console.log('✅ API responded with:', data.response ? 'Valid response' : 'No response text');
+            } else {
+                console.warn('⚠️ Chatbot API returned success: false');
+            }
+        } else {
+            console.error('🔴 Chatbot API returned status:', response.status);
+        }
+    } catch (error) {
+        console.error('🔴 Chatbot API test failed:', error.message);
+        console.error('🔴 This could indicate:');
+        console.error('   1. API endpoint is not configured');
+        console.error('   2. Server is not running');
+        console.error('   3. CORS issues');
+        console.error('   4. Network problems');
+    }
+}
 </script>
