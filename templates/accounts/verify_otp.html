@@ -5,26 +5,72 @@
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-center py-5 px-4" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);" data-aos="fade-up" data-aos-duration="800">
-    <div class="w-100" style="max-width: 400px;">
+    <div class="w-100" style="max-width: 450px;">
         <div class="text-center mb-4" data-aos="fade-down" data-aos-delay="100">
             <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, #ef4444, #dc2626);">
                 <i class="bi bi-shield-lock text-white fs-4"></i>
             </div>
             <h2 class="display-6 fw-bold text-white mb-2">
-                Verify your code
+                Verify Your Email
             </h2>
             <p class="small mb-0" style="color: var(--text-secondary);">
-                Enter the 6-digit code sent to <span id="displayEmail" class="text-red-400 font-medium"></span>
+                Enter the 6-digit code sent to <span id="displayEmail" class="text-danger font-medium"></span>
             </p>
-            <div id="otpNotification" class="mt-3 p-3 alert alert-warning rounded-3 small hidden" data-aos="fade-in" data-aos-delay="200">
-                <div class="d-flex align-items-start">
-                    <i class="bi bi-exclamation-triangle text-warning me-2 mt-1 flex-shrink-0"></i>
-                    <div>
-                        <p class="font-medium">OTP Information</p>
-                        <p class="mt-1">If you don't receive an email, the OTP has been generated and is available. Contact your system administrator for assistance.</p>
+        </div>
+
+        <!-- Verification Progress -->
+        <div class="glass-card p-4 mb-4 fade-in-up">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="text-white fw-semibold mb-0">Verification Steps</h4>
+                <span class="badge bg-success bg-opacity-25 text-success small">Verified users get a badge</span>
+            </div>
+            
+            <div class="d-flex flex-column gap-3">
+                <!-- Step 1: Verify Email -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(34, 197, 94, 0.2); border: 2px solid #22c55e;">
+                        <i class="bi bi-check text-success small"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white small fw-semibold mb-0">Verify Email</p>
+                        <p class="text-muted small mb-0">Completed</p>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Verify Phone -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.2); border: 2px solid #f59e0b;">
+                        <i class="bi bi-clock text-warning small"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white small fw-semibold mb-0">Verify Phone</p>
+                        <p class="text-warning small mb-0">In Progress</p>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Complete Profile -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2);">
+                        <i class="bi bi-circle text-muted small"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white small fw-semibold mb-0">Complete Profile</p>
+                        <p class="text-muted small mb-0">Not Started</p>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Trust Score -->
+        <div class="glass-card p-4 mb-4 fade-in-up delay-1">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-white fw-semibold">Trust Score</span>
+                <span class="text-success fw-bold">60</span>
+            </div>
+            <div class="progress" style="height: 8px; background: rgba(255, 255, 255, 0.1);">
+                <div class="progress-bar bg-success" style="width: 60%;"></div>
+            </div>
+            <p class="text-muted small mb-0 mt-2">+30 heard</p>
         </div>
 
         <div class="glass-card p-4" data-aos="zoom-in" data-aos-delay="300">
@@ -361,6 +407,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start countdown on page load
     startResendCountdown();
 
+    // Start OTP timer countdown (15 minutes)
+    startOtpTimer();
+
     // Focus first input
     otpInputs[0].focus();
 
@@ -371,6 +420,27 @@ document.addEventListener('DOMContentLoaded', function() {
             easing: 'ease-out-cubic',
             once: true
         });
+    }
+
+    // OTP timer countdown function
+    function startOtpTimer() {
+        let timeLeft = 15 * 60; // 15 minutes in seconds
+        const timerElement = document.getElementById('otpTimer');
+        
+        const timer = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timerElement.textContent = '00:00';
+                timerElement.classList.add('text-danger');
+            }
+            
+            timeLeft--;
+        }, 1000);
     }
 });
 </script>
