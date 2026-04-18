@@ -28,6 +28,7 @@ urlpatterns = [
     # Search pages
     path('search/donors/', views.donor_search_page, name='search-donors'),
     path('search/users/', views.user_search_page, name='search-users'),
+    path('search/hospitals/', views.hospital_search_page, name='search-hospitals'),
     
     # Forgot password frontend pages
     path('forgot-password/', views.forgot_password_page, name='forgot_password'),

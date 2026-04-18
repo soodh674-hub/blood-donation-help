@@ -791,8 +791,18 @@ def logout_view(request):
 
 
 def donor_search_page(request):
-    """Render the donor search page (public access)"""
+    """Donor search page"""
     return render(request, 'search/donor_search.html')
+
+
+def user_search_page(request):
+    """User search page"""
+    return render(request, 'search/user_search.html')
+
+
+def hospital_search_page(request):
+    """Hospital search page"""
+    return render(request, 'search/hospital_search.html')
 
 
 @api_view(['PUT'])

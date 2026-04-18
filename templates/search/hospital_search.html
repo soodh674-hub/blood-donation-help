@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hospital Search - BloodLife{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+
+    .hospital-card {
+        transition: all 0.2s ease;
+    }
+
+    .hospital-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .hospital-card.active {
+        border-color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4 py-md-5" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);">
+    <div class="container-fluid px-3 px-sm-4 px-md-5">
+        <!-- Header -->
+        <div class="mb-4 mb-md-5">
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">
+                Find Hospitals
+            </h1>
+            <p class="fs-6 fs-md-5" style="color: var(--text-secondary);">Search for hospitals in your area</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="glass-card p-4 mb-4 fade-in-up">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="hospital-search-input" placeholder="Search hospitals (e.g., Ambala hospital)" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <button class="btn btn-gradient w-100" id="use-location-btn">
+                        <i class="bi bi-geo-alt me-2"></i>Use My Location
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hospital Results -->
+        <div class="glass-card p-4 p-md-5 fade-in-up delay-1">
+            <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-2">
+                <i class="bi bi-hospital" style="color: #60a5fa;"></i>
+                Hospital Results
+            </h2>
+            
+            <div id="hospital-results-container" style="max-height: 500px; overflow-y: auto;">
+                <!-- Sample hospital data - will be populated dynamically -->
+                <div class="hospital-card p-3 mb-2 rounded-3 active" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;" onclick="selectHospital(this)">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.2);">
+                            <i class="bi bi-hospital text-danger fs-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white fw-semibold mb-1">Ambala Hospital</h4>
+                            <p class="text-muted small mb-0">Ambala City, Haryana</p>
+                        </div>
+                        <i class="bi bi-check-circle text-success fs-4"></i>
+                    </div>
+                </div>
+
+                <div class="hospital-card p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;" onclick="selectHospital(this)">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(96, 165, 250, 0.2);">
+                            <i class="bi bi-hospital text-primary fs-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white fw-semibold mb-1">Sun Green Hospital</h4>
+                            <p class="text-muted small mb-0">Ambala, Haryana</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hospital-card p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;" onclick="selectHospital(this)">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(96, 165, 250, 0.2);">
+                            <i class="bi bi-hospital text-primary fs-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white fw-semibold mb-1">Ambala Hospital</h4>
+                            <p class="text-muted small mb-0">Ambala Cantt, Haryana</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hospital-card p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer;" onclick="selectHospital(this)">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(96, 165, 250, 0.2);">
+                            <i class="bi bi-hospital text-primary fs-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white fw-semibold mb-1">Ambala Hospital</h4>
+                            <p class="text-muted small mb-0">Patel Road, Ambala Sadar, Haryana</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('hospital-search-input');
+    const useLocationBtn = document.getElementById('use-location-btn');
+
+    // Search functionality
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        filterHospitals(query);
+    });
+
+    // Use My Location functionality
+    useLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            useLocationBtn.innerHTML = '<i class="bi bi-spinner-border me-2"></i>Getting Location...';
+            useLocationBtn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    useLocationBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Location Found';
+                    setTimeout(() => {
+                        useLocationBtn.innerHTML = '<i class="bi bi-geo-alt me-2"></i>Use My Location';
+                        useLocationBtn.disabled = false;
+                    }, 2000);
+                    
+                    // Filter hospitals by location (mock implementation)
+                    filterHospitalsByLocation(position.coords.latitude, position.coords.longitude);
+                },
+                function(error) {
+                    useLocationBtn.innerHTML = '<i class="bi bi-geo-alt me-2"></i>Use My Location';
+                    useLocationBtn.disabled = false;
+                    alert('Unable to get your location. Please enable location services.');
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+});
+
+function filterHospitals(query) {
+    const cards = document.querySelectorAll('.hospital-card');
+    cards.forEach(card => {
+        const name = card.querySelector('h4').textContent.toLowerCase();
+        const location = card.querySelector('p').textContent.toLowerCase();
+        
+        if (name.includes(query) || location.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterHospitalsByLocation(lat, lng) {
+    // Mock implementation - in production, this would calculate actual distances
+    const cards = document.querySelectorAll('.hospital-card');
+    cards.forEach(card => {
+        card.style.display = 'block';
+    });
+}
+
+function selectHospital(element) {
+    // Remove active class from all cards
+    document.querySelectorAll('.hospital-card').forEach(card => {
+        card.classList.remove('active');
+        const checkIcon = card.querySelector('.bi-check-circle');
+        if (checkIcon) checkIcon.remove();
+    });
+    
+    // Add active class to selected card
+    element.classList.add('active');
+    
+    // Add check icon if not present
+    if (!element.querySelector('.bi-check-circle')) {
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-check-circle text-success fs-4';
+        element.querySelector('.d-flex').appendChild(icon);
+    }
+    
+    // Store selected hospital
+    const hospitalName = element.querySelector('h4').textContent;
+    console.log('Selected hospital:', hospitalName);
+}
+</script>
+{% endblock %}
