@@ -25,7 +25,7 @@
             {% if conversations %}
                 <div class="glass-card" data-aos="zoom-in" data-aos-delay="300">
                     {% for conversation in conversations %}
-                        <a href="{% url 'chat-conversation' conversation.user.id %}" class="text-decoration-none text-white">
+                        <a href="{% url 'requests:chat-conversation' conversation.user.id %}" class="text-decoration-none text-white">
                             <div class="p-3 border-bottom border-secondary border-opacity-25 hover-bg-light transition-all {% if conversation.unread_count > 0 %}bg-opacity-10 unread-message{% endif %}" data-aos="fade-right" data-aos-delay="400">
                                 <div class="d-flex align-items-center">
                                     <!-- User Avatar -->
