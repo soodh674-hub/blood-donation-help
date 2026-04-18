@@ -226,8 +226,8 @@ def donor_profile(request, user_id):
         donor = get_object_or_404(
             User.objects.select_related('donor_profile').only(
                 'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                'phone', 'city', 'pincode', 'is_available', 'is_verified',
-                'bio', 'date_joined',
+                'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
+                'date_joined',
                 'donor_profile__profile_photo'
             ),
             id=user_id, user_type='donor', is_active=True

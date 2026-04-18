@@ -417,15 +417,26 @@ class ChatbotView(APIView):
             # Try to save conversation to database (optional, don't fail if model doesn't exist)
             try:
                 from .models_chat import ChatbotConversation
-                conversation = ChatbotConversation.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
+                # Use get_or_create to avoid duplicate session_id errors
+                conversation, created = ChatbotConversation.objects.get_or_create(
                     session_id=session_id,
-                    user_message=message,
-                    bot_response=response_data['response'],
-                    confidence=response_data.get('confidence', 'medium'),
-                    suggestions=response_data.get('suggestions', []),
-                    user_context=user_context
+                    defaults={
+                        'user': request.user if request.user.is_authenticated else None,
+                        'user_message': message,
+                        'bot_response': response_data['response'],
+                        'confidence': response_data.get('confidence', 'medium'),
+                        'suggestions': response_data.get('suggestions', []),
+                        'user_context': user_context
+                    }
                 )
+                # If conversation already exists, update it
+                if not created:
+                    conversation.user_message = message
+                    conversation.bot_response = response_data['response']
+                    conversation.confidence = response_data.get('confidence', 'medium')
+                    conversation.suggestions = response_data.get('suggestions', [])
+                    conversation.user_context = user_context
+                    conversation.save()
             except ImportError as e:
                 # Model doesn't exist - this is OK
                 logger.debug(f"Chatbot conversation model not available: {e}")

@@ -2,7 +2,6 @@ const CACHE_NAME = 'bloodlife-v1';
 const urlsToCache = [
   '/',
   '/static/css/home.css',
-  '/static/css/tailwind-custom.css',
   '/static/js/home.js',
   '/static/js/animations.js',
   '/static/js/app.js',
