@@ -665,65 +665,6 @@ class BloodRequestCreateView(generics.CreateAPIView):
                     notifications_sent = notification_service.send_blood_request_notification(instance, limit=20)
                     logger.info(f'Sent {notifications_sent} notifications for anonymous request {instance.id}')
                 except Exception as notif_error:
-                    logger.error(f'Failed to send notifications for anonymous request: {str(notif_error)}', exc_info=True)
-                
-        except Exception as e:
-            logger.error(f'Error creating blood request: {str(e)}', exc_info=True)
-            raise
-
-
-class BloodRequestListView(generics.ListAPIView):
-    """
-    List blood requests with basic filtering.
-    """
-
-    queryset = BloodRequest.objects.all()
-    serializer_class = BloodRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ["status", "priority", "city", "patient_blood_group"]
-    ordering_fields = ["created_at", "required_by", "priority"]
-    ordering = ["-created_at"]
-
-
-class BloodRequestDetailView(generics.RetrieveAPIView):
-    """
-    Retrieve full details of a blood request, including matches.
-    """
-
-    queryset = BloodRequest.objects.all()
-    serializer_class = BloodRequestDetailSerializer
-    permission_classes = [permissions.AllowAny]  # Allow anyone to view requests
-
-
-def create_request_page(request):
-    """Render the blood request creation page with hybrid form handling"""
-    
-    # Handle traditional POST submission (fallback from JavaScript)
-    if request.method == 'POST':
-        try:
-            logger.info('🟡 Traditional POST form submission detected')
-            
-            # Extract form data
-            city = request.POST.get('city', '')
-            state = request.POST.get('state', '')
-            hospital_address = request.POST.get('hospital_name', '')
-
-            # Geocoding: Convert address to latitude/longitude
-            latitude, longitude = 28.6139, 77.2090  # Default Delhi
-            if city and state:
-                try:
-                    import requests
-                    address_query = f"{hospital_address}, {city}, {state}, India"
-                    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
-                    headers = {'User-Agent': 'BloodDonationApp/1.0'}
-
-                    response = requests.get(url, headers=headers, timeout=5)
-                    if response.status_code == 200:
-                        geodata = response.json()
-                        if geodata and len(geodata) > 0:
-                            latitude = float(geodata[0]['lat'])
-                            longitude = float(geodata[0]['lon'])
                             logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
                         else:
                             # Fallback to city coordinates
@@ -837,6 +778,7 @@ def live_blood_requests(request):
     """
     API endpoint to fetch live/active blood requests for homepage display.
     Returns recent active requests from OTHER users (privacy: exclude current user's requests).
+    Filters by blood group compatibility - only shows requests the user can donate to.
     Ordered by urgency and creation time.
     """
     try:
@@ -887,8 +829,19 @@ def live_blood_requests(request):
             ]
             return JsonResponse(dummy_data, safe=False)
         
-        # Get active requests - remove expiry filter for debugging
-        # Show ALL requests regardless of expiry
+        # Blood group compatibility chart (who can donate to whom)
+        BLOOD_COMPATIBILITY = {
+            'A+': ['A+', 'AB+'],
+            'A-': ['A+', 'A-', 'AB+', 'AB-'],
+            'B+': ['B+', 'AB+'],
+            'B-': ['B+', 'B-', 'AB+', 'AB-'],
+            'AB+': ['AB+'],
+            'AB-': ['AB+', 'AB-'],
+            'O+': ['O+', 'A+', 'B+', 'AB+'],
+            'O-': ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'],  # Universal donor
+        }
+        
+        # Get active requests
         queryset = BloodRequest.objects.filter(
             status__in=['active', 'approved', 'pending', 'partially_fulfilled', 'fulfilled', 'cancelled']
         )
@@ -897,6 +850,19 @@ def live_blood_requests(request):
         if request.user.is_authenticated:
             queryset = queryset.exclude(requester=request.user)
             logger.info(f'Excluding user {request.user.id}\'s requests from homepage')
+            
+            # FILTER BY BLOOD GROUP COMPATIBILITY
+            user_blood_group = request.user.blood_group
+            if user_blood_group:
+                # Get blood groups this user can donate to
+                compatible_patient_groups = BLOOD_COMPATIBILITY.get(user_blood_group, [])
+                if compatible_patient_groups:
+                    queryset = queryset.filter(patient_blood_group__in=compatible_patient_groups)
+                    logger.info(f'Filtering requests for {user_blood_group} donor - showing requests for: {compatible_patient_groups}')
+                else:
+                    # If user has invalid blood group, return no requests
+                    logger.warning(f'User {request.user.id} has invalid blood group: {user_blood_group}')
+                    return Response([])
         
         live_requests = queryset.order_by(
             '-priority',
@@ -913,6 +879,13 @@ def live_blood_requests(request):
             # PRIVACY: Also exclude in fallback query
             if request.user.is_authenticated:
                 queryset = queryset.exclude(requester=request.user)
+                
+                # Also apply blood group filter in fallback
+                user_blood_group = request.user.blood_group
+                if user_blood_group:
+                    compatible_patient_groups = BLOOD_COMPATIBILITY.get(user_blood_group, [])
+                    if compatible_patient_groups:
+                        queryset = queryset.filter(patient_blood_group__in=compatible_patient_groups)
             
             live_requests = queryset.order_by(
                 '-priority',
