@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from . import health_check
 from . import views_location
+from . import views_report
 
 urlpatterns = [
     # Frontend pages
@@ -82,4 +83,8 @@ urlpatterns = [
     # Location autocomplete API (Nominatim - FREE)
     path('api/location/autocomplete/', views_location.location_autocomplete, name='location-autocomplete'),
     path('api/location/reverse-geocode/', views_location.reverse_geocode, name='reverse-geocode'),
+    
+    # Report user API (Anti-fake system)
+    path('api/report-user/', views_report.report_user, name='report-user'),
+    path('api/users/<int:user_id>/trust-score/', views_report.get_user_trust_score, name='trust-score'),
 ]
