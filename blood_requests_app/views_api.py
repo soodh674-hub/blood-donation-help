@@ -417,8 +417,8 @@ class ChatbotView(APIView):
             # Try to save conversation to database (optional, don't fail if model doesn't exist)
             try:
                 from .models_chat import ChatbotConversation
-                # Use get_or_create to avoid duplicate session_id errors
-                conversation, created = ChatbotConversation.objects.get_or_create(
+                # Use update_or_create to handle both new and existing sessions
+                conversation, created = ChatbotConversation.objects.update_or_create(
                     session_id=session_id,
                     defaults={
                         'user': request.user if request.user.is_authenticated else None,
@@ -426,19 +426,10 @@ class ChatbotView(APIView):
                         'bot_response': response_data['response'],
                         'confidence': response_data.get('confidence', 'medium'),
                         'suggestions': response_data.get('suggestions', []),
-                        'user_context': user_context
+                        'user_context': response_data.get('context', {})
                     }
                 )
-                # If conversation already exists, update it
-                if not created:
-                    conversation.user_message = message
-                    conversation.bot_response = response_data['response']
-                    conversation.confidence = response_data.get('confidence', 'medium')
-                    conversation.suggestions = response_data.get('suggestions', [])
-                    conversation.user_context = user_context
-                    conversation.save()
-            except ImportError as e:
-                # Model doesn't exist - this is OK
+                logger.info(f"✅ Chatbot conversation saved to database (session_id: {session_id}, created: {created})")
                 logger.debug(f"Chatbot conversation model not available: {e}")
             except Exception as e:
                 # Log but don't fail if there are any database issues

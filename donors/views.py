@@ -305,7 +305,7 @@ def recommended_donors(request):
             blood_group__in=compatible_blood_groups
         ).exclude(id=request.user.id).select_related('donor_profile').only(
             'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-            'phone', 'city', 'is_available', 'is_verified',
+            'phone_number', 'city', 'is_available', 'is_verified',
             'latitude', 'longitude', 'last_donation_date',
             'donor_profile__profile_photo'
         )
