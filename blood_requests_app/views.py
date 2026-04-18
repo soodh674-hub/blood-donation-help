@@ -1759,7 +1759,6 @@ def get_unread_chat_count(user):
     return ChatMessage.objects.filter(receiver=user, is_read=False).count()
 
 
-@login_required
 def unread_chat_count_api(request):
     """API endpoint to get unread chat count for navbar badge"""
     try:
