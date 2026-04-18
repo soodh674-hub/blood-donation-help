@@ -29,6 +29,12 @@
     <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <link rel="apple-touch-icon" href="{% static 'favicon.ico' %}">
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
+    
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta name="theme-color" content="#dc3545">
@@ -1430,6 +1436,25 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c; // Distance in km
         };
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjQ8d6FHvt2qH50FEQ4s_33LZ0kNTe-aw",
+            authDomain: "blood-donation-help-50944.firebaseapp.com",
+            projectId: "blood-donation-help-50944",
+            storageBucket: "blood-donation-help-50944.firebasestorage.app",
+            messagingSenderId: "887833742855",
+            appId: "1:887833742855:web:51b4376204eb0d2cf4a4a2",
+            measurementId: "G-7N251R51K9"
+        };
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
     </script>
     
     <!-- Chat Widget -->

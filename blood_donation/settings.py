@@ -556,12 +556,15 @@ if IS_RENDER:
     
     # Firebase Configuration for Real-time Chat and Notifications
     # Firebase works alongside PostgreSQL - Firebase for real-time features, Supabase for structured data
-    FIREBASE_API_KEY = config('FIREBASE_API_KEY', default='')
-    FIREBASE_AUTH_DOMAIN = config('FIREBASE_AUTH_DOMAIN', default='')
-    FIREBASE_PROJECT_ID = config('FIREBASE_PROJECT_ID', default='')
-    FIREBASE_STORAGE_BUCKET = config('FIREBASE_STORAGE_BUCKET', default='')
-    FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID', default='')
-    FIREBASE_APP_ID = config('FIREBASE_APP_ID', default='')
+    FIREBASE_API_KEY = 'AIzaSyDjQ8d6FHvt2qH50FEQ4s_33LZ0kNTe-aw'
+    FIREBASE_AUTH_DOMAIN = 'blood-donation-help-50944.firebaseapp.com'
+    FIREBASE_PROJECT_ID = 'blood-donation-help-50944'
+    FIREBASE_STORAGE_BUCKET = 'blood-donation-help-50944.firebasestorage.app'
+    FIREBASE_MESSAGING_SENDER_ID = '887833742855'
+    FIREBASE_APP_ID = '1:887833742855:web:51b4376204eb0d2cf4a4a2'
+    FIREBASE_MEASUREMENT_ID = 'G-7N251R51K9'
+    FIREBASE_DATABASE_URL = 'https://blood-donation-help-50944-default-rtdb.firebaseio.com'
+    FIREBASE_SERVICE_ACCOUNT_KEY = os.path.join(BASE_DIR, 'firebase-service-account.json')
     
     if FIREBASE_API_KEY and FIREBASE_PROJECT_ID:
         logger.info("✅ Firebase configured for real-time chat and notifications")
