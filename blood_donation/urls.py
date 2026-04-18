@@ -146,13 +146,13 @@ urlpatterns = [
     # Health check endpoint (root level for easy monitoring)
     path('health/', health_check.health_check, name='health-check'),
     
-    # Admin panel - hidden URL for security
-    path('secure-admin-panel-x92/', admin.site.urls),
-    
-    # Admin verification system (Phase 3)
+    # Admin verification system (Phase 3) - Must be BEFORE admin.site.urls
     path('admin/verify/', blood_request_views.verify_requests_page, name='admin-verify-requests'),
     path('secure-admin-panel-x92/verify/', blood_request_views.verify_requests_page, name='admin-verify-requests-panel'),
     path('api/admin/verify/<int:request_id>/', blood_request_views.verify_request_api, name='admin-verify-request-api'),
+    
+    # Admin panel - hidden URL for security
+    path('secure-admin-panel-x92/', admin.site.urls),
     
     # Direct registration route (common access pattern)
     path('register/', accounts_views.donor_registration_view, name='register-direct'),  # Allows /register/ to work directly
