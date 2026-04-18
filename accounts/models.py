@@ -72,6 +72,14 @@ class User(AbstractUser):
     profile_completion_seen = models.BooleanField(default=False)  # Track if user has seen progress bar
     last_notification_check = models.DateTimeField(blank=True, null=True)  # Track last notification check
     
+    # Trust system and anti-fake measures
+    trust_score = models.IntegerField(default=50, help_text="Trust score from 0-100, affects feature access")
+    reports_count = models.IntegerField(default=0, help_text="Number of times user has been reported")
+    donations_completed = models.IntegerField(default=0, help_text="Number of successful donations")
+    is_blocked = models.BooleanField(default=False, help_text="Auto-blocked if too many reports or low trust")
+    firebase_uid = models.CharField(max_length=100, blank=True, null=True, help_text="Firebase user ID for real-time features")
+    fcm_token = models.CharField(max_length=255, blank=True, null=True, help_text="Firebase Cloud Messaging token")
+    
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"
     
@@ -474,6 +482,65 @@ class DonorProfile(models.Model):
             if self.user.last_donation_date:
                 self.calculate_next_eligible_date()
             self.save()
+
+
+class UserReport(models.Model):
+    """Model for reporting users for fake/scam behavior"""
+    
+    REPORT_REASON_CHOICES = [
+        ('fake_profile', 'Fake Profile'),
+        ('spam', 'Spam Messages'),
+        ('inappropriate', 'Inappropriate Behavior'),
+        ('scam', 'Scam Attempt'),
+        ('harassment', 'Harassment'),
+        ('other', 'Other'),
+    ]
+    
+    REPORT_STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('investigating', 'Under Investigation'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+    
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
+    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_received')
+    reason = models.CharField(max_length=50, choices=REPORT_REASON_CHOICES)
+    description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=REPORT_STATUS_CHOICES, default='pending')
+    is_resolved = models.BooleanField(default=False)
+    admin_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        unique_together = ['reporter', 'reported_user']  # One user can report another only once
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['reported_user', 'status']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Report: {self.reporter.username} -> {self.reported_user.username} ({self.reason})"
+    
+    def save(self, *args, **kwargs):
+        # Auto-increment reports_count on reported user
+        if not self.id:  # New report
+            self.reported_user.reports_count += 1
+            self.reported_user.save()
+            
+            # Auto-block if 3+ reports
+            if self.reported_user.reports_count >= 3:
+                self.reported_user.is_blocked = True
+                self.reported_user.trust_score = max(0, self.reported_user.trust_score - 50)
+                self.reported_user.save()
+            
+            # Reduce trust score
+            self.reported_user.trust_score = max(0, self.reported_user.trust_score - 10)
+            self.reported_user.save()
+        
+        super().save(*args, **kwargs)
 
 
 class UserActivityLog(models.Model):

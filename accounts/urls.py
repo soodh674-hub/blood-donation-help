@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from . import health_check
+from . import views_location
 
 urlpatterns = [
     # Frontend pages
@@ -77,5 +78,8 @@ urlpatterns = [
 
     # Profile completion tracking
     path('api/profile/mark-completion-seen/', views.mark_profile_completion_seen, name='mark-profile-completion-seen'),
-
+    
+    # Location autocomplete API (Nominatim - FREE)
+    path('api/location/autocomplete/', views_location.location_autocomplete, name='location-autocomplete'),
+    path('api/location/reverse-geocode/', views_location.reverse_geocode, name='reverse-geocode'),
 ]

@@ -554,6 +554,24 @@ if IS_RENDER:
     else:
         logger.info("✅ Using FREE OpenStreetMap + Leaflet (no API key required)")
     
+    # Firebase Configuration for Real-time Chat and Notifications
+    # Firebase works alongside PostgreSQL - Firebase for real-time features, Supabase for structured data
+    FIREBASE_API_KEY = config('FIREBASE_API_KEY', default='')
+    FIREBASE_AUTH_DOMAIN = config('FIREBASE_AUTH_DOMAIN', default='')
+    FIREBASE_PROJECT_ID = config('FIREBASE_PROJECT_ID', default='')
+    FIREBASE_STORAGE_BUCKET = config('FIREBASE_STORAGE_BUCKET', default='')
+    FIREBASE_MESSAGING_SENDER_ID = config('FIREBASE_MESSAGING_SENDER_ID', default='')
+    FIREBASE_APP_ID = config('FIREBASE_APP_ID', default='')
+    
+    if FIREBASE_API_KEY and FIREBASE_PROJECT_ID:
+        logger.info("✅ Firebase configured for real-time chat and notifications")
+    else:
+        logger.info("ℹ️ Firebase not configured - real-time features will be limited")
+    
+    # Location Autocomplete API (Nominatim - FREE)
+    NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
+    NOMINATIM_USER_AGENT = "BloodDonationApp/1.0"
+    
     # No SMTP settings needed - using HTTP API instead
     # This avoids port 587 blocking on Render free tier
 else:
