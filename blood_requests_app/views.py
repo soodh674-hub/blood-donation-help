@@ -1130,6 +1130,38 @@ def respond_to_request(request, request_id):
             logger.error(f"Error creating response: {e}")
             return JsonResponse({'success': False, 'message': f'Failed to create response: {str(e)}'}, status=500)
 
+        # Create or get chat room for this request
+        try:
+            from .models_chat import ChatRoom, ChatMessage
+            chat_room, created = ChatRoom.objects.get_or_create(
+                blood_request=blood_request,
+                room_type='request',
+                defaults={
+                    'name': f"Request #{blood_request.id} - {blood_request.patient_name}",
+                    'is_active': True
+                }
+            )
+            
+            # Add both requester and donor to the chat room
+            if created or not chat_room.participants.filter(id=blood_request.requester.id).exists():
+                chat_room.participants.add(blood_request.requester)
+            if not chat_room.participants.filter(id=request.user.id).exists():
+                chat_room.participants.add(request.user)
+            
+            # Send system message to chat
+            ChatMessage.objects.create(
+                sender=blood_request.requester,
+                receiver=request.user,
+                message=f"🩸 {request.user.get_full_name() or request.user.username} has accepted your blood request for {blood_request.patient_name} ({blood_request.patient_blood_group}). You can now chat to coordinate the donation.",
+                message_type='system',
+                request=blood_request
+            )
+            
+            logger.info(f"Chat room {chat_room.id} created/retrieved for request {request_id}")
+        except Exception as chat_error:
+            logger.error(f"Error creating chat room: {chat_error}")
+            # Don't fail the request if chat room creation fails
+
         # Send notification to requester
         try:
             from notifications.services import NotificationService
