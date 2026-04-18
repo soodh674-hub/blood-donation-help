@@ -1190,7 +1190,7 @@ def get_request_responses(request, request_id):
         # Only requester can see all responses
         if blood_request.requester != request.user:
             return Response(
-                {'error': 'Permission denied'},
+                {'error': 'Only the requester can view responses to their blood request'},
                 status=status.HTTP_403_FORBIDDEN
             )
         
