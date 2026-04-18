@@ -53,6 +53,26 @@
                         <p class="text-secondary small mt-1">Age: {{ user.age }} years</p>
                         {% endif %}
                         
+                        <!-- Trust Score -->
+                        <div class="mt-3 p-3 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-white fw-semibold small">Trust Score</span>
+                                <span class="text-success fw-bold">{{ user.trust_score|default:50 }}</span>
+                            </div>
+                            <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
+                                <div class="progress-bar bg-success" style="width: {{ user.trust_score|default:50 }}%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Verification Status -->
+                        {% if user.is_verified %}
+                        <div class="mt-3">
+                            <span class="badge bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-check-circle me-1"></i>Verified
+                            </span>
+                        </div>
+                        {% endif %}
+                        
                         <!-- Donation Eligibility Status -->
                         {% if user.user_type == 'donor' %}
                         <div class="mt-3">
@@ -65,14 +85,6 @@
                                 <i class="bi bi-x-circle me-1"></i>Not Eligible
                             </span>
                             {% endif %}
-                        </div>
-                        {% endif %}
-                        
-                        {% if user.is_verified %}
-                        <div class="mt-3">
-                            <span class="badge bg-success bg-opacity-10 text-success">
-                                <i class="bi bi-check-circle me-1"></i>Verified
-                            </span>
                         </div>
                         {% endif %}
                     </div>
@@ -201,6 +213,47 @@
                             <button onclick="cancelEdit()" id="cancel-btn" class="btn btn-outline-secondary d-none">
                                 Cancel
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User List Section -->
+                <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="info-card p-4">
+                        <h5 class="text-white mb-3">Community Members</h5>
+                        <div class="d-flex flex-column gap-3">
+                            <!-- Ankit Sharma -->
+                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(96, 165, 250, 0.2);">
+                                    <span class="text-primary fw-bold small">AS</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white small fw-semibold mb-0">Ankit Sharma</p>
+                                    <p class="text-success small mb-0">Active</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Priya Verma -->
+                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(236, 72, 153, 0.2);">
+                                    <span class="text-danger fw-bold small">PV</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white small fw-semibold mb-0">Priya Verma</p>
+                                    <p class="text-success small mb-0">Active</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Alay Patel -->
+                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.2);">
+                                    <span class="text-warning fw-bold small">AP</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white small fw-semibold mb-0">Alay Patel</p>
+                                    <p class="text-muted small mb-0">Leave</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
