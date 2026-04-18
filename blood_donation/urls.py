@@ -146,13 +146,12 @@ urlpatterns = [
     # Health check endpoint (root level for easy monitoring)
     path('health/', health_check.health_check, name='health-check'),
     
-    # Admin verification system (Phase 3) - Must be BEFORE admin.site.urls
-    path('admin/verify/', blood_request_views.verify_requests_page, name='admin-verify-requests'),
-    path('secure-admin-panel-x92/verify/', blood_request_views.verify_requests_page, name='admin-verify-requests-panel'),
-    path('api/admin/verify/<int:request_id>/', blood_request_views.verify_request_api, name='admin-verify-request-api'),
-    
     # Admin panel - hidden URL for security
     path('secure-admin-panel-x92/', admin.site.urls),
+    
+    # Admin verification system (Phase 3) - Use separate path to avoid admin panel conflict
+    path('requests/verify-requests/', blood_request_views.verify_requests_page, name='admin-verify-requests'),
+    path('api/admin/verify/<int:request_id>/', blood_request_views.verify_request_api, name='admin-verify-request-api'),
     
     # Direct registration route (common access pattern)
     path('register/', accounts_views.donor_registration_view, name='register-direct'),  # Allows /register/ to work directly
@@ -200,33 +199,6 @@ urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 admin.site.site_header = "Blood Donation Platform Admin"
 admin.site.site_title = "Blood Donation Admin Portal"
 admin.site.index_title = "Welcome to Blood Donation Platform Administration"
-
-# Add custom link to admin panel
-from django.contrib.admin import AdminSite
-class BloodLifeAdminSite(AdminSite):
-    site_header = "Blood Donation Platform Admin"
-    site_title = "Blood Donation Admin Portal"
-    index_title = "Welcome to Blood Donation Platform Administration"
-    
-    def get_urls(self):
-        from django.urls import path
-        urls = super().get_urls()
-        custom_urls = [
-            path('verify-requests-link/', self.admin_view(self.verify_requests_view), name='admin_verify_requests_link'),
-        ]
-        return custom_urls + urls
-    
-    def verify_requests_view(self, request):
-        from django.shortcuts import redirect
-        return redirect('/secure-admin-panel-x92/verify/')
-    
-    def index(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['verify_requests_url'] = '/secure-admin-panel-x92/verify/'
-        return super().index(request, extra_context)
-
-# Use custom admin site
-admin.site.__class__ = BloodLifeAdminSite
 
 # Catch-all for common scanner endpoints (must be last)
 urlpatterns.append(path('<path:path>', catchall_handler))
