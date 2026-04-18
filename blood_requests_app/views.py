@@ -112,29 +112,39 @@ def create_request_unified_page(request):
             state = request.POST.get('state', '')
             hospital_address = request.POST.get('hospital_name', '')
 
-            # Geocoding: Convert address to latitude/longitude
-            latitude, longitude = 28.6139, 77.2090  # Default Delhi
-            if city and state:
-                try:
-                    import requests
-                    address_query = f"{hospital_address}, {city}, {state}, India"
-                    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
-                    headers = {'User-Agent': 'BloodDonationApp/1.0'}
+            # Use coordinates from frontend location search if provided
+            latitude = request.POST.get('latitude')
+            longitude = request.POST.get('longitude')
+            
+            # If coordinates not provided, fall back to server-side geocoding
+            if not latitude or not longitude:
+                latitude, longitude = 28.6139, 77.2090  # Default Delhi
+                if city and state:
+                    try:
+                        import requests
+                        address_query = f"{hospital_address}, {city}, {state}, India"
+                        url = f"https://nominatim.openstreetmap.org/search?format=json&q={address_query}"
+                        headers = {'User-Agent': 'BloodDonationApp/1.0'}
 
-                    response = requests.get(url, headers=headers, timeout=5)
-                    if response.status_code == 200:
-                        geodata = response.json()
-                        if geodata and len(geodata) > 0:
-                            latitude = float(geodata[0]['lat'])
-                            longitude = float(geodata[0]['lon'])
-                            logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
-                        else:
-                            # Fallback to city coordinates
-                            latitude, longitude = _get_city_coordinates(city)
-                            logger.warning(f'Geocoding failed for {city}, using fallback')
-                except Exception as e:
-                    logger.error(f'Geocoding error: {e}')
-                    latitude, longitude = _get_city_coordinates(city)
+                        response = requests.get(url, headers=headers, timeout=5)
+                        if response.status_code == 200:
+                            geodata = response.json()
+                            if geodata and len(geodata) > 0:
+                                latitude = float(geodata[0]['lat'])
+                                longitude = float(geodata[0]['lon'])
+                                logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
+                            else:
+                                # Fallback to city coordinates
+                                latitude, longitude = _get_city_coordinates(city)
+                                logger.warning(f'Geocoding failed for {city}, using fallback')
+                    except Exception as e:
+                        logger.error(f'Geocoding error: {e}')
+                        latitude, longitude = _get_city_coordinates(city)
+            else:
+                # Convert to float if provided as strings
+                latitude = float(latitude)
+                longitude = float(longitude)
+                logger.info(f'Using frontend-provided coordinates: {latitude}, {longitude}')
 
             data = {
                 'patient_name': request.POST.get('patient_name'),

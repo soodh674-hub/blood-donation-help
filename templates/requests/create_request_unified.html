@@ -220,13 +220,39 @@
                 <!-- Location Information -->
                 <div class="row g-3 g-md-4 mb-3">
                     <div class="col-12">
-                        <label class="form-label small fw-medium" style="color: var(--text-secondary);">Location</label>
-                        <div class="alert alert-info mb-0" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <small>Location will be automatically determined from your address details</small>
+                        <label class="form-label small fw-medium" style="color: var(--text-secondary);">📍 Enter Hospital / Area Name *</label>
+                        <div class="position-relative">
+                            <input type="text" name="location_search" id="location-search" required
+                                   class="form-control bg-transparent text-white border-secondary input-enhanced"
+                                   style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                                   placeholder="e.g., Sun Green Hospital Ambala, Civil Hospital, etc."
+                                   autocomplete="off">
+                            <!-- Autocomplete Dropdown -->
+                            <div id="location-suggestions" class="position-absolute w-100 mt-1 rounded-3" 
+                                 style="background: rgba(30, 30, 30, 0.95); border: 1px solid rgba(255, 255, 255, 0.2); max-height: 200px; overflow-y: auto; z-index: 1000; display: none;">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" onclick="useMyLocation()" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-geo-alt me-1"></i> Use My Location
+                            </button>
+                            <button type="button" onclick="toggleMapPicker()" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-map me-1"></i> Pick on Map
+                            </button>
                         </div>
                     </div>
                 </div>
+                
+                <!-- Map Picker (Hidden by default) -->
+                <div id="map-picker-container" class="mb-3 d-none">
+                    <div id="location-picker-map" style="height: 300px; border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.2);"></div>
+                    <p class="small text-muted mt-2">Click on the map to select location</p>
+                </div>
+                
+                <!-- Hidden fields for coordinates -->
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <input type="hidden" name="formatted_address" id="formatted-address">
                 
                 <div class="row g-3 g-md-4">
                     <div class="col-12 col-md-6">
@@ -249,21 +275,21 @@
                 <div class="row g-3 g-md-4 mt-2">
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">City *</label>
-                        <input type="text" name="city" required
+                        <input type="text" name="city" id="city" required
                                class="form-control bg-transparent text-white border-secondary"
                                style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
                     </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">State *</label>
-                        <input type="text" name="state" required
+                        <input type="text" name="state" id="state" required
                                class="form-control bg-transparent text-white border-secondary"
                                style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
                     </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Pincode *</label>
-                        <input type="text" name="pincode" required pattern="[0-9]{6}"
+                        <input type="text" name="pincode" id="pincode" required pattern="[0-9]{6}"
                                class="form-control bg-transparent text-white border-secondary"
                                style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
                                placeholder="6 digits">
@@ -271,7 +297,7 @@
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Country</label>
-                        <input type="text" name="country" value="India"
+                        <input type="text" name="country" id="country" value="India"
                                class="form-control bg-transparent text-white border-secondary"
                                style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
                     </div>
@@ -510,6 +536,220 @@ document.addEventListener('DOMContentLoaded', function() {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.querySelector('[name="required_by"]').min = now.toISOString().slice(0, 16);
+    
+    // Initialize location autocomplete
+    initLocationAutocomplete();
 });
+
+// Location Autocomplete
+let locationAutocompleteTimeout;
+
+function initLocationAutocomplete() {
+    const locationInput = document.getElementById('location-search');
+    const suggestionsContainer = document.getElementById('location-suggestions');
+    
+    locationInput.addEventListener('input', function() {
+        clearTimeout(locationAutocompleteTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        locationAutocompleteTimeout = setTimeout(() => {
+            fetchLocationSuggestions(query);
+        }, 300);
+    });
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!locationInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+}
+
+async function fetchLocationSuggestions(query) {
+    const suggestionsContainer = document.getElementById('location-suggestions');
+    
+    try {
+        const response = await fetch(`/accounts/api/location/autocomplete/?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success && data.results.length > 0) {
+            suggestionsContainer.innerHTML = data.results.map(result => `
+                <div class="p-3 border-bottom border-white border-opacity-10 cursor-pointer hover:bg-white hover:bg-opacity-10 transition-all" 
+                     onclick="selectLocation('${result.display_name}', ${result.lat}, ${result.lon}, '${result.city}', '${result.state}')">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-geo-alt text-danger"></i>
+                        <div>
+                            <div class="text-white small fw-medium">${result.display_name.split(',')[0]}</div>
+                            <div class="text-muted small">${result.city}, ${result.state}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            suggestionsContainer.style.display = 'block';
+        } else {
+            suggestionsContainer.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching location suggestions:', error);
+    }
+}
+
+function selectLocation(displayName, lat, lng, city, state) {
+    document.getElementById('location-search').value = displayName.split(',')[0];
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    document.getElementById('formatted-address').value = displayName;
+    document.getElementById('city').value = city || '';
+    document.getElementById('state').value = state || '';
+    document.getElementById('location-suggestions').style.display = 'none';
+}
+
+// Use My Location
+function useMyLocation() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        try {
+            const response = await fetch(`/accounts/api/location/reverse-geocode/?lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const address = data.address;
+                document.getElementById('location-search').value = address.display_name.split(',')[0];
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                document.getElementById('formatted-address').value = address.display_name;
+                document.getElementById('city').value = address.city || '';
+                document.getElementById('state').value = address.state || '';
+                document.getElementById('pincode').value = address.pincode || '';
+                
+                alert('Location detected successfully!');
+            }
+        } catch (error) {
+            console.error('Error reverse geocoding:', error);
+            alert('Failed to detect location. Please try again.');
+        }
+    }, (error) => {
+        console.error('Geolocation error:', error);
+        alert('Failed to get your location. Please enable location services.');
+    });
+}
+
+// Map Picker
+let mapPicker = null;
+let mapMarker = null;
+
+function toggleMapPicker() {
+    const container = document.getElementById('map-picker-container');
+    
+    if (container.classList.contains('d-none')) {
+        container.classList.remove('d-none');
+        initMapPicker();
+    } else {
+        container.classList.add('d-none');
+    }
+}
+
+function initMapPicker() {
+    if (mapPicker) return;
+    
+    // Default to India
+    const defaultLat = 20.5937;
+    const defaultLng = 78.9629;
+    
+    mapPicker = L.map('location-picker-map').setView([defaultLat, defaultLng], 5);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapPicker);
+    
+    // Click handler
+    mapPicker.on('click', async function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        // Add or update marker
+        if (mapMarker) {
+            mapMarker.setLatLng([lat, lng]);
+        } else {
+            mapMarker = L.marker([lat, lng]).addTo(mapPicker);
+        }
+        
+        // Reverse geocode
+        try {
+            const response = await fetch(`/accounts/api/location/reverse-geocode/?lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const address = data.address;
+                document.getElementById('location-search').value = address.display_name.split(',')[0];
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                document.getElementById('formatted-address').value = address.display_name;
+                document.getElementById('city').value = address.city || '';
+                document.getElementById('state').value = address.state || '';
+                document.getElementById('pincode').value = address.pincode || '';
+                
+                mapMarker.bindPopup(address.display_name).openPopup();
+            }
+        } catch (error) {
+            console.error('Error reverse geocoding:', error);
+            mapMarker.bindPopup(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`).openPopup();
+        }
+    });
+}
+
+// Report User Function
+async function reportUser(userId) {
+    if (!confirm('Are you sure you want to report this user?')) return;
+    
+    const reason = prompt('Reason for reporting (fake_profile, spam, inappropriate, scam, harassment, other):');
+    if (!reason) return;
+    
+    const description = prompt('Additional details (optional):');
+    
+    try {
+        const response = await fetch('/accounts/api/report-user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                reported_user_id: userId,
+                reason: reason,
+                description: description || ''
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('User reported successfully. Thank you for helping keep our community safe.');
+        } else {
+            alert(data.error || 'Failed to report user');
+        }
+    } catch (error) {
+        console.error('Error reporting user:', error);
+        alert('Failed to report user. Please try again.');
+    }
+}
+
+// Get CSRF Token
+function getCSRFToken() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    return csrfToken ? csrfToken.value : '';
+}
 </script>
 {% endblock %}
