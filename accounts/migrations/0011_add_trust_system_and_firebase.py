@@ -32,11 +32,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='firebase_uid',
-            field=models.CharField(max_length=255, null=True, blank=True, help_text='Firebase user ID for authentication'),
+            field=models.CharField(max_length=100, null=True, blank=True, help_text='Firebase user ID for authentication'),
         ),
         migrations.AddField(
             model_name='user',
             name='fcm_token',
-            field=models.CharField(max_length=500, null=True, blank=True, help_text='Firebase Cloud Messaging token for push notifications'),
+            field=models.CharField(max_length=255, null=True, blank=True, help_text='Firebase Cloud Messaging token for push notifications'),
         ),
     ]
