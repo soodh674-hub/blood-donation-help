@@ -201,7 +201,34 @@
             <h1 class="display-5 display-md-4 fw-bold text-white mb-2">
                 Track Blood Request
             </h1>
-            <p class="fs-6 fs-md-5" style="color: var(--text-secondary);">Real-time donor tracking and management</p>
+            <p class="fs-6 fs-md-5" style="color: var(--text-secondary);">Monitor urgent blood donation needs nearby</p>
+        </div>
+
+        <!-- Filter/Search Bar -->
+        <div class="glass-card p-3 mb-4 fade-in">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search by hospital, blood group, or location" id="search-requests" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <select class="form-select" id="filter-blood-group" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary);">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- Main Grid Layout -->
@@ -211,23 +238,74 @@
             <div class="col-12 col-lg-6">
                 <div class="d-flex flex-column gap-4">
                     
-                    <!-- Live Blood Requests Section -->
-                    <div class="glass-card p-4 p-md-5 fade-in-up">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <h2 class="fs-4 fs-md-3 fw-bold text-white d-flex align-items-center gap-2 mb-0">
-                                <i class="bi bi-heart-pulse" style="color: #ff6b6b;"></i>
-                                Live Blood Requests
-                            </h2>
-                            <span class="badge bg-danger bg-opacity-10 text-danger" id="request-count">0 Active</span>
+                    <!-- Urgent Request Card -->
+                    <div class="glass-card p-4 p-md-5 fade-in-up" id="urgent-request-card" style="border: 2px solid rgba(239, 68, 68, 0.5);">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="badge bg-danger fs-6 fw-bold px-3 py-2">URGENT</span>
+                            <span class="text-muted small" id="urgent-time">5 minutes ago</span>
                         </div>
                         
-                        <div id="live-requests-container" style="max-height: 400px; overflow-y: auto;">
-                            <!-- Loading State -->
-                            <div class="text-center py-5">
-                                <div class="spinner-border text-danger" role="status" style="width: 2rem; height: 2rem;">
-                                    <span class="visually-hidden">Loading...</span>
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <h3 class="text-white fw-bold mb-1" id="urgent-requester">Harshit</h3>
+                                <p class="text-muted small mb-0" id="urgent-hospital">Sun Green Hospital, Ambala</p>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-6 col-md-3">
+                                <p class="text-muted small mb-1">Phone</p>
+                                <p class="text-white fw-semibold small mb-0" id="urgent-phone">+91 98765 43210</p>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <p class="text-muted small mb-1">Blood Type</p>
+                                <p class="text-white fw-semibold small mb-0" id="urgent-blood-group">A+</p>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <p class="text-muted small mb-1">Quantity</p>
+                                <p class="text-white fw-semibold small mb-0" id="urgent-quantity">2 units</p>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <p class="text-muted small mb-1">Distance</p>
+                                <p class="text-white fw-semibold small mb-0" id="urgent-distance">2.3 km</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-danger bg-opacity-25 text-danger" id="urgent-status">Critical</span>
+                        </div>
+                        
+                        <!-- Map Preview -->
+                        <div class="mb-3 rounded-3 overflow-hidden" style="height: 200px; background: rgba(0,0,0,0.3);">
+                            <div id="urgent-map-preview" class="w-100 h-100" style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(0,0,0,0.3)); display: flex; align-items: center; justify-content: center;">
+                                <div class="text-center">
+                                    <i class="bi bi-map fs-1 text-muted"></i>
+                                    <p class="text-muted small mb-0 mt-2">Ambala City</p>
                                 </div>
-                                <p class="text-muted mt-2 mb-0">Loading requests...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" id="urgent-contact-btn">
+                                <i class="bi bi-telephone me-2"></i>Contact
+                            </button>
+                            <button class="btn btn-danger" id="urgent-accept-btn">
+                                <i class="bi bi-check-circle me-2"></i>Accept Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- All Requests List -->
+                    <div class="glass-card p-4 p-md-5 fade-in-up delay-1">
+                        <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-2">
+                            <i class="bi bi-list-ul" style="color: #60a5fa;"></i>
+                            All Requests
+                        </h2>
+                        
+                        <div id="all-requests-container" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Requests will be loaded dynamically -->
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-0">Loading requests...</p>
                             </div>
                         </div>
                     </div>
@@ -244,7 +322,26 @@
                         
                         <div id="donor-list-container" style="max-height: 400px; overflow-y: auto;">
                             <div class="text-center py-5 text-muted">
-                                <p class="mb-0">Select a request to see donors</p>
+                                <p class="mb-0">No donors yet</p>
+                                <p class="small text-muted mb-0">Accept request to start chat.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Bar -->
+                    <div class="glass-card p-3 p-md-4 fade-in-up delay-2">
+                        <div class="row g-3 text-center">
+                            <div class="col-4">
+                                <p class="text-muted small mb-1">Total</p>
+                                <p class="text-white fw-bold fs-4 mb-0" id="summary-total">5</p>
+                            </div>
+                            <div class="col-4">
+                                <p class="text-muted small mb-1">Active</p>
+                                <p class="text-success fw-bold fs-4 mb-0" id="summary-active">0</p>
+                            </div>
+                            <div class="col-4">
+                                <p class="text-muted small mb-1">Done</p>
+                                <p class="text-primary fw-bold fs-4 mb-0" id="summary-done">0</p>
                             </div>
                         </div>
                     </div>
@@ -451,9 +548,14 @@ function initializeStats() {
     const statsElement = document.querySelector('[data-request-stats]');
     if (statsElement) {
         const stats = JSON.parse(statsElement.dataset.requestStats || '{}');
+        // Update both old and new stat elements
         document.getElementById('stat-total').textContent = stats.total || 0;
         document.getElementById('stat-donors').textContent = stats.active || 0;
         document.getElementById('stat-completed').textContent = stats.completed || 0;
+        // Update new summary bar
+        document.getElementById('summary-total').textContent = stats.total || 0;
+        document.getElementById('summary-active').textContent = stats.active || 0;
+        document.getElementById('summary-done').textContent = stats.completed || 0;
     }
 }
 
@@ -470,6 +572,72 @@ function initializeTrackingMap() {
     }).addTo(trackingMap);
 }
 
+// Populate all requests list
+function populateAllRequestsList(requests) {
+    const container = document.getElementById('all-requests-container');
+    if (!container) return;
+    
+    if (!requests || requests.length === 0) {
+        container.innerHTML = '<div class="text-center py-5 text-muted"><p class="mb-0">No requests available</p></div>';
+        return;
+    }
+    
+    let html = '';
+    requests.forEach(req => {
+        const timeAgo = getTimeAgo(req.created_at);
+        const distance = req.distance ? `${req.distance.toFixed(1)} km` : 'N/A';
+        
+        html += `
+            <div class="p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-danger bg-opacity-25 text-danger">${req.blood_group}</span>
+                            <span class="text-white small fw-semibold">${req.hospital}</span>
+                        </div>
+                        <p class="text-muted small mb-0">${distance} • ${timeAgo}</p>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="selectRequest(${req.id})">View</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Update urgent request card
+function updateUrgentRequestCard(requests) {
+    if (!requests || requests.length === 0) return;
+    
+    // Find the most urgent request (emergency or urgent priority)
+    const urgentRequest = requests.find(req => req.urgency === 'emergency' || req.priority === 'urgent') || requests[0];
+    
+    if (urgentRequest) {
+        document.getElementById('urgent-requester').textContent = urgentRequest.requester_name || 'Unknown';
+        document.getElementById('urgent-hospital').textContent = urgentRequest.hospital;
+        document.getElementById('urgent-phone').textContent = urgentRequest.phone_number || 'N/A';
+        document.getElementById('urgent-blood-group').textContent = urgentRequest.blood_group;
+        document.getElementById('urgent-quantity').textContent = `${urgentRequest.units_required || 1} units`;
+        document.getElementById('urgent-distance').textContent = urgentRequest.distance ? `${urgentRequest.distance.toFixed(1)} km` : 'N/A';
+        document.getElementById('urgent-status').textContent = urgentRequest.status || 'Critical';
+        document.getElementById('urgent-time').textContent = getTimeAgo(urgentRequest.created_at);
+    }
+}
+
+// Helper function to get time ago
+function getTimeAgo(dateString) {
+    if (!dateString) return 'Just now';
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    return `${Math.floor(seconds / 86400)} days ago`;
+}
+
 // Load live blood requests
 async function loadLiveRequests() {
     try {
@@ -480,6 +648,12 @@ async function loadLiveRequests() {
             const response = await fetch('/requests/live/');
             requests = await response.json();
         }
+        
+        // Populate all requests list
+        populateAllRequestsList(requests);
+        
+        // Update urgent request card if there's an urgent request
+        updateUrgentRequestCard(requests);
         
         // Check for new emergency requests
         const previousRequests = window.previousRequests || [];
