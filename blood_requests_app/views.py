@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.utils import timezone
 import logging
 import math
+from accounts.decorators import check_request_eligibility, check_donation_eligibility
 
 from .models import BloodRequest
 from .serializers import (
@@ -68,6 +69,7 @@ def time_ago(dt):
         return f'{weeks} week{"s" if weeks > 1 else ""} ago'
 
 
+@check_request_eligibility
 def create_request_unified_page(request):
     """
     Blood request creation page - handles both GET and POST
@@ -1047,6 +1049,7 @@ def get_live_requests(request):
 
 
 @api_view(['POST'])
+@check_donation_eligibility
 def respond_to_request(request, request_id):
     """
     Donor responds to a blood request (accept/reject)
