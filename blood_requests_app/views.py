@@ -1751,7 +1751,6 @@ def accept_request_view(request, request_id):
 from django.db.models import Q, Max, Count
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 # Import ChatMessage from models_chat (user-to-user chat, not request-specific)
 from .models_chat import ChatMessage
 
@@ -1760,7 +1759,6 @@ def get_unread_chat_count(user):
     return ChatMessage.objects.filter(receiver=user, is_read=False).count()
 
 
-@csrf_exempt
 def unread_chat_count_api(request):
     """API endpoint to get unread chat count for navbar badge"""
     try:
