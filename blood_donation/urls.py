@@ -201,5 +201,32 @@ admin.site.site_header = "Blood Donation Platform Admin"
 admin.site.site_title = "Blood Donation Admin Portal"
 admin.site.index_title = "Welcome to Blood Donation Platform Administration"
 
+# Add custom link to admin panel
+from django.contrib.admin import AdminSite
+class BloodLifeAdminSite(AdminSite):
+    site_header = "Blood Donation Platform Admin"
+    site_title = "Blood Donation Admin Portal"
+    index_title = "Welcome to Blood Donation Platform Administration"
+    
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path('verify-requests-link/', self.admin_view(self.verify_requests_view), name='admin_verify_requests_link'),
+        ]
+        return custom_urls + urls
+    
+    def verify_requests_view(self, request):
+        from django.shortcuts import redirect
+        return redirect('/secure-admin-panel-x92/verify/')
+    
+    def index(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['verify_requests_url'] = '/secure-admin-panel-x92/verify/'
+        return super().index(request, extra_context)
+
+# Use custom admin site
+admin.site.__class__ = BloodLifeAdminSite
+
 # Catch-all for common scanner endpoints (must be last)
 urlpatterns.append(path('<path:path>', catchall_handler))
