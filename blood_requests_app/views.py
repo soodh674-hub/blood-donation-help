@@ -667,6 +667,9 @@ class BloodRequestCreateView(generics.CreateAPIView):
                 except Exception as notif_error:
                     logger.error(f'Failed to send notifications: {str(notif_error)}', exc_info=True)
                     # Continue even if notification fails - don't crash the request
+        except Exception as e:
+            logger.error(f'Error in perform_create: {str(e)}', exc_info=True)
+            raise
 
 
 def my_requests_page(request):
