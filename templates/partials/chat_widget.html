@@ -1,13 +1,13 @@
 <!-- Chat Widget for BloodLife Chatbot -->
-<div id="chat-widget" class="chat-widget-container" data-aos="zoom-in" data-aos-duration="600">
+<div id="chatbot-widget" class="chat-widget-container" data-aos="zoom-in" data-aos-duration="600">
     <!-- Chat Toggle Button -->
-    <button id="chat-toggle-btn" class="chat-toggle-btn" onclick="toggleChatWidget()" data-aos="fade-in" data-aos-delay="100">
+    <button id="chatbot-toggle-btn" class="chat-toggle-btn" onclick="toggleChatbotWidget()" data-aos="fade-in" data-aos-delay="100">
         <i class="bi bi-chat-dots"></i>
-        <span class="chat-badge" id="chat-badge" style="display: none;">1</span>
+        <span class="chat-badge" id="chatbot-badge" style="display: none;">1</span>
     </button>
     
     <!-- Chat Window -->
-    <div id="chat-window" class="chat-window" style="display: none;" data-aos="fade-up" data-aos-duration="600">
+    <div id="chatbot-window" class="chat-window" style="display: none;" data-aos="fade-up" data-aos-duration="600">
         <!-- Chat Header -->
         <div class="chat-header">
             <div class="chat-header-content">
@@ -19,13 +19,13 @@
                     <span class="chat-status">Online</span>
                 </div>
             </div>
-            <button class="chat-close-btn" onclick="toggleChatWidget()">
+            <button class="chat-close-btn" onclick="toggleChatbotWidget()">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
         
         <!-- Chat Messages -->
-        <div id="chat-messages" class="chat-messages">
+        <div id="chatbot-messages" class="chat-messages">
             <div class="chat-message bot-message">
                 <div class="message-avatar">
                     <i class="bi bi-robot"></i>
@@ -45,15 +45,15 @@
         
         <!-- Chat Input -->
         <div class="chat-input-area">
-            <div class="chat-suggestions" id="chat-suggestions" style="display: none;">
-                <button class="suggestion-btn" onclick="sendSuggestion('Am I eligible to donate?')">Am I eligible to donate?</button>
-                <button class="suggestion-btn" onclick="sendSuggestion('How do I find a donor?')">How do I find a donor?</button>
-                <button class="suggestion-btn" onclick="sendSuggestion('What is the donation process?')">What is the donation process?</button>
+            <div class="chat-suggestions" id="chatbot-suggestions" style="display: none;">
+                <button class="suggestion-btn" onclick="sendChatbotSuggestion('Am I eligible to donate?')">Am I eligible to donate?</button>
+                <button class="suggestion-btn" onclick="sendChatbotSuggestion('How do I find a donor?')">How do I find a donor?</button>
+                <button class="suggestion-btn" onclick="sendChatbotSuggestion('What is the donation process?')">What is the donation process?</button>
             </div>
             <div class="chat-input-wrapper">
-                <input type="text" id="chat-input" placeholder="Type your message..." 
-                       onkeypress="handleChatKeypress(event)">
-                <button id="chat-send-btn" onclick="sendChatMessage()">
+                <input type="text" id="chatbot-input" placeholder="Type your message..." 
+                       onkeypress="handleChatbotKeypress(event)">
+                <button id="chatbot-send-btn" onclick="sendChatbotMessage()">
                     <i class="bi bi-send"></i>
                 </button>
             </div>
@@ -417,43 +417,43 @@
 </style>
 
 <script>
-let chatSessionId = null;
-let isChatOpen = false;
+let chatbotSessionId = null;
+let isChatbotOpen = false;
 
-function toggleChatWidget() {
-    const chatWindow = document.getElementById('chat-window');
-    const chatSuggestions = document.getElementById('chat-suggestions');
+function toggleChatbotWidget() {
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotSuggestions = document.getElementById('chatbot-suggestions');
     
-    isChatOpen = !isChatOpen;
+    isChatbotOpen = !isChatbotOpen;
     
-    if (isChatOpen) {
-        chatWindow.style.display = 'flex';
-        chatSuggestions.style.display = 'flex';
+    if (isChatbotOpen) {
+        chatbotWindow.style.display = 'flex';
+        chatbotSuggestions.style.display = 'flex';
         
         // Focus on input
         setTimeout(() => {
-            document.getElementById('chat-input').focus();
+            document.getElementById('chatbot-input').focus();
         }, 100);
     } else {
-        chatWindow.style.display = 'none';
-        chatSuggestions.style.display = 'none';
+        chatbotWindow.style.display = 'none';
+        chatbotSuggestions.style.display = 'none';
     }
 }
 
-function handleChatKeypress(event) {
+function handleChatbotKeypress(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        sendChatMessage();
+        sendChatbotMessage();
     }
 }
 
-function sendSuggestion(text) {
-    document.getElementById('chat-input').value = text;
-    sendChatMessage();
+function sendChatbotSuggestion(text) {
+    document.getElementById('chatbot-input').value = text;
+    sendChatbotMessage();
 }
 
-async function sendChatMessage() {
-    const input = document.getElementById('chat-input');
+async function sendChatbotMessage() {
+    const input = document.getElementById('chatbot-input');
     const message = input.value.trim();
 
     if (!message) {
@@ -476,7 +476,7 @@ async function sendChatMessage() {
     try {
         const apiUrl = '/api/requests/chatbot/';
         console.log('🟢 Sending POST request to:', apiUrl);
-        console.log('🟢 Request payload:', { message, session_id: chatSessionId });
+        console.log('🟢 Request payload:', { message, session_id: chatbotSessionId });
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -486,7 +486,7 @@ async function sendChatMessage() {
             },
             body: JSON.stringify({
                 message: message,
-                session_id: chatSessionId
+                session_id: chatbotSessionId
             })
         });
 
@@ -530,7 +530,7 @@ async function sendChatMessage() {
             console.log('✅ Response length:', data.response.length);
             
             // Update session ID
-            chatSessionId = data.session_id || chatSessionId;
+            chatbotSessionId = data.session_id || chatbotSessionId;
 
             // Add bot response to chat
             addMessageToChat(data.response, 'bot');
@@ -600,7 +600,7 @@ function getFallbackResponse(message) {
 
 function addMessageToChat(message, type) {
     console.log('🔵 Adding message to chat:', type, message);
-    const messagesContainer = document.getElementById('chat-messages');
+    const messagesContainer = document.getElementById('chatbot-messages');
 
     if (!messagesContainer) {
         console.error('🔴 Chat messages container not found!');
@@ -667,7 +667,7 @@ function formatMessage(message) {
 }
 
 function showTypingIndicator() {
-    const messagesContainer = document.getElementById('chat-messages');
+    const messagesContainer = document.getElementById('chatbot-messages');
     
     const typingDiv = document.createElement('div');
     typingDiv.id = 'typing-indicator';
@@ -700,14 +700,14 @@ function removeTypingIndicator() {
 }
 
 function updateSuggestions(suggestions) {
-    const suggestionsContainer = document.getElementById('chat-suggestions');
+    const suggestionsContainer = document.getElementById('chatbot-suggestions');
     suggestionsContainer.innerHTML = '';
     
     suggestions.slice(0, 3).forEach(suggestion => {
         const button = document.createElement('button');
         button.className = 'suggestion-btn';
         button.textContent = suggestion;
-        button.onclick = () => sendSuggestion(suggestion);
+        button.onclick = () => sendChatbotSuggestion(suggestion);
         suggestionsContainer.appendChild(button);
     });
     
