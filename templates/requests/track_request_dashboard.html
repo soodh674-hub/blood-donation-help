@@ -697,6 +697,11 @@ async function loadLiveRequests() {
 function displayLiveRequests(requests) {
     const container = document.getElementById('live-requests-container');
 
+    if (!container) {
+        console.warn('⚠️ live-requests-container element not found');
+        return;
+    }
+
     // Get user responses
     const userResponsesData = document.getElementById('userResponsesData');
     const userResponses = userResponsesData ? JSON.parse(userResponsesData.textContent) : {};
@@ -863,7 +868,7 @@ async function updateMapForRequest(requestId) {
         // Add marker for selected request
         const marker = L.marker([lat, lng])
             .addTo(trackingMap)
-            .bindPopup(`<b>${request.blood_group}</b><br>${request.city}, ${request.state}<br>Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`)
+            .bindPopup(`<b>${request.blood_group}</b><br>${request.city}, ${request.state}<br>Lat: ${parseFloat(lat).toFixed(4)}, Lng: ${parseFloat(lng).toFixed(4)}`)
             .openPopup();
 
         requestMarkers.push(marker);
