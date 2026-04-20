@@ -1282,12 +1282,17 @@ function refreshLocations() {
 
 // Update statistics
 function updateStats(requests) {
-    document.getElementById('stat-total').textContent = requests.length;
-    document.getElementById('request-count').textContent = `${requests.length} Active`;
+    const statTotal = document.getElementById('stat-total');
+    const requestCount = document.getElementById('request-count');
+    const statDonors = document.getElementById('stat-donors');
+    const statCompleted = document.getElementById('stat-completed');
+    
+    if (statTotal) statTotal.textContent = requests.length;
+    if (requestCount) requestCount.textContent = `${requests.length} Active`;
     
     // Count unique donors (would need additional API call in real implementation)
-    document.getElementById('stat-donors').textContent = '0';
-    document.getElementById('stat-completed').textContent = '0';
+    if (statDonors) statDonors.textContent = '0';
+    if (statCompleted) statCompleted.textContent = '0';
 }
 
 // Start auto-refresh
