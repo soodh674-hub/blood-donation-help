@@ -430,7 +430,6 @@ class ChatbotView(APIView):
                     }
                 )
                 logger.info(f"✅ Chatbot conversation saved to database (session_id: {session_id}, created: {created})")
-                logger.debug(f"Chatbot conversation model not available: {e}")
             except Exception as e:
                 # Log but don't fail if there are any database issues
                 logger.warning(f'Could not save chatbot conversation to database: {e}')
