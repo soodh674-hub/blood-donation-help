@@ -665,14 +665,8 @@ class BloodRequestCreateView(generics.CreateAPIView):
                     notifications_sent = notification_service.send_blood_request_notification(instance, limit=20)
                     logger.info(f'Sent {notifications_sent} notifications for anonymous request {instance.id}')
                 except Exception as notif_error:
-                            logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
-                        else:
-                            # Fallback to city coordinates
-                            latitude, longitude = _get_city_coordinates(city)
-                            logger.warning(f'Geocoding failed for {city}, using fallback')
-                except Exception as e:
-                    logger.error(f'Geocoding error: {e}')
-                    latitude, longitude = _get_city_coordinates(city)
+                    logger.error(f'Failed to send notifications: {str(notif_error)}', exc_info=True)
+                    # Continue even if notification fails - don't crash the request
 
             data = {
                 'patient_name': request.POST.get('patient_name'),

@@ -4,257 +4,290 @@
 {% block title %}My Profile - BloodLife{% endblock %}
 
 {% block extra_css %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <style>
-    .profile-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        display: inline-block;
+        vertical-align: middle;
     }
-    .info-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+    .bg-primary-gradient {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    .profile-section {
+        padding-top: 6rem;
+        padding-bottom: 8rem;
+    }
+    @media (min-width: 768px) {
+        .profile-section {
+            padding-top: 7rem;
+            padding-bottom: 10rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5" data-aos="fade-in" data-aos-duration="800">
-    <div class="profile-card p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-down" data-aos-delay="200">
-            <h1 class="h3 fw-bold text-white">My Profile</h1>
-            <div class="d-flex gap-2">
-                <a href="/requests/my-requests/" class="btn btn-primary">
-                    Track Requests
-                </a>
-                <a href="/accounts/dashboard/" class="btn btn-danger">
-                    Back to Dashboard
-                </a>
+<div class="profile-section px-4 md:px-6 max-w-7xl mx-auto min-h-screen">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-3xl font-extrabold text-white">My Profile</h1>
+        <div class="flex gap-2">
+            <a href="/requests/my-requests/" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+                Track Requests
+            </a>
+            <a href="/accounts/dashboard/" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero Profile Section: Bento Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
+        <!-- Main Profile Card -->
+        <div class="md:col-span-2 rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8 relative overflow-hidden" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="absolute top-0 right-0 p-4">
+                {% if user.is_verified %}
+                <span class="bg-green-500 text-white px-4 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    Verified
+                </span>
+                {% else %}
+                <span class="bg-yellow-500 text-black px-4 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">pending</span>
+                    Pending
+                </span>
+                {% endif %}
+            </div>
+            <div class="relative w-24 h-24 md:w-32 md:h-32 flex-shrink-0">
+                <div class="w-full h-full rounded-full overflow-hidden border-4 border-red-500/20 shadow-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                    <span class="text-3xl md:text-4xl font-black text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
+                </div>
+                <div class="absolute -bottom-2 -right-2 bg-primary-gradient p-2 rounded-full shadow-lg cursor-pointer" onclick="toggleEditMode()">
+                    <span class="material-symbols-outlined text-white text-lg">edit</span>
+                </div>
+            </div>
+            <div class="flex-grow text-center md:text-left">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-2">{{ user.first_name }} {{ user.last_name }}</h1>
+                <p class="text-gray-400 font-medium mb-4 md:mb-6">{{ user.get_user_type_display }} • Trust Score: {{ user.trust_score|default:50 }}</p>
+                <div class="flex flex-wrap justify-center md:justify-start gap-3 md:gap-4">
+                    <div class="px-4 py-3 rounded-xl flex items-center gap-3" style="background: rgba(255, 255, 255, 0.08);">
+                        <span class="material-symbols-outlined text-green-500" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Email Verified</p>
+                            <p class="text-sm font-semibold text-white">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 rounded-xl flex items-center gap-3" style="background: rgba(255, 255, 255, 0.08);">
+                        <span class="material-symbols-outlined text-yellow-500">pending</span>
+                        <div>
+                            <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Phone</p>
+                            <p class="text-sm font-semibold text-white">{{ user.phone_number|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row g-4" data-aos="fade-up" data-aos-delay="300">
-                <!-- Profile Picture and Basic Info -->
-                <div class="col-md-4">
-                    <div class="info-card p-4 p-md-5 text-center" data-aos="zoom-in" data-aos-delay="400">
-                        <div class="d-flex justify-content-center mb-3">
-                            <div class="bg-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                                <span class="display-6 fw-bold text-white">{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}</span>
-                            </div>
-                        </div>
-                        <h4 class="text-white">{{ user.first_name }} {{ user.last_name }}</h4>
-                        <p class="text-danger fw-medium">@{{ user.username }}</p>
-                        <p class="text-secondary small mt-2">{{ user.get_user_type_display }}</p>
-                        
-                        <!-- Age Display -->
-                        {% if user.age %}
-                        <p class="text-secondary small mt-1">Age: {{ user.age }} years</p>
-                        {% endif %}
-                        
-                        <!-- Trust Score -->
-                        <div class="mt-3 p-3 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <span class="text-white fw-semibold small">Trust Score</span>
-                                <span class="text-success fw-bold">{{ user.trust_score|default:50 }}</span>
-                            </div>
-                            <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
-                                <div class="progress-bar bg-success" style="width: {{ user.trust_score|default:50 }}%;"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Verification Status -->
-                        {% if user.is_verified %}
-                        <div class="mt-3">
-                            <span class="badge bg-success bg-opacity-10 text-success">
-                                <i class="bi bi-check-circle me-1"></i>Verified
-                            </span>
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Donation Eligibility Status -->
-                        {% if user.user_type == 'donor' %}
-                        <div class="mt-3">
-                            {% if user.is_eligible_donor %}
-                            <span class="badge bg-success bg-opacity-10 text-success">
-                                <i class="bi bi-check-circle me-1"></i>Eligible to Donate
-                            </span>
-                            {% else %}
-                            <span class="badge bg-danger bg-opacity-10 text-danger">
-                                <i class="bi bi-x-circle me-1"></i>Not Eligible
-                            </span>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
+        <!-- Blood Group & Location Cards (Vertical Stack) -->
+        <div class="flex flex-col gap-4 md:gap-6">
+            <!-- Blood Group Card -->
+            <div class="rounded-xl p-6 flex flex-col justify-between h-1/2 relative overflow-hidden bg-gradient-to-br from-red-500 to-red-600">
+                <span class="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl opacity-10 text-white">bloodtype</span>
+                <p class="font-bold text-white text-sm">Blood Group</p>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-6xl font-black text-white">{{ user.blood_group|default:"N/A" }}</span>
+                    {% if user.blood_group == 'O-' %}
+                    <span class="text-white opacity-80 text-sm font-bold">Universal</span>
+                    {% endif %}
                 </div>
+            </div>
+            <!-- Location Card -->
+            <div class="rounded-xl p-6 flex flex-col justify-between h-1/2" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="flex justify-between items-start">
+                    <p class="font-bold text-gray-400 text-sm">Location</p>
+                    <span class="material-symbols-outlined text-red-500">location_on</span>
+                </div>
+                <div>
+                    <p class="text-xl font-bold text-white">{{ user.city|default:"Not provided" }}, {{ user.state|default:"Not provided" }}</p>
+                    <p class="text-xs text-gray-400 font-medium mt-1">{{ user.country }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Profile Details -->
-                <div class="col-md-8">
-                    <div class="mb-4" data-aos="fade-left" data-aos-delay="400">
-                        <!-- CSRF Token -->
-                        {% csrf_token %}
-                        
-                        <!-- Personal Information -->
-                        <div class="info-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="450">
-                            <h5 class="text-white mb-3">Personal Information</h5>
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">First Name</label>
-                                    <p class="text-white view-field mb-0">{{ user.first_name|default:"Not provided" }}</p>
-                                    <input type="text" name="first_name" value="{{ user.first_name|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Last Name</label>
-                                    <p class="text-white view-field mb-0">{{ user.last_name|default:"Not provided" }}</p>
-                                    <input type="text" name="last_name" value="{{ user.last_name|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Email</label>
-                                    <p class="text-white mb-0">{{ user.email }}</p>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Phone Number</label>
-                                    <p class="text-white view-field mb-0">{{ user.phone_number|default:"Not provided" }}</p>
-                                    <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Date of Birth</label>
-                                    <p class="text-white view-field mb-0">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
-                                    <input type="date" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                            </div>
-                        </div>
+    <!-- Profile Edit Section -->
+    <div class="rounded-xl p-6 md:p-8 mb-8 md:mb-12" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+        {% csrf_token %}
+        <h2 class="text-xl md:text-2xl font-bold text-white mb-6">Edit Profile</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <!-- Personal Information -->
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">First Name</label>
+                <p class="text-white view-field mb-0">{{ user.first_name|default:"Not provided" }}</p>
+                <input type="text" name="first_name" value="{{ user.first_name|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">Last Name</label>
+                <p class="text-white view-field mb-0">{{ user.last_name|default:"Not provided" }}</p>
+                <input type="text" name="last_name" value="{{ user.last_name|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">Phone Number</label>
+                <p class="text-white view-field mb-0">{{ user.phone_number|default:"Not provided" }}</p>
+                <input type="tel" name="phone_number" value="{{ user.phone_number|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">Date of Birth</label>
+                <p class="text-white view-field mb-0">{{ user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
+                <input type="date" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d'|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            
+            <!-- Blood Donation Info -->
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">Blood Group</label>
+                <p class="text-red-400 font-medium text-lg view-field mb-0">{{ user.blood_group|default:"Not specified" }}</p>
+                <select name="blood_group" class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                    <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">Last Donation Date</label>
+                <p class="text-white view-field mb-0">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
+                <input type="date" name="last_donation_date" value="{{ user.last_donation_date|date:'Y-m-d'|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            
+            <!-- Location -->
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">City</label>
+                <p class="text-white view-field mb-0">{{ user.city|default:"Not provided" }}</p>
+                <input type="text" name="city" value="{{ user.city|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+            <div>
+                <label class="text-gray-400 text-sm mb-1 block">State</label>
+                <p class="text-white view-field mb-0">{{ user.state|default:"Not provided" }}</p>
+                <input type="text" name="state" value="{{ user.state|default:'' }}" 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 edit-field hidden" />
+            </div>
+        </div>
 
-                        <!-- Blood Donation Info -->
-                        <div class="info-card p-4 mb-4">
-                            <h5 class="text-white mb-3">Blood Donation Information</h5>
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Blood Group</label>
-                                    <p class="text-danger fw-medium fs-5 view-field mb-0">{{ user.blood_group|default:"Not specified" }}</p>
-                                    <select name="blood_group" class="form-select bg-white bg-opacity-10 text-white border-white/20 edit-field d-none">
-                                        <option value="">Select Blood Group</option>
-                                        <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
-                                        <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
-                                        <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
-                                        <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
-                                        <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
-                                        <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
-                                        <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
-                                        <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Last Donation Date</label>
-                                    <p class="text-white view-field mb-0">{{ user.last_donation_date|date:"M d, Y"|default:"Never donated" }}</p>
-                                    <input type="date" name="last_donation_date" value="{{ user.last_donation_date|date:'Y-m-d'|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Days Since Last Donation</label>
-                                    <p class="text-white mb-0">{{ user.days_since_last_donation|default:"N/A" }} days</p>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Availability Status</label>
-                                    <p class="text-white view-field mb-0">{% if user.is_available %}Available for donation{% else %}Not available{% endif %}</p>
-                                    <select name="is_available" class="form-select bg-white bg-opacity-10 text-white border-white/20 edit-field d-none">
-                                        <option value="true" {% if user.is_available %}selected{% endif %}>Available for donation</option>
-                                        <option value="false" {% if not user.is_available %}selected{% endif %}>Not available</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-2 mt-6">
+            <button onclick="toggleEditMode()" id="edit-toggle-btn" class="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors">
+                Edit Profile
+            </button>
+            <button onclick="saveProfile()" id="save-btn" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors hidden">
+                Save Changes
+            </button>
+            <button onclick="cancelEdit()" id="cancel-btn" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors hidden">
+                Cancel
+            </button>
+        </div>
+    </div>
 
-                        <!-- Location Information -->
-                        <div class="info-card p-4 mb-4">
-                            <h5 class="text-white mb-3">Location Information</h5>
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">City</label>
-                                    <p class="text-white view-field mb-0">{{ user.city|default:"Not provided" }}</p>
-                                    <input type="text" name="city" value="{{ user.city|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">State</label>
-                                    <p class="text-white view-field mb-0">{{ user.state|default:"Not provided" }}</p>
-                                    <input type="text" name="state" value="{{ user.state|default:'' }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Country</label>
-                                    <p class="text-white view-field mb-0">{{ user.country }}</p>
-                                    <input type="text" name="country" value="{{ user.country }}" 
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="text-secondary small mb-1">Pincode</label>
-                                    <p class="text-white view-field mb-0">{{ user.pincode|default:"Not provided" }}</p>
-                                    <input type="text" name="pincode" value="{{ user.pincode|default:'' }}" maxlength="6"
-                                           class="form-control bg-white bg-opacity-10 text-white border-white/20 edit-field d-none" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="d-flex flex-wrap gap-2 pt-3">
-                            <button onclick="toggleEditMode()" id="edit-toggle-btn" class="btn btn-outline-light">
-                                Edit Profile
-                            </button>
-                            <button onclick="saveProfile()" id="save-btn" class="btn btn-success d-none">
-                                Save Changes
-                            </button>
-                            <button onclick="cancelEdit()" id="cancel-btn" class="btn btn-outline-secondary d-none">
-                                Cancel
-                            </button>
+    <!-- Community Members Section -->
+    <div>
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <h2 class="text-xl md:text-2xl font-bold text-white">Community Members</h2>
+                <p class="text-gray-400 text-sm font-medium">Verified donors in your immediate network</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <!-- Ankit Sharma -->
+            <div class="rounded-xl p-5 hover:bg-white/10 transition-colors group cursor-pointer border border-transparent hover:border-red-500/20" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-red-500/20 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                        <span class="text-white font-bold">AS</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white group-hover:text-red-400 transition-colors">Ankit Sharma</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <p class="text-xs font-semibold text-gray-400">Ready to donate</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- User List Section -->
-                <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="500">
-                    <div class="info-card p-4">
-                        <h5 class="text-white mb-3">Community Members</h5>
-                        <div class="d-flex flex-column gap-3">
-                            <!-- Ankit Sharma -->
-                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(96, 165, 250, 0.2);">
-                                    <span class="text-primary fw-bold small">AS</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-white small fw-semibold mb-0">Ankit Sharma</p>
-                                    <p class="text-success small mb-0">Active</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Priya Verma -->
-                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(236, 72, 153, 0.2);">
-                                    <span class="text-danger fw-bold small">PV</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-white small fw-semibold mb-0">Priya Verma</p>
-                                    <p class="text-success small mb-0">Active</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Alay Patel -->
-                            <div class="d-flex align-items-center gap-3 p-2 rounded-3" style="background: rgba(255, 255, 255, 0.05);">
-                                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.2);">
-                                    <span class="text-warning fw-bold small">AP</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-white small fw-semibold mb-0">Alay Patel</p>
-                                    <p class="text-muted small mb-0">Leave</p>
-                                </div>
-                            </div>
+                <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(255, 255, 255, 0.03);">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Type</span>
+                        <span class="font-black text-red-400">A-</span>
+                    </div>
+                    <div class="h-6 w-[1px] bg-white/10"></div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Last Donation</span>
+                        <span class="text-sm font-bold">2 months ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Priya Verma -->
+            <div class="rounded-xl p-5 hover:bg-white/10 transition-colors group cursor-pointer border border-transparent hover:border-red-500/20" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-red-500/20 bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+                        <span class="text-white font-bold">PV</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white group-hover:text-red-400 transition-colors">Priya Verma</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                            <p class="text-xs font-semibold text-gray-400">Away</p>
                         </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(255, 255, 255, 0.03);">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Type</span>
+                        <span class="font-black text-red-400">B+</span>
+                    </div>
+                    <div class="h-6 w-[1px] bg-white/10"></div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Last Donation</span>
+                        <span class="text-sm font-bold">Just Joined</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alay Patel -->
+            <div class="rounded-xl p-5 hover:bg-white/10 transition-colors group cursor-pointer border border-transparent hover:border-red-500/20" style="background: rgba(255, 255, 255, 0.05);">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-red-500/20 bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                        <span class="text-white font-bold">AP</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white group-hover:text-red-400 transition-colors">Alay Patel</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <p class="text-xs font-semibold text-gray-400">Ready to donate</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(255, 255, 255, 0.03);">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Type</span>
+                        <span class="font-black text-red-400">AB+</span>
+                    </div>
+                    <div class="h-6 w-[1px] bg-white/10"></div>
+                    <div class="flex flex-col text-right">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Last Donation</span>
+                        <span class="text-sm font-bold">5 months ago</span>
                     </div>
                 </div>
             </div>
@@ -278,12 +311,12 @@ function toggleEditMode() {
     
     if (isEditing) {
         // Switch to edit mode
-        viewFields.forEach(field => field.classList.add('d-none'));
-        editFields.forEach(field => field.classList.remove('d-none'));
+        viewFields.forEach(field => field.classList.add('hidden'));
+        editFields.forEach(field => field.classList.remove('hidden'));
         
-        editToggleBtn.classList.add('d-none');
-        saveBtn.classList.remove('d-none');
-        cancelBtn.classList.remove('d-none');
+        editToggleBtn.classList.add('hidden');
+        saveBtn.classList.remove('hidden');
+        cancelBtn.classList.remove('hidden');
         
         // Store original data for cancellation
         storeOriginalData();
@@ -291,12 +324,12 @@ function toggleEditMode() {
         editToggleBtn.textContent = 'Cancel Editing';
     } else {
         // Switch to view mode
-        viewFields.forEach(field => field.classList.remove('d-none'));
-        editFields.forEach(field => field.classList.add('d-none'));
+        viewFields.forEach(field => field.classList.remove('hidden'));
+        editFields.forEach(field => field.classList.add('hidden'));
         
-        editToggleBtn.classList.remove('d-none');
-        saveBtn.classList.add('d-none');
-        cancelBtn.classList.add('d-none');
+        editToggleBtn.classList.remove('hidden');
+        saveBtn.classList.add('hidden');
+        cancelBtn.classList.add('hidden');
         
         editToggleBtn.textContent = 'Edit Profile';
     }
