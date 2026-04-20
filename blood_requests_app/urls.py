@@ -39,8 +39,8 @@ urlpatterns = [
     
     # API endpoints (these will be accessed via /api/requests/* due to main urls.py configuration)
     path("create-api/", views.BloodRequestCreateView.as_view(), name="blood-request-create-api"),
-    path("list/", views.BloodRequestListView.as_view(), name="blood-request-list-api"),
-    path("<int:pk>/", views.BloodRequestDetailView.as_view(), name="blood-request-detail-api"),
+    # path("list/", views.BloodRequestListView.as_view(), name="blood-request-list-api"),  # TODO: Implement BloodRequestListView
+    # path("<int:pk>/", views.BloodRequestDetailView.as_view(), name="blood-request-detail-api"),  # TODO: Implement BloodRequestDetailView
     
     # OLD Live blood requests (will be replaced)
     path("live-requests/", views.live_blood_requests, name="live-blood-requests"),
