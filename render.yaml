@@ -26,7 +26,7 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: blood_donation.settings
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: "3.13"
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
