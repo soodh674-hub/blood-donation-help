@@ -219,10 +219,12 @@
             </div>
             <div class="col-md-3">
                 <div class="d-flex flex-column gap-2">
-                    {% if blood_request.status == 'pending' or blood_request.status == 'approved' or blood_request.status == 'active' and not user_response %}
+                    {% if not user_response %}
+                        {% if blood_request.status == 'pending' or blood_request.status == 'approved' or blood_request.status == 'active' %}
                     <button class="action-btn btn-accept w-100" onclick="acceptRequest({{ blood_request.id }})">
                         <i class="bi bi-check-circle me-2"></i>Accept Request
                     </button>
+                        {% endif %}
                     {% endif %}
                     
                     <a href="tel:{{ blood_request.contact_phone }}" class="action-btn btn-contact w-100 text-decoration-none text-center">
