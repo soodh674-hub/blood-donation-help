@@ -93,4 +93,8 @@ urlpatterns = [
     path('api/rate-donor/', views.rate_donor, name='rate-donor'),
     path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
     path('donation-history/', views.my_donation_history, name='donation-history'),
+    
+    # Trust Signals & Hospital Partners
+    path('hospital-partners/', views.hospital_partners, name='hospital-partners'),
+    path('trust-signals/', views.trust_signals, name='trust-signals'),
 ]

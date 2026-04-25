@@ -19,7 +19,7 @@ from .serializers import (
     CustomTokenObtainPairSerializer, EmailVerificationSerializer,
     PasswordResetRequestSerializer, OTPVerificationSerializer, PasswordResetSerializer
 )
-from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor, Follow, DonorRating
+from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor, Follow, DonorRating, Hospital
 from . import services as otp_services
 from .tasks import send_password_reset_email_task
 import random
@@ -1806,3 +1806,52 @@ def my_donation_history(request):
     }
     
     return render(request, 'accounts/donation_history.html', context)
+
+
+@login_required
+def hospital_partners(request):
+    """View verified hospital partners"""
+    hospitals = Hospital.objects.filter(
+        verification_status='verified'
+    ).order_by('-trust_score', '-total_donations_processed')
+    
+    context = {
+        'hospitals': hospitals,
+        'total_hospitals': hospitals.count(),
+    }
+    
+    return render(request, 'accounts/hospital_partners.html', context)
+
+
+@login_required
+def trust_signals(request):
+    """View trust signals and platform verification"""
+    from django.db.models import Count, Avg
+    
+    # Get platform statistics
+    total_donors = User.objects.filter(user_type='donor', is_verified=True).count()
+    total_hospitals = Hospital.objects.filter(verification_status='verified').count()
+    total_donations = User.objects.aggregate(
+        total=Count('donations_completed')
+    )['total'] or 0
+    
+    # Get top rated donors
+    top_donors = User.objects.filter(
+        user_type='donor',
+        donations_completed__gt=0
+    ).order_by('-donations_completed', '-trust_score')[:10]
+    
+    # Get verified hospitals
+    verified_hospitals = Hospital.objects.filter(
+        verification_status='verified'
+    ).order_by('-trust_score')[:10]
+    
+    context = {
+        'total_donors': total_donors,
+        'total_hospitals': total_hospitals,
+        'total_donations': total_donations,
+        'top_donors': top_donors,
+        'verified_hospitals': verified_hospitals,
+    }
+    
+    return render(request, 'accounts/trust_signals.html', context)
