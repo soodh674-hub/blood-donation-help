@@ -1959,6 +1959,51 @@ def trust_signals(request):
 
 
 @login_required
+def hospital_dashboard(request):
+    """Hospital dashboard for hospital users"""
+    if request.user.user_type != 'hospital' and not request.user.is_staff:
+        messages.error(request, 'Access denied. Hospital dashboard is for hospital users only.')
+        return redirect('/accounts/dashboard/')
+    
+    from blood_requests_app.models import BloodRequest
+    from django.db.models import Count, Q
+    
+    # Get hospital profile if user is hospital
+    hospital = None
+    if request.user.user_type == 'hospital':
+        try:
+            hospital = Hospital.objects.get(user=request.user)
+        except Hospital.DoesNotExist:
+            pass
+    
+    # Get blood requests created by this hospital
+    hospital_requests = BloodRequest.objects.filter(
+        created_by=request.user
+    ).order_by('-created_at')[:10]
+    
+    # Statistics
+    total_requests = BloodRequest.objects.filter(created_by=request.user).count()
+    active_requests = BloodRequest.objects.filter(
+        created_by=request.user,
+        status__in=['pending', 'accepted']
+    ).count()
+    completed_requests = BloodRequest.objects.filter(
+        created_by=request.user,
+        status='completed'
+    ).count()
+    
+    context = {
+        'hospital': hospital,
+        'hospital_requests': hospital_requests,
+        'total_requests': total_requests,
+        'active_requests': active_requests,
+        'completed_requests': completed_requests,
+    }
+    
+    return render(request, 'accounts/hospital_dashboard.html', context)
+
+
+@login_required
 def smart_donor_match(request, blood_request_id):
     """Smart donor matching algorithm for blood requests"""
     from blood_requests_app.models import BloodRequest
