@@ -94,6 +94,8 @@ urlpatterns = [
     path('api/users/<int:user_id>/trust-score/', views_report.get_user_trust_score, name='trust-score'),
     
     # Donor Rating System
+    path('donor/<int:donor_id>/rate/', views.donor_rating_form, name='donor-rating-form'),
+    path('donor/<int:donor_id>/rate/<int:blood_request_id>/', views.donor_rating_form, name='donor-rating-form-with-request'),
     path('api/rate-donor/', views.rate_donor, name='rate-donor'),
     path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
     path('donation-history/', views.my_donation_history, name='donation-history'),

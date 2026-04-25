@@ -2215,10 +2215,14 @@ def donor_gps_sender(request, response_id):
         messages.error(request, 'Response not found')
         return redirect('/requests/track-request-dashboard/')
     
+    blood_request = response.blood_request
+    
     context = {
         'response': response,
-        'request': response.blood_request,
+        'request': blood_request,
         'donor': request.user,
+        'hospital_latitude': float(blood_request.latitude) if blood_request.latitude else 28.6139,
+        'hospital_longitude': float(blood_request.longitude) if blood_request.longitude else 77.2090,
     }
     
     return render(request, 'requests/donor_gps_sender.html', context)
@@ -2238,9 +2242,23 @@ def track_request_zomato(request, request_id):
     # Get all responses for this request
     responses = blood_request.responses.filter(status='accepted').select_related('donor')
     
+    # Calculate current step based on status
+    status_to_step = {
+        'pending': 1,
+        'verified': 2,
+        'approved': 2,
+        'active': 3,
+        'partially_fulfilled': 4,
+        'fulfilled': 5,
+        'cancelled': 0,
+        'expired': 0,
+    }
+    current_step = status_to_step.get(blood_request.status, 1)
+    
     context = {
         'request': blood_request,
         'responses': responses,
+        'current_step': current_step,
     }
     
     return render(request, 'requests/track_request_zomato.html', context)

@@ -113,12 +113,11 @@ let watchId = null;
 let locationHistory = [];
 let ws = null;
 
-// Get data from URL
-const urlParams = new URLSearchParams(window.location.search);
-const RESPONSE_ID = urlParams.get('response_id');
-const REQUEST_ID = urlParams.get('request_id');
-const HOSPITAL_LAT = parseFloat(urlParams.get('hospital_lat'));
-const HOSPITAL_LNG = parseFloat(urlParams.get('hospital_lng'));
+// Get data from Django context
+const RESPONSE_ID = parseInt('{{ response.id|default:0 }}') || 0;
+const REQUEST_ID = parseInt('{{ request.id|default:0 }}') || 0;
+const HOSPITAL_LAT = parseFloat('{{ hospital_latitude|default:28.6139 }}') || 28.6139;
+const HOSPITAL_LNG = parseFloat('{{ hospital_longitude|default:77.2090 }}') || 77.2090;
 
 // Initialize map
 function initMap() {

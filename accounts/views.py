@@ -1805,7 +1805,24 @@ def following_list(request, user_id):
 
 
 @login_required
-@require_POST
+def donor_rating_form(request, donor_id, blood_request_id=None):
+    """View to display donor rating form"""
+    donor = get_object_or_404(User, id=donor_id, is_active=True)
+    
+    blood_request = None
+    if blood_request_id:
+        from blood_requests_app.models import BloodRequest
+        blood_request = get_object_or_404(BloodRequest, id=blood_request_id)
+    
+    context = {
+        'donor': donor,
+        'blood_request': blood_request,
+    }
+    
+    return render(request, 'requests/donor_rating.html', context)
+
+
+@login_required
 def rate_donor(request):
     """Rate a donor after donation"""
     donor_id = request.POST.get('donor_id')
