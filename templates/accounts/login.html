@@ -312,6 +312,8 @@ function requestOTP() {
     const captchaResponse = document.querySelector('input[name="captcha_0"]')?.value || '';
     const captchaKey = document.querySelector('input[name="captcha_1"]')?.value || '';
 
+    console.log('Requesting OTP for email:', email);
+
     if (!email) {
         alert('Please enter your email address');
         return;
@@ -332,8 +334,12 @@ function requestOTP() {
             'captcha_1': captchaKey
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('OTP request response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('OTP request response data:', data);
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-send me-2"></i>Send OTP';
 
@@ -341,11 +347,13 @@ function requestOTP() {
             document.getElementById('otp-step-1').style.display = 'none';
             document.getElementById('otp-step-2').style.display = 'block';
             document.getElementById('otp-email-display').textContent = email;
+            alert('OTP sent successfully! Please check your email.');
         } else {
             alert(data.message || 'Failed to send OTP. Please try again.');
         }
     })
     .catch(error => {
+        console.error('OTP request error:', error);
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-send me-2"></i>Send OTP';
         alert('An error occurred. Please try again.');
@@ -355,6 +363,8 @@ function requestOTP() {
 function verifyOTP() {
     const email = document.getElementById('otp-email').value;
     const otp = document.getElementById('otp-code').value;
+
+    console.log('Verifying OTP for email:', email, 'OTP:', otp);
 
     if (!otp || otp.length !== 6) {
         alert('Please enter a valid 6-digit OTP');
@@ -375,18 +385,24 @@ function verifyOTP() {
             'otp': otp
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('OTP verify response status:', response.status);
+        return response.json();
+    })
     .then(data => {
+        console.log('OTP verify response data:', data);
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Verify & Login';
 
         if (data.success) {
+            alert('Login successful! Redirecting to dashboard...');
             window.location.href = data.redirect || '/accounts/dashboard/';
         } else {
             alert(data.message || 'Invalid OTP. Please try again.');
         }
     })
     .catch(error => {
+        console.error('OTP verify error:', error);
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Verify & Login';
         alert('An error occurred. Please try again.');

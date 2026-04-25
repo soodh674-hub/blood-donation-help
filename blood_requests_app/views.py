@@ -1160,6 +1160,7 @@ def get_donor_location(request, response_id):
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
+@login_required
 def get_request_responses(request, request_id):
     """
     Get all responses for a specific request (for requester dashboard)
