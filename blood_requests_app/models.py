@@ -25,6 +25,13 @@ class BloodRequest(models.Model):
         ('expired', 'Expired'),
     ]
     
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('under_review', 'Under Review'),
+    ]
+    
     REQUESTER_TYPE_CHOICES = [
         ('hospital', 'Hospital'),
         ('individual', 'Individual Patient'),
@@ -40,6 +47,7 @@ class BloodRequest(models.Model):
     fulfilled_units = models.IntegerField(default=0)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS_CHOICES, default='pending')
     requester_type = models.CharField(max_length=10, choices=REQUESTER_TYPE_CHOICES, default='hospital')
     
     # Medical details
