@@ -1978,17 +1978,17 @@ def hospital_dashboard(request):
     
     # Get blood requests created by this hospital
     hospital_requests = BloodRequest.objects.filter(
-        requester=request.user
+        created_by=request.user
     ).order_by('-created_at')[:10]
-
+    
     # Statistics
-    total_requests = BloodRequest.objects.filter(requester=request.user).count()
+    total_requests = BloodRequest.objects.filter(created_by=request.user).count()
     active_requests = BloodRequest.objects.filter(
-        requester=request.user,
+        created_by=request.user,
         status__in=['pending', 'accepted']
     ).count()
     completed_requests = BloodRequest.objects.filter(
-        requester=request.user,
+        created_by=request.user,
         status='completed'
     ).count()
     
