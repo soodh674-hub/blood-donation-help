@@ -126,7 +126,7 @@
                         {% if user.is_staff or user.user_type == 'hospital' %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:hospital-dashboard' %}"><i class="bi bi-grid me-2" style="color: #8b5cf6;"></i>Hospital Dashboard</a></li>
                         {% endif %}
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:admin-verify-requests' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:verify-requests-page' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:settings' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
@@ -268,7 +268,7 @@
                         Hospital Dashboard
                     </a>
                     {% endif %}
-                    <a href="{% url 'requests:admin-verify-requests' %}" class="mobile-nav-link d-flex align-items-center">
+                    <a href="{% url 'requests:verify-requests-page' %}" class="mobile-nav-link d-flex align-items-center">
                         <i class="bi bi-check-circle me-2" style="color: #10b981;"></i>
                         Verify Requests
                     </a>
