@@ -348,6 +348,7 @@ class LoginOTP(models.Model):
 auditlog.register(User)
 auditlog.register(PasswordResetOTP)
 auditlog.register(LoginOTP)
+auditlog.register(DonorRating)
 auditlog.register(Hospital)
 auditlog.register(HospitalStaff)
 
@@ -669,6 +670,74 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
+
+
+class DonorRating(models.Model):
+    """Donor rating system for building trust"""
+    
+    RATING_CHOICES = [
+        (1, 'Poor'),
+        (2, 'Fair'),
+        (3, 'Good'),
+        (4, 'Very Good'),
+        (5, 'Excellent'),
+    ]
+    
+    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
+    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
+    blood_request = models.ForeignKey('blood_requests_app.BloodRequest', on_delete=models.CASCADE, related_name='ratings', null=True, blank=True)
+    
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    review = models.TextField(blank=True, help_text="Optional review/comments")
+    
+    # Rating categories
+    punctuality = models.IntegerField(choices=RATING_CHOICES, default=5, help_text="Arrived on time")
+    professionalism = models.IntegerField(choices=RATING_CHOICES, default=5, help_text="Professional behavior")
+    communication = models.IntegerField(choices=RATING_CHOICES, default=5, help_text="Communication quality")
+    
+    is_verified = models.BooleanField(default=False, help_text="Verified by hospital staff")
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_ratings')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['donor', 'rater', 'blood_request']
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['donor', '-rating']),
+            models.Index(fields=['blood_request']),
+        ]
+    
+    def __str__(self):
+        return f"{self.rater.username} rated {self.donor.username}: {self.rating}/5"
+    
+    @property
+    def average_rating(self):
+        """Calculate average of all rating categories"""
+        return (self.rating + self.punctuality + self.professionalism + self.communication) / 4
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        # Update donor's trust score based on ratings
+        self.update_donor_trust_score()
+    
+    def update_donor_trust_score(self):
+        """Update donor's trust score based on average rating"""
+        from django.db.models import Avg
+        
+        avg_rating = DonorRating.objects.filter(donor=self.donor).aggregate(
+            avg=Avg('rating')
+        )['avg'] or 3
+        
+        # Map rating (1-5) to trust score (0-100)
+        # Rating 3 = 50, Rating 5 = 100, Rating 1 = 0
+        new_trust_score = int((avg_rating / 5) * 100)
+        
+        # Blend with existing trust score (70% new, 30% old)
+        self.donor.trust_score = int((new_trust_score * 0.7) + (self.donor.trust_score * 0.3))
+        self.donor.save(update_fields=['trust_score'])
 
 
 class Hospital(models.Model):
