@@ -161,6 +161,7 @@ def update_donation_status(request):
 
 
 @login_required
+@csrf_exempt
 def notification_list(request):
     """
     Display all notifications for the user
