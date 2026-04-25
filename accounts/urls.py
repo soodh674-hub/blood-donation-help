@@ -88,4 +88,9 @@ urlpatterns = [
     # Report user API (Anti-fake system)
     path('api/report-user/', views_report.report_user, name='report-user'),
     path('api/users/<int:user_id>/trust-score/', views_report.get_user_trust_score, name='trust-score'),
+    
+    # Donor Rating System
+    path('api/rate-donor/', views.rate_donor, name='rate-donor'),
+    path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
+    path('donation-history/', views.my_donation_history, name='donation-history'),
 ]

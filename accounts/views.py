@@ -19,7 +19,7 @@ from .serializers import (
     CustomTokenObtainPairSerializer, EmailVerificationSerializer,
     PasswordResetRequestSerializer, OTPVerificationSerializer, PasswordResetSerializer
 )
-from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor, Follow
+from .models import User, PasswordResetOTP, DonorProfile, FavoriteDonor, Follow, DonorRating
 from . import services as otp_services
 from .tasks import send_password_reset_email_task
 import random
@@ -1701,3 +1701,108 @@ def following_list(request, user_id):
     }
     
     return render(request, 'accounts/following_list.html', context)
+
+
+@login_required
+@require_POST
+def rate_donor(request):
+    """Rate a donor after donation"""
+    donor_id = request.POST.get('donor_id')
+    blood_request_id = request.POST.get('blood_request_id')
+    rating = request.POST.get('rating')
+    review = request.POST.get('review', '')
+    punctuality = request.POST.get('punctuality', 5)
+    professionalism = request.POST.get('professionalism', 5)
+    communication = request.POST.get('communication', 5)
+    
+    if not donor_id or not rating:
+        return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+    
+    try:
+        donor = get_object_or_404(User, id=donor_id)
+        
+        # Validate rating
+        rating = int(rating)
+        if not 1 <= rating <= 5:
+            return JsonResponse({'success': False, 'error': 'Rating must be between 1 and 5'}, status=400)
+        
+        # Get blood request if provided
+        blood_request = None
+        if blood_request_id:
+            from blood_requests_app.models import BloodRequest
+            blood_request = get_object_or_404(BloodRequest, id=blood_request_id)
+        
+        # Check if user already rated this donor for this request
+        existing_rating = DonorRating.objects.filter(
+            donor=donor,
+            rater=request.user,
+            blood_request=blood_request
+        ).first()
+        
+        if existing_rating:
+            # Update existing rating
+            existing_rating.rating = rating
+            existing_rating.review = review
+            existing_rating.punctuality = int(punctuality)
+            existing_rating.professionalism = int(professionalism)
+            existing_rating.communication = int(communication)
+            existing_rating.save()
+            return JsonResponse({'success': True, 'message': 'Rating updated successfully'})
+        
+        # Create new rating
+        DonorRating.objects.create(
+            donor=donor,
+            rater=request.user,
+            blood_request=blood_request,
+            rating=rating,
+            review=review,
+            punctuality=int(punctuality),
+            professionalism=int(professionalism),
+            communication=int(communication)
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Rating submitted successfully'})
+        
+    except Exception as e:
+        logger.error(f'Error rating donor: {str(e)}', exc_info=True)
+        return JsonResponse({'success': False, 'error': 'Failed to submit rating'}, status=500)
+
+
+@login_required
+def donor_ratings(request, donor_id):
+    """View all ratings for a donor"""
+    donor = get_object_or_404(User, id=donor_id, is_active=True)
+    
+    ratings = DonorRating.objects.filter(donor=donor).select_related('rater', 'blood_request').order_by('-created_at')
+    
+    # Calculate average rating
+    from django.db.models import Avg
+    avg_rating = ratings.aggregate(avg=Avg('rating'))['avg'] or 0
+    
+    context = {
+        'donor': donor,
+        'ratings': ratings,
+        'avg_rating': round(avg_rating, 1),
+        'total_ratings': ratings.count(),
+    }
+    
+    return render(request, 'accounts/donor_ratings.html', context)
+
+
+@login_required
+def my_donation_history(request):
+    """View user's donation history"""
+    from blood_requests_app.models import RequestResponse
+    
+    # Get all responses where user donated
+    donations = RequestResponse.objects.filter(
+        donor=request.user,
+        status='donated'
+    ).select_related('request').order_by('-updated_at')
+    
+    context = {
+        'donations': donations,
+        'total_donations': donations.count(),
+    }
+    
+    return render(request, 'accounts/donation_history.html', context)
