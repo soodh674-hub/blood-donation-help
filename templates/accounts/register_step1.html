@@ -32,7 +32,7 @@
                 </div>
                 {% endif %}
 
-                <form method="POST" action="{% url 'register-step1' %}">
+                <form method="POST" action="/accounts/register/step1/">
                     {% csrf_token %}
                     
                     <div class="mb-3">
@@ -62,7 +62,7 @@
                     </button>
 
                     <p class="text-center text-secondary small mb-0">
-                        Already have an account? <a href="{% url 'login' %}" class="text-danger">Login</a>
+                        Already have an account? <a href="/accounts/login/" class="text-danger">Login</a>
                     </p>
                 </form>
             </div>

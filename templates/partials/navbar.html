@@ -59,7 +59,7 @@
             <!-- Auth Links - Guest User -->
             {% if not user.is_authenticated %}
             <div class="d-flex align-items-center ms-3">
-                <a href="{% url 'accounts:login' %}" class="nav-link-custom">
+                <a href="/accounts/login/" class="nav-link-custom">
                     Login
                 </a>
                 <a href="/accounts/register/step1/" class="btn-gradient ms-3">
@@ -185,7 +185,7 @@
             {% if not user.is_authenticated %}
             <div class="pt-3 pb-2 mt-2 border-top-custom">
                 <div class="px-3 d-flex align-items-center">
-                    <a href="{% url 'accounts:login' %}" class="mobile-nav-link flex-grow-1">Login</a>
+                    <a href="/accounts/login/" class="mobile-nav-link flex-grow-1">Login</a>
                     <a href="/accounts/register/step1/" class="btn-gradient ms-2 flex-grow-1 text-center">Get Started</a>
                 </div>
             </div>
