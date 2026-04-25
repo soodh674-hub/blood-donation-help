@@ -790,6 +790,107 @@ def logout_view(request):
     return redirect('/')
 
 
+@require_POST
+@csrf_exempt
+def otp_login_request(request):
+    """
+    Handle OTP login request - generate and send OTP via email
+    Returns JSON response for AJAX requests
+    """
+    email = request.POST.get('email')
+    captcha_response = request.POST.get('captcha_0', '')
+    captcha_key = request.POST.get('captcha_1', '')
+
+    if not email:
+        return JsonResponse({'success': False, 'message': 'Email is required'})
+
+    # Check if user exists with this email
+    User = get_user_model()
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'No account found with this email'})
+
+    # CAPTCHA validation (if captcha is available)
+    has_captcha = 'captcha' in settings.INSTALLED_APPS
+    if has_captcha:
+        try:
+            from captcha.models import CaptchaStore
+            if captcha_response and captcha_key:
+                CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+            else:
+                return JsonResponse({'success': False, 'message': 'Please complete the security verification'})
+        except CaptchaStore.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA'})
+        except Exception as e:
+            logger.warning(f'CAPTCHA error in OTP request: {str(e)}')
+
+    # Check rate limit
+    allowed, remaining = otp_services.check_rate_limit(user.id)
+    if not allowed:
+        return JsonResponse({
+            'success': False,
+            'message': f'Please wait {remaining} seconds before requesting another OTP'
+        })
+
+    # Generate OTP
+    otp = otp_services.generate_otp()
+
+    # Store OTP in cache
+    if not otp_services.store_otp(user.id, otp):
+        return JsonResponse({'success': False, 'message': 'Failed to generate OTP. Please try again'})
+
+    # Send OTP via email
+    from .services import send_otp_email
+    success, message = send_otp_email(email, otp, user.get_full_name())
+
+    if success:
+        # Set rate limit
+        otp_services.set_rate_limit(user.id)
+        return JsonResponse({'success': True, 'message': 'OTP sent successfully'})
+    else:
+        # Clear OTP if email failed
+        otp_services.clear_reset_state(user.id)
+        return JsonResponse({'success': False, 'message': message})
+
+
+@require_POST
+@csrf_exempt
+def otp_login_verify(request):
+    """
+    Handle OTP verification - verify OTP and log user in
+    Returns JSON response for AJAX requests
+    """
+    email = request.POST.get('email')
+    otp = request.POST.get('otp')
+
+    if not email or not otp:
+        return JsonResponse({'success': False, 'message': 'Email and OTP are required'})
+
+    # Get user by email
+    User = get_user_model()
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Invalid email or OTP'})
+
+    # Verify OTP
+    success, message = otp_services.verify_otp_cache(user.id, otp)
+
+    if success:
+        # Log user in
+        login(request, user)
+        # Clear OTP state
+        otp_services.clear_reset_state(user.id)
+        return JsonResponse({
+            'success': True,
+            'message': 'Login successful',
+            'redirect': '/accounts/dashboard/'
+        })
+    else:
+        return JsonResponse({'success': False, 'message': message})
+
+
 def donor_search_page(request):
     """Donor search page"""
     return render(request, 'search/donor_search.html')

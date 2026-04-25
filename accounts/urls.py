@@ -12,6 +12,10 @@ urlpatterns = [
     path('login/', views.login_view, name='login-page'),
     path('login/', views.login_view, name='login'),  # Alias for template compatibility
     path('logout/', views.logout_view, name='logout'),
+    
+    # OTP Login endpoints
+    path('otp-login-request/', views.otp_login_request, name='otp-login-request'),
+    path('otp-login-verify/', views.otp_login_verify, name='otp-login-verify'),
     path('donors/', views.donor_search_page, name='donor-search-page'),
     path('search/', views.donor_search_page, name='search-donors-page'),
     path('users/', views.user_search_page, name='user-search-page'),
