@@ -221,7 +221,7 @@
                 <div class="d-flex flex-column gap-2">
                     {% if not user_response %}
                         {% if blood_request.status == 'pending' or blood_request.status == 'approved' or blood_request.status == 'active' %}
-                    <button class="action-btn btn-accept w-100" onclick="acceptRequest({{ blood_request.id }})">
+                    <button class="action-btn btn-accept w-100" id="btn-accept" data-request-id="{{ blood_request.id|default:0 }}">
                         <i class="bi bi-check-circle me-2"></i>Accept Request
                     </button>
                         {% endif %}
@@ -412,7 +412,7 @@
                         <i class="bi bi-exclamation-triangle me-2"></i>Report Issue
                     </button>
                     {% if blood_request.requester == request.user and blood_request.status not in 'active fulfilled' %}
-                    <button class="btn btn-danger" onclick="deleteRequest({{ blood_request.id }})">
+                    <button class="btn btn-danger" id="btn-delete" data-request-id="{{ blood_request.id|default:0 }}">
                         <i class="bi bi-trash me-2"></i>Delete Request Permanently
                     </button>
                     {% endif %}
@@ -452,12 +452,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Set progress bar width
-    const fulfilled = {{ blood_request.fulfilled_units|default:0 }};
-    const required = {{ blood_request.required_units|default:1 }};
+    const fulfilled = parseInt('{{ blood_request.fulfilled_units|default:0 }}') || 0;
+    const required = parseInt('{{ blood_request.required_units|default:1 }}') || 1;
     const progressFill = document.getElementById('progress-fill');
     if (progressFill && required > 0) {
         const percentage = Math.min((fulfilled / required) * 100, 100);
         progressFill.style.width = percentage + '%';
+    }
+});
+
+// Event listeners for buttons with data attributes
+document.addEventListener('DOMContentLoaded', function() {
+    // Accept request button
+    const acceptBtn = document.getElementById('btn-accept');
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+            const requestId = this.dataset.requestId;
+            acceptRequest(requestId);
+        });
+    }
+    
+    // Delete request button
+    const deleteBtn = document.getElementById('btn-delete');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const requestId = this.dataset.requestId;
+            deleteRequest(requestId);
+        });
     }
 });
 
