@@ -348,6 +348,8 @@ class LoginOTP(models.Model):
 auditlog.register(User)
 auditlog.register(PasswordResetOTP)
 auditlog.register(LoginOTP)
+auditlog.register(Hospital)
+auditlog.register(HospitalStaff)
 
 
 class NotificationSettings(models.Model):
@@ -667,6 +669,105 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
+
+
+class Hospital(models.Model):
+    """Hospital model for verified blood donation centers"""
+    
+    HOSPITAL_TYPE_CHOICES = [
+        ('government', 'Government Hospital'),
+        ('private', 'Private Hospital'),
+        ('ngo', 'NGO Blood Bank'),
+        ('blood_bank', 'Blood Bank'),
+    ]
+    
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    hospital_type = models.CharField(max_length=20, choices=HOSPITAL_TYPE_CHOICES, default='private')
+    license_number = models.CharField(max_length=100, unique=True, help_text="Hospital license/registration number")
+    
+    # Location
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=10)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    
+    # Contact
+    phone = models.CharField(max_length=15)
+    email = models.EmailField()
+    emergency_contact = models.CharField(max_length=15, blank=True)
+    
+    # Blood bank details
+    has_blood_bank = models.BooleanField(default=True)
+    blood_groups_available = models.JSONField(default=list, help_text="List of available blood groups")
+    
+    # Verification
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_STATUS_CHOICES, default='pending')
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_hospitals')
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verification_documents = models.FileField(upload_to='hospital_documents/', blank=True, null=True)
+    
+    # Statistics
+    total_donations_processed = models.IntegerField(default=0)
+    active_requests = models.IntegerField(default=0)
+    
+    # Trust score
+    trust_score = models.IntegerField(default=50, help_text="Trust score from 0-100")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-trust_score', '-created_at']
+        indexes = [
+            models.Index(fields=['city', 'verification_status']),
+            models.Index(fields=['trust_score']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.city})"
+    
+    @property
+    def is_verified(self):
+        return self.verification_status == 'verified'
+
+
+class HospitalStaff(models.Model):
+    """Hospital staff members who can create verified blood requests"""
+    
+    ROLE_CHOICES = [
+        ('admin', 'Hospital Admin'),
+        ('doctor', 'Doctor'),
+        ('nurse', 'Nurse'),
+        ('coordinator', 'Blood Donation Coordinator'),
+    ]
+    
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='staff')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='hospital_staff_profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='coordinator')
+    employee_id = models.CharField(max_length=50, unique=True)
+    department = models.CharField(max_length=100, blank=True)
+    
+    # Permissions
+    can_create_requests = models.BooleanField(default=True)
+    can_approve_requests = models.BooleanField(default=False)
+    can_manage_inventory = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['hospital', 'user']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.hospital.name} ({self.get_role_display()})"
 
 
 # Auto-create settings when user is created
