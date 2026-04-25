@@ -91,10 +91,10 @@ urlpatterns = [
     # Chatbot
     path("chatbot/", views_api.ChatbotView.as_view(), name='chatbot'),
     
-    # Donor Rating System
-    path('api/rate-donor/', views.rate_donor, name='rate-donor'),
-    path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
-    path('donation-history/', views.my_donation_history, name='donation-history'),
+    # Donor Rating System - Moved to accounts app
+    # path('api/rate-donor/', views.rate_donor, name='rate-donor'),
+    # path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
+    # path('donation-history/', views.my_donation_history, name='donation-history'),
     
     # Donor GPS Location Sharing
     path('donor/<int:response_id>/share-location/', views.donor_gps_sender, name='donor-gps-sender'),
