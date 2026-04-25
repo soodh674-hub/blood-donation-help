@@ -48,6 +48,7 @@ urlpatterns = [
     # User request tracking endpoints
     path("user-requests/", views_api.UserBloodRequestsView.as_view(), name="user-blood-requests"),
     path("track/<int:request_id>/", views.track_specific_request, name="track-specific-request"),
+    path("delete/<int:request_id>/", views.delete_request_permanently, name="delete-request-permanently"),
     
     # ========================================================================
     # NEW ENHANCED API ENDPOINTS FOR REAL-TIME TRACKING SYSTEM

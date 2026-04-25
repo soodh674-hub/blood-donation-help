@@ -505,6 +505,55 @@ def track_specific_request(request, request_id):
     return render(request, 'requests/track_specific_request.html', context)
 
 
+@login_required
+@require_POST
+def delete_request_permanently(request, request_id):
+    """
+    Permanently delete a blood request
+    Only the requester can delete their own request
+    """
+    from django.http import JsonResponse
+    from .models import BloodRequest
+    
+    try:
+        blood_request = BloodRequest.objects.get(id=request_id)
+        
+        # Check if user is the requester
+        if blood_request.requester != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'You can only delete your own requests'
+            }, status=403)
+        
+        # Check if request is in a state that can be deleted
+        if blood_request.status in ['active', 'fulfilled']:
+            return JsonResponse({
+                'success': False,
+                'error': 'Cannot delete request that is active or fulfilled'
+            }, status=400)
+        
+        # Delete the request
+        request_id_str = str(blood_request.id)
+        blood_request.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Request deleted permanently'
+        })
+        
+    except BloodRequest.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Request not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f'Error deleting request: {str(e)}', exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to delete request'
+        }, status=500)
+
+
 def manage_request(request, request_id):
     """
     Manage individual blood request (cancel, update, etc.)

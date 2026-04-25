@@ -411,6 +411,11 @@
                     <button class="btn btn-outline-warning" onclick="reportIssue()">
                         <i class="bi bi-exclamation-triangle me-2"></i>Report Issue
                     </button>
+                    {% if blood_request.requester == request.user and blood_request.status not in 'active fulfilled' %}
+                    <button class="btn btn-danger" onclick="deleteRequest({{ blood_request.id }})">
+                        <i class="bi bi-trash me-2"></i>Delete Request Permanently
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -492,13 +497,10 @@ async function acceptRequest(requestId) {
 
 function shareRequest() {
     const url = window.location.href;
-    const bloodGroup = "{{ blood_request.patient_blood_group|escapejs }}";
-    const hospitalName = "{{ blood_request.hospital_name|escapejs }}";
-    
     if (navigator.share) {
         navigator.share({
-            title: 'Blood Donation Request - BloodLife',
-            text: 'Urgent blood donation request for ' + bloodGroup + ' blood at ' + hospitalName,
+            title: 'Blood Donation Request',
+            text: 'Help save a life by donating blood!',
             url: url
         });
     } else {
@@ -508,15 +510,42 @@ function shareRequest() {
 }
 
 function reportIssue() {
-    const message = prompt('Please describe the issue with this request:');
-    if (message) {
-        // In production, send this to your backend
-        showNotification('success', 'Issue reported. Thank you for your feedback.');
+    showNotification('info', 'Please contact support at support@bloodis-life.online');
+}
+
+async function deleteRequest(requestId) {
+    if (!confirm('Are you sure you want to permanently delete this request? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const csrfToken = getCookie('csrftoken');
+        const response = await fetch(`/requests/delete/${requestId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showNotification('success', 'Request deleted successfully');
+            setTimeout(() => {
+                window.location.href = '/requests/track/';
+            }, 1500);
+        } else {
+            showNotification('error', data.error || 'Failed to delete request');
+        }
+    } catch (error) {
+        console.error('Error deleting request:', error);
+        showNotification('error', 'An error occurred. Please try again.');
     }
 }
 
 function showNotification(type, message) {
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertClass = type === 'success' ? 'alert-success' : type === 'info' ? 'alert-info' : 'alert-danger';
     const alert = document.createElement('div');
     alert.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
     alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
