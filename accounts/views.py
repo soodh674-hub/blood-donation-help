@@ -1855,3 +1855,125 @@ def trust_signals(request):
     }
     
     return render(request, 'accounts/trust_signals.html', context)
+
+
+@login_required
+def smart_donor_match(request, blood_request_id):
+    """Smart donor matching algorithm for blood requests"""
+    from blood_requests_app.models import BloodRequest
+    from django.db.models import Q, F
+    from django.contrib.gis.geos import Point
+    from django.contrib.gis.measure import D
+    from math import radians, cos, sin, asin, sqrt
+    
+    blood_request = get_object_or_404(BloodRequest, id=blood_request_id)
+    
+    # Blood group compatibility matrix
+    BLOOD_COMPATIBILITY = {
+        'A+': ['A+', 'A-', 'O+', 'O-'],
+        'A-': ['A-', 'O-'],
+        'B+': ['B+', 'B-', 'O+', 'O-'],
+        'B-': ['B-', 'O-'],
+        'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        'AB-': ['A-', 'B-', 'AB-', 'O-'],
+        'O+': ['O+', 'O-'],
+        'O-': ['O-'],
+    }
+    
+    # Get compatible blood groups
+    compatible_groups = BLOOD_COMPATIBILITY.get(blood_request.patient_blood_group, [blood_request.patient_blood_group])
+    
+    # Calculate distance using Haversine formula
+    def calculate_distance(lat1, lon1, lat2, lon2):
+        """Calculate distance between two points in km using Haversine formula"""
+        R = 6371  # Earth's radius in km
+        
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a))
+        
+        return R * c
+    
+    # Get base queryset of available donors
+    donors = User.objects.filter(
+        user_type='donor',
+        is_active=True,
+        is_available=True,
+        blood_group__in=compatible_groups,
+        city=blood_request.city  # Same city first
+    ).exclude(
+        id=blood_request.requester.id  # Exclude requester
+    )
+    
+    # Calculate match scores for each donor
+    matched_donors = []
+    request_lat = float(blood_request.latitude)
+    request_lng = float(blood_request.longitude)
+    
+    for donor in donors:
+        if not donor.latitude or not donor.longitude:
+            continue
+            
+        # Calculate distance
+        distance = calculate_distance(
+            request_lat, request_lng,
+            float(donor.latitude), float(donor.longitude)
+        )
+        
+        # Skip if too far (more than 50km)
+        if distance > 50:
+            continue
+        
+        # Calculate match score (0-100)
+        score = 0
+        
+        # Distance score (0-40 points) - closer is better
+        if distance <= 5:
+            score += 40
+        elif distance <= 10:
+            score += 30
+        elif distance <= 20:
+            score += 20
+        elif distance <= 30:
+            score += 10
+        else:
+            score += 5
+        
+        # Trust score (0-30 points)
+        score += (donor.trust_score / 100) * 30
+        
+        # Donation history (0-20 points) - more donations is better
+        score += min(donor.donations_completed * 2, 20)
+        
+        # Blood group exact match bonus (10 points)
+        if donor.blood_group == blood_request.patient_blood_group:
+            score += 10
+        
+        # Availability status (0-10 points)
+        if donor.availability_status == 'available':
+            score += 10
+        elif donor.availability_status == 'cooldown':
+            score += 5
+        
+        matched_donors.append({
+            'donor': donor,
+            'distance': round(distance, 1),
+            'match_score': round(score, 1),
+        })
+    
+    # Sort by match score (highest first)
+    matched_donors.sort(key=lambda x: x['match_score'], reverse=True)
+    
+    # Get top 20 matches
+    top_matches = matched_donors[:20]
+    
+    context = {
+        'blood_request': blood_request,
+        'matched_donors': top_matches,
+        'total_matches': len(matched_donors),
+    }
+    
+    return render(request, 'accounts/smart_donor_match.html', context)

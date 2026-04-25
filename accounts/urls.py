@@ -97,4 +97,7 @@ urlpatterns = [
     # Trust Signals & Hospital Partners
     path('hospital-partners/', views.hospital_partners, name='hospital-partners'),
     path('trust-signals/', views.trust_signals, name='trust-signals'),
+    
+    # Smart Donor Matching
+    path('smart-match/<int:blood_request_id>/', views.smart_donor_match, name='smart-donor-match'),
 ]
