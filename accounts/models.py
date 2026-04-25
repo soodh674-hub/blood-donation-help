@@ -344,14 +344,6 @@ class LoginOTP(models.Model):
         
         return False, "Invalid OTP"
 
-# Audit logging for compliance
-auditlog.register(User)
-auditlog.register(PasswordResetOTP)
-auditlog.register(LoginOTP)
-auditlog.register(DonorRating)
-auditlog.register(Hospital)
-auditlog.register(HospitalStaff)
-
 
 class NotificationSettings(models.Model):
     """User notification preferences and settings"""
@@ -837,6 +829,15 @@ class HospitalStaff(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.hospital.name} ({self.get_role_display()})"
+
+
+# Audit logging for compliance - must be after all models are defined
+auditlog.register(User)
+auditlog.register(PasswordResetOTP)
+auditlog.register(LoginOTP)
+auditlog.register(DonorRating)
+auditlog.register(Hospital)
+auditlog.register(HospitalStaff)
 
 
 # Auto-create settings when user is created
