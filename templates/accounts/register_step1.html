@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Step 1 - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-md-5">
+                <!-- Progress -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white small">Step 1 of 3</span>
+                        <span class="text-secondary small">33%</span>
+                    </div>
+                    <div class="progress" style="height: 8px; background: rgba(255,255,255,0.1);">
+                        <div class="progress-bar bg-danger" style="width: 33%;"></div>
+                    </div>
+                </div>
+
+                <h2 class="fw-bold text-white mb-2">Create Account</h2>
+                <p class="text-secondary mb-4">Enter your basic information to get started</p>
+
+                {% if errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for field, error_list in errors.items %}
+                        {% for error in error_list %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'register-step1' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">Username</label>
+                        <input type="text" name="username" class="form-control" value="{{ saved_data.username|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ saved_data.email|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                        <small class="text-secondary">Must be at least 8 characters</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-white">Confirm Password</label>
+                        <input type="password" name="confirm_password" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        Continue to Step 2
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+
+                    <p class="text-center text-secondary small mb-0">
+                        Already have an account? <a href="{% url 'login' %}" class="text-danger">Login</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Step 2 - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-md-5">
+                <!-- Progress -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white small">Step 2 of 3</span>
+                        <span class="text-secondary small">66%</span>
+                    </div>
+                    <div class="progress" style="height: 8px; background: rgba(255,255,255,0.1);">
+                        <div class="progress-bar bg-danger" style="width: 66%;"></div>
+                    </div>
+                </div>
+
+                <h2 class="fw-bold text-white mb-2">Personal Information</h2>
+                <p class="text-secondary mb-4">Tell us more about yourself</p>
+
+                {% if errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for field, error_list in errors.items %}
+                        {% for error in error_list %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'register-step2' %}">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ saved_data.first_name|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-white">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ saved_data.last_name|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Phone Number</label>
+                        <input type="tel" name="phone_number" class="form-control" value="{{ saved_data.phone_number|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Blood Group</label>
+                        <select name="blood_group" class="form-select" required>
+                            <option value="">Select Blood Group</option>
+                            <option value="A+" {% if saved_data.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                            <option value="A-" {% if saved_data.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                            <option value="B+" {% if saved_data.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                            <option value="B-" {% if saved_data.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                            <option value="AB+" {% if saved_data.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                            <option value="AB-" {% if saved_data.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                            <option value="O+" {% if saved_data.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                            <option value="O-" {% if saved_data.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-white">Date of Birth</label>
+                        <input type="date" name="date_of_birth" class="form-control" value="{{ saved_data.date_of_birth|default:'' }}" required>
+                        <small class="text-secondary">You must be at least 18 years old</small>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" onclick="history.back()" class="btn btn-outline-light flex-1">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back
+                        </button>
+                        <button type="submit" class="btn btn-primary flex-1">
+                            Continue to Step 3
+                            <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

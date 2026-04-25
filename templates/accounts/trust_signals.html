@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Trust Signals - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">Trust Signals</h1>
+            <p class="text-secondary mb-0">Platform verification and transparency</p>
+        </div>
+    </div>
+
+    <!-- Platform Statistics -->
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+            <div class="glass-card p-4 text-center">
+                <i class="bi bi-people display-4 text-primary mb-3"></i>
+                <div class="h3 text-white mb-1">{{ total_donors }}</div>
+                <div class="text-secondary">Verified Donors</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="glass-card p-4 text-center">
+                <i class="bi bi-hospital display-4 text-success mb-3"></i>
+                <div class="h3 text-white mb-1">{{ total_hospitals }}</div>
+                <div class="text-secondary">Verified Hospitals</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="glass-card p-4 text-center">
+                <i class="bi bi-heart-pulse display-4 text-danger mb-3"></i>
+                <div class="h3 text-white mb-1">{{ total_donations }}</div>
+                <div class="text-secondary">Total Donations</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Donors -->
+    <div class="glass-card p-4 p-md-5 mb-4">
+        <h3 class="fw-bold text-white mb-4">Top Rated Donors</h3>
+        {% if top_donors %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for donor in top_donors %}
+            <div class="col">
+                <div class="glass-card p-3 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 50px; height: 50px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            {{ donor.first_name|first|upper }}{{ donor.last_name|first|upper }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-white mb-0">{{ donor.get_full_name|default:donor.username }}</h6>
+                            <p class="text-secondary small mb-0">{{ donor.blood_group|default:"N/A" }}</p>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-warning">★ {{ donor.trust_score }}/100</span>
+                        <span class="text-secondary small">{{ donor.donations_completed }} donations</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-secondary">No top donors yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Verified Hospitals -->
+    <div class="glass-card p-4 p-md-5">
+        <h3 class="fw-bold text-white mb-4">Verified Hospital Partners</h3>
+        {% if verified_hospitals %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for hospital in verified_hospitals %}
+            <div class="col">
+                <div class="glass-card p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-bold text-white mb-0">{{ hospital.name }}</h6>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <p class="text-secondary small mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ hospital.city }}, {{ hospital.state }}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-warning">★ {{ hospital.trust_score }}/100</span>
+                        <span class="text-secondary small">{{ hospital.total_donations_processed }} donations</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-secondary">No verified hospitals yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

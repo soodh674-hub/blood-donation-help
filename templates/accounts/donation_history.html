@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Donation History - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">My Donation History</h1>
+            <p class="text-secondary mb-0">Track all your blood donations</p>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="glass-card p-4 p-md-5 mb-4">
+        <div class="row">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="h3 text-white mb-1">{{ total_donations }}</div>
+                <div class="text-secondary">Total Donations</div>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="h3 text-white mb-1">{{ request.user.donations_completed|default:0 }}</div>
+                <div class="text-secondary">Completed</div>
+            </div>
+            <div class="col-md-4">
+                <div class="h3 text-white mb-1">{{ request.user.blood_group|default:"N/A" }}</div>
+                <div class="text-secondary">Blood Group</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation List -->
+    {% if donations %}
+    <div class="row">
+        {% for donation in donations %}
+        <div class="col-12 mb-3">
+            <div class="glass-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="fw-bold text-white mb-2">Request #{{ donation.request.id }}</h6>
+                        <p class="text-secondary small mb-1">
+                            <i class="bi bi-droplet-fill text-danger me-1"></i>
+                            {{ donation.request.patient_blood_group }} - {{ donation.request.patient_name }}
+                        </p>
+                        <p class="text-secondary small mb-0">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            {{ donation.request.hospital_name }}, {{ donation.request.city }}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <span class="badge bg-success">Donated</span>
+                        <p class="text-secondary small mb-0 mt-2">{{ donation.updated_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card p-5 text-center">
+        <i class="bi bi-heart-pulse display-4 text-secondary mb-3"></i>
+        <h5 class="text-white mb-2">No Donations Yet</h5>
+        <p class="text-secondary">You haven't donated blood yet. Start saving lives today!</p>
+        <a href="/requests/create/" class="btn btn-primary mt-3">Find Blood Requests</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

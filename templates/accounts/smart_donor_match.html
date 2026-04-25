@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Smart Donor Match - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">Smart Donor Matching</h1>
+            <p class="text-secondary mb-0">Request #{{ blood_request.id }} - {{ blood_request.patient_blood_group }} needed</p>
+        </div>
+    </div>
+
+    <!-- Request Summary -->
+    <div class="glass-card p-4 p-md-5 mb-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h5 class="fw-bold text-white mb-2">{{ blood_request.patient_name }}</h5>
+                <p class="text-secondary small mb-1">
+                    <i class="bi bi-hospital me-1"></i>
+                    {{ blood_request.hospital_name }}
+                </p>
+                <p class="text-secondary small mb-0">
+                    <i class="bi bi-geo-alt me-1"></i>
+                    {{ blood_request.city }}, {{ blood_request.state }}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="h3 text-white mb-1">{{ total_matches }}</div>
+                <div class="text-secondary">Potential Donors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matched Donors -->
+    {% if matched_donors %}
+    <div class="row">
+        {% for match in matched_donors %}
+        <div class="col-12 mb-3">
+            <div class="glass-card p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 60px; height: 60px; background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                                {{ match.donor.first_name|first|upper }}{{ match.donor.last_name|first|upper }}
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1">{{ match.donor.get_full_name|default:match.donor.username }}</h6>
+                                <p class="text-secondary small mb-0">
+                                    <i class="bi bi-droplet-fill text-danger me-1"></i>
+                                    {{ match.donor.blood_group|default:"N/A" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <div class="d-flex justify-content-md-end gap-4 align-items-center">
+                            <div class="text-center">
+                                <div class="h4 text-white mb-0">{{ match.match_score }}%</div>
+                                <div class="text-secondary small">Match Score</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="h4 text-white mb-0">{{ match.distance }} km</div>
+                                <div class="text-secondary small">Distance</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="h4 text-white mb-0">★ {{ match.donor.trust_score }}</div>
+                                <div class="text-secondary small">Trust</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3 pt-3 border-top border-secondary">
+                    <div class="col-md-6">
+                        <p class="text-secondary small mb-0">
+                            <i class="bi bi-telephone me-1"></i>
+                            {{ match.donor.phone_number|default:"Not available" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <a href="tel:{{ match.donor.phone_number }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-telephone me-1"></i>
+                            Contact
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card p-5 text-center">
+        <i class="bi bi-search display-4 text-secondary mb-3"></i>
+        <h5 class="text-white mb-2">No Matching Donors Found</h5>
+        <p class="text-secondary">Try expanding your search criteria or check back later.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

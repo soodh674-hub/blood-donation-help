@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Donor Ratings - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">Donor Ratings</h1>
+            <p class="text-secondary mb-0">View ratings and reviews for {{ donor.get_full_name|default:donor.username }}</p>
+        </div>
+    </div>
+
+    <!-- Rating Summary -->
+    <div class="glass-card p-4 p-md-5 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center mb-3 mb-md-0">
+                <div class="display-3 fw-bold text-white">{{ avg_rating }}</div>
+                <div class="text-secondary">Average Rating</div>
+                <div class="text-warning mb-0">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= avg_rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="h4 text-white mb-1">{{ total_ratings }}</div>
+                        <div class="text-secondary small">Total Ratings</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-white mb-1">{{ donor.blood_group|default:"N/A" }}</div>
+                        <div class="text-secondary small">Blood Group</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ratings List -->
+    {% if ratings %}
+    <div class="row">
+        {% for rating in ratings %}
+        <div class="col-12 mb-3">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                            {{ rating.rater.first_name|default:rating.rater.username|make_list|first|upper }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-white mb-0">{{ rating.rater.get_full_name|default:rating.rater.username }}</h6>
+                            <p class="text-secondary small mb-0">{{ rating.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    <div class="text-warning">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= rating.rating %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                {% if rating.review %}
+                <p class="text-white mb-3">{{ rating.review }}</p>
+                {% endif %}
+                
+                <div class="row row-cols-3 g-2">
+                    <div class="col">
+                        <div class="text-secondary small">Punctuality</div>
+                        <div class="text-white">{{ rating.punctuality }}/5</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-secondary small">Professionalism</div>
+                        <div class="text-white">{{ rating.professionalism }}/5</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-secondary small">Communication</div>
+                        <div class="text-white">{{ rating.communication }}/5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card p-5 text-center">
+        <i class="bi bi-star display-4 text-secondary mb-3"></i>
+        <h5 class="text-white mb-2">No Ratings Yet</h5>
+        <p class="text-secondary">This donor hasn't received any ratings yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

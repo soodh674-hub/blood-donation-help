@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Step 3 - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-sm-4 px-md-5 py-4 py-md-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-md-5">
+                <!-- Progress -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-white small">Step 3 of 3</span>
+                        <span class="text-secondary small">100%</span>
+                    </div>
+                    <div class="progress" style="height: 8px; background: rgba(255,255,255,0.1);">
+                        <div class="progress-bar bg-success" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <h2 class="fw-bold text-white mb-2">Location Information</h2>
+                <p class="text-secondary mb-4">Almost done! Tell us where you're located</p>
+
+                {% if errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for field, error_list in errors.items %}
+                        {% for error in error_list %}
+                            {{ error }}<br>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'register-step3' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white">City</label>
+                        <input type="text" name="city" class="form-control" value="{{ saved_data.city|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">State</label>
+                        <input type="text" name="state" class="form-control" value="{{ saved_data.state|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Pincode</label>
+                        <input type="text" name="pincode" class="form-control" value="{{ saved_data.pincode|default:'' }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">Country</label>
+                        <input type="text" name="country" class="form-control" value="{{ saved_data.country|default:'India' }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="consent_given" id="consent" required>
+                            <label class="form-check-label text-secondary small" for="consent">
+                                I agree to the <a href="{% url 'terms_of_service' %}" class="text-danger">Terms of Service</a> and <a href="{% url 'privacy_policy' %}" class="text-danger">Privacy Policy</a>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" onclick="history.back()" class="btn btn-outline-light flex-1">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back
+                        </button>
+                        <button type="submit" class="btn btn-success flex-1">
+                            Complete Registration
+                            <i class="bi bi-check-circle ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Summary -->
+                <div class="mt-4 pt-4 border-top border-secondary">
+                    <h6 class="text-white mb-3">Registration Summary</h6>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <span class="text-secondary small">Username:</span>
+                            <span class="text-white small">{{ saved_data.username|default:"-" }}</span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <span class="text-secondary small">Email:</span>
+                            <span class="text-white small">{{ saved_data.email|default:"-" }}</span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <span class="text-secondary small">Name:</span>
+                            <span class="text-white small">{{ saved_data.first_name|default:"-" }} {{ saved_data.last_name|default:"-" }}</span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <span class="text-secondary small">Blood Group:</span>
+                            <span class="text-white small">{{ saved_data.blood_group|default:"-" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
