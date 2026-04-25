@@ -554,22 +554,18 @@ if IS_RENDER:
     else:
         logger.info("✅ Using FREE OpenStreetMap + Leaflet (no API key required)")
     
-    # Firebase Configuration for Real-time Chat and Notifications
-    # Firebase works alongside PostgreSQL - Firebase for real-time features, Supabase for structured data
-    FIREBASE_API_KEY = 'AIzaSyDjQ8d6FHvt2qH50FEQ4s_33LZ0kNTe-aw'
-    FIREBASE_AUTH_DOMAIN = 'blood-donation-help-50944.firebaseapp.com'
-    FIREBASE_PROJECT_ID = 'blood-donation-help-50944'
-    FIREBASE_STORAGE_BUCKET = 'blood-donation-help-50944.firebasestorage.app'
-    FIREBASE_MESSAGING_SENDER_ID = '887833742855'
-    FIREBASE_APP_ID = '1:887833742855:web:51b4376204eb0d2cf4a4a2'
-    FIREBASE_MEASUREMENT_ID = 'G-7N251R51K9'
-    FIREBASE_DATABASE_URL = 'https://blood-donation-help-50944-default-rtdb.firebaseio.com'
-    FIREBASE_SERVICE_ACCOUNT_KEY = os.path.join(BASE_DIR, 'firebase-service-account.json')
+    # WebSocket Configuration for Real-time Chat and Notifications
+    # Using Django Channels for real-time features instead of Firebase
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [(config('REDIS_URL', default='redis://localhost:6379/0'), 6379)],
+            },
+        },
+    }
     
-    if FIREBASE_API_KEY and FIREBASE_PROJECT_ID:
-        logger.info("✅ Firebase configured for real-time chat and notifications")
-    else:
-        logger.info("ℹ️ Firebase not configured - real-time features will be limited")
+    logger.info("✅ WebSocket configured for real-time chat and notifications using Django Channels")
     
     # Location Autocomplete API (Nominatim - FREE)
     NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"

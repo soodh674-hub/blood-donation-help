@@ -280,9 +280,74 @@ class PasswordResetOTP(models.Model):
         
         return False, "Invalid OTP"
 
+
+class LoginOTP(models.Model):
+    """Model to store login OTP for two-factor authentication"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_otps')
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+    attempts = models.IntegerField(default=0)
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Login OTP for {self.user.username} - Verified: {self.is_verified}"
+    
+    @property
+    def is_expired(self):
+        """Check if OTP is expired (10 minutes for login)"""
+        return (timezone.now() - self.created_at).total_seconds() > 600  # 10 minutes
+    
+    @classmethod
+    def generate_otp(cls, user, ip_address=None, user_agent=None):
+        """Generate a new 6-digit OTP for login"""
+        # Delete any existing unverified OTPs for this user
+        cls.objects.filter(user=user, is_verified=False).delete()
+        
+        # Generate secure 6-digit OTP
+        otp = ''.join(secrets.choice("0123456789") for _ in range(6))
+        
+        # Create new OTP record
+        return cls.objects.create(
+            user=user, 
+            otp=otp,
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+    
+    def verify_otp(self, entered_otp):
+        """Verify OTP and handle attempts"""
+        if self.is_verified:
+            return False, "OTP already used"
+        
+        if self.is_expired:
+            return False, "OTP expired"
+        
+        if self.attempts >= 5:
+            return False, "Maximum attempts exceeded"
+        
+        self.attempts += 1
+        self.save()
+        
+        if self.otp == entered_otp:
+            self.is_verified = True
+            self.save()
+            return True, "OTP verified successfully"
+        
+        return False, "Invalid OTP"
+
 # Audit logging for compliance
 auditlog.register(User)
 auditlog.register(PasswordResetOTP)
+auditlog.register(LoginOTP)
 
 
 class NotificationSettings(models.Model):
