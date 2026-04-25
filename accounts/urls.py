@@ -57,7 +57,6 @@ urlpatterns = [
     path('profile/update/', views.update_profile, name='update-profile-direct'),  # Direct access without 'api/' prefix
     
     # Email verification
-    path('verify-email/', views.verify_email, name='verify-email'),
     
     # Password reset API endpoints
     path('api/forgot-password/', views.forgot_password, name='forgot-password-api'),
@@ -112,4 +111,7 @@ urlpatterns = [
     path('register/step1/', views.register_step1, name='register-step1'),
     path('register/step2/', views.register_step2, name='register-step2'),
     path('register/step3/', views.register_step3, name='register-step3'),
+    
+    # Email Verification
+    path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify-email'),
 ]

@@ -2316,6 +2316,10 @@ def register_step3(request):
         # Create user
         try:
             from datetime import datetime
+            from django.core.mail import send_mail
+            from django.contrib.auth.tokens import default_token_generator
+            from django.utils.http import urlsafe_base64_encode
+            from django.utils.encoding import force_bytes
             
             user = User.objects.create_user(
                 username=saved_data['username'],
@@ -2331,13 +2335,52 @@ def register_step3(request):
                 pincode=pincode,
                 country=country,
                 user_type='donor',
+                is_active=False,  # User inactive until email verification
             )
+            
+            # Generate verification token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Create verification URL
+            verification_url = f"{request.scheme}://{request.get_host()}/accounts/verify-email/{uid}/{token}/"
+            
+            # Send verification email using Brevo
+            subject = 'Verify Your Email - Blood Donation Help'
+            message = f'''
+            Hello {user.first_name},
+            
+            Thank you for registering with Blood Donation Help!
+            
+            Please verify your email address by clicking the link below:
+            {verification_url}
+            
+            This link will expire in 24 hours.
+            
+            If you did not create this account, please ignore this email.
+            
+            Best regards,
+            Blood Donation Help Team
+            '''
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+                logger.info(f'Verification email sent to {user.email} via Brevo')
+            except Exception as email_error:
+                logger.error(f'Failed to send verification email: {str(email_error)}')
+                # Still allow registration to proceed even if email fails
             
             # Clear session data
             request.session.pop('registration_data', None)
             request.session.modified = True
             
-            messages.success(request, 'Registration successful! Please login.')
+            messages.success(request, 'Registration successful! Please check your email to verify your account.')
             return redirect('login')
             
         except Exception as e:
@@ -2349,3 +2392,29 @@ def register_step3(request):
             })
     
     return render(request, 'accounts/register_step3.html', {'saved_data': saved_data})
+
+
+def verify_email(request, uidb64, token):
+    """Verify user email using token from verification link"""
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+    from django.utils.encoding import force_str
+    from django.contrib.auth import login
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            login(request, user)
+            messages.success(request, 'Email verified successfully! Your account is now active.')
+            return redirect('/accounts/dashboard/')
+        else:
+            messages.error(request, 'Invalid or expired verification link.')
+            return redirect('login')
+            
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        messages.error(request, 'Invalid verification link.')
+        return redirect('login')
