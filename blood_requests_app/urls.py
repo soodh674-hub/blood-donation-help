@@ -91,8 +91,16 @@ urlpatterns = [
     # Chatbot
     path("chatbot/", views_api.ChatbotView.as_view(), name='chatbot'),
     
-    # Rating system
-    path("rate-user/", views_api.RateUserView.as_view(), name='rate-user'),
+    # Donor Rating System
+    path('api/rate-donor/', views.rate_donor, name='rate-donor'),
+    path('donor/<int:donor_id>/ratings/', views.donor_ratings, name='donor-ratings'),
+    path('donation-history/', views.my_donation_history, name='donation-history'),
+    
+    # Donor GPS Location Sharing
+    path('donor/<int:response_id>/share-location/', views.donor_gps_sender, name='donor-gps-sender'),
+    
+    # Zomato-style tracking
+    path('track-zomato/<int:request_id>/', views.track_request_zomato, name='track-request-zomato'),
     
     # Donor location and availability
     path("donor/location/", views_api.UpdateDonorLocationView.as_view(), name='donor-location'),

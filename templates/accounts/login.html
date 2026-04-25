@@ -324,8 +324,7 @@ function requestOTP() {
     fetch('/accounts/otp-login-request/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
             'email': email,
@@ -369,8 +368,7 @@ function verifyOTP() {
     fetch('/accounts/otp-login-verify/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
             'email': email,
@@ -405,8 +403,7 @@ function resendOTP() {
     fetch('/accounts/otp-login-request/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
             'email': email

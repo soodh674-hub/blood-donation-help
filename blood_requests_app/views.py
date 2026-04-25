@@ -2204,6 +2204,48 @@ def get_nearby_requests_api(request):
 
 
 @login_required
+def donor_gps_sender(request, response_id):
+    """View for donor to share their GPS location while traveling to donate"""
+    from blood_requests_app.models import BloodRequestResponse
+    
+    try:
+        response = BloodRequestResponse.objects.get(id=response_id, donor=request.user)
+    except BloodRequestResponse.DoesNotExist:
+        messages.error(request, 'Response not found')
+        return redirect('/requests/track-request-dashboard/')
+    
+    context = {
+        'response': response,
+        'request': response.blood_request,
+        'donor': request.user,
+    }
+    
+    return render(request, 'requests/donor_gps_sender.html', context)
+
+
+@login_required
+def track_request_zomato(request, request_id):
+    """Zomato-style tracking view for blood requests"""
+    from blood_requests_app.models import BloodRequest
+    
+    try:
+        blood_request = BloodRequest.objects.get(id=request_id)
+    except BloodRequest.DoesNotExist:
+        messages.error(request, 'Request not found')
+        return redirect('/requests/track-request-dashboard/')
+    
+    # Get all responses for this request
+    responses = blood_request.responses.filter(status='accepted').select_related('donor')
+    
+    context = {
+        'request': blood_request,
+        'responses': responses,
+    }
+    
+    return render(request, 'requests/track_request_zomato.html', context)
+
+
+@login_required
 def manage_all_requests(request):
     """View to manage all blood requests with filtering and pagination"""
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
