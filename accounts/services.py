@@ -183,3 +183,280 @@ def verify_otp_cache(user_id: int, entered_otp: str) -> tuple[bool, str]:
         return False, f"Invalid OTP. {remaining} attempt(s) remaining."
 
     return True, "OTP verified successfully"
+
+
+"""
+SMS and Push Notification Services
+"""
+import logging
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+logger = logging.getLogger(__name__)
+
+
+class SMSService:
+    """SMS notification service using Twilio or similar provider"""
+    
+    @staticmethod
+    def send_sms(phone_number, message):
+        """
+        Send SMS notification
+        Args:
+            phone_number: Phone number with country code (e.g., +919876543210)
+            message: SMS message content
+        Returns:
+            (success, message)
+        """
+        try:
+            # Check if Twilio is configured
+            if not hasattr(settings, 'TWILIO_ACCOUNT_SID') or not settings.TWILIO_ACCOUNT_SID:
+                logger.warning("Twilio not configured, SMS will be logged only")
+                logger.info(f"SMS to {phone_number}: {message}")
+                return True, "SMS logged (Twilio not configured)"
+            
+            from twilio.rest import Client
+            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            
+            message_obj = client.messages.create(
+                body=message,
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=phone_number
+            )
+            
+            logger.info(f"SMS sent to {phone_number}: SID {message_obj.sid}")
+            return True, "SMS sent successfully"
+            
+        except Exception as e:
+            logger.error(f"SMS sending failed: {str(e)}", exc_info=True)
+            return False, f"SMS failed: {str(e)}"
+
+
+class PushNotificationService:
+    """Push notification service using Firebase Cloud Messaging (FCM)"""
+    
+    @staticmethod
+    def send_push_notification(user, title, message, data=None):
+        """
+        Send push notification to user
+        Args:
+            user: User object
+            title: Notification title
+            message: Notification message
+            data: Optional data payload
+        Returns:
+            (success, message)
+        """
+        try:
+            # Check if Firebase is configured
+            if not hasattr(settings, 'FIREBASE_CREDENTIALS'):
+                logger.warning("Firebase not configured, push notification will be logged only")
+                logger.info(f"Push to {user.username}: {title} - {message}")
+                return True, "Push logged (Firebase not configured)"
+            
+            from firebase_admin import messaging
+            from accounts.models import NotificationSettings
+            
+            # Check if user has push notifications enabled
+            try:
+                settings_obj = user.notification_settings
+                if not settings_obj.push_notifications:
+                    return True, "Push notifications disabled for user"
+            except NotificationSettings.DoesNotExist:
+                return True, "Notification settings not found"
+            
+            # Get user's FCM token (you need to store this in user profile)
+            fcm_token = getattr(user, 'fcm_token', None)
+            if not fcm_token:
+                logger.warning(f"No FCM token for user {user.username}")
+                return False, "No FCM token for user"
+            
+            # Create message
+            notification = messaging.Notification(
+                title=title,
+                body=message
+            )
+            
+            fcm_message = messaging.Message(
+                notification=notification,
+                token=fcm_token,
+                data=data or {}
+            )
+            
+            # Send message
+            response = messaging.send(fcm_message)
+            logger.info(f"Push sent to {user.username}: {response}")
+            return True, "Push notification sent successfully"
+            
+        except Exception as e:
+            logger.error(f"Push notification failed: {str(e)}", exc_info=True)
+            return False, f"Push failed: {str(e)}"
+    
+    @staticmethod
+    def send_bulk_push_notification(users, title, message, data=None):
+        """
+        Send bulk push notification to multiple users
+        Args:
+            users: QuerySet of User objects
+            title: Notification title
+            message: Notification message
+            data: Optional data payload
+        Returns:
+            (success_count, failure_count)
+        """
+        success_count = 0
+        failure_count = 0
+        
+        for user in users:
+            success, _ = PushNotificationService.send_push_notification(user, title, message, data)
+            if success:
+                success_count += 1
+            else:
+                failure_count += 1
+        
+        return success_count, failure_count
+
+
+class NotificationService:
+    """Unified notification service that handles SMS, push, and email"""
+    
+    @staticmethod
+    def send_notification(user, title, message, notification_type='info', data=None):
+        """
+        Send notification via enabled channels
+        Args:
+            user: User object
+            title: Notification title
+            message: Notification message
+            notification_type: Type of notification (blood_request, emergency, etc.)
+            data: Optional data payload
+        """
+        from accounts.models import NotificationSettings
+        
+        try:
+            # Get user's notification preferences
+            try:
+                settings_obj = user.notification_settings
+            except NotificationSettings.DoesNotExist:
+                settings_obj = NotificationSettings.objects.create(user=user)
+            
+            # Check quiet hours
+            if settings_obj.quiet_hours_enabled:
+                from django.utils import timezone
+                now = timezone.now().time()
+                if settings_obj.quiet_hours_start <= now <= settings_obj.quiet_hours_end:
+                    logger.info(f"Quiet hours active for {user.username}, skipping notification")
+                    return
+            
+            # Send SMS if enabled
+            if settings_obj.sms_notifications and user.phone_number:
+                SMSService.send_sms(user.phone_number, f"{title}: {message}")
+            
+            # Send push notification if enabled
+            if settings_obj.push_notifications:
+                PushNotificationService.send_push_notification(user, title, message, data)
+            
+            # Send email if enabled
+            if settings_obj.email_notifications and user.email:
+                html_message = render_to_string('emails/notification.html', {
+                    'title': title,
+                    'message': message,
+                    'user': user
+                })
+                plain_message = strip_tags(html_message)
+                send_mail(
+                    title,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    html_message=html_message,
+                    fail_silently=True
+                )
+            
+            # Create notification record
+            from notifications.models import Notification
+            Notification.objects.create(
+                user=user,
+                title=title,
+                message=message,
+                notification_type=notification_type
+            )
+            
+            # Send real-time notification via WebSocket
+            from notifications.consumers import send_notification_to_user
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(send_notification_to_user(user, {
+                    'title': title,
+                    'message': message,
+                    'notification_type': notification_type
+                }))
+            except:
+                pass
+            
+        except Exception as e:
+            logger.error(f"Notification sending failed: {str(e)}", exc_info=True)
+    
+    @staticmethod
+    def send_blood_request_notification(donor, blood_request):
+        """Send notification about new blood request to donor"""
+        NotificationService.send_notification(
+            donor,
+            title="New Blood Request Near You",
+            message=f"{blood_request.patient_blood_group} blood needed at {blood_request.hospital_name}",
+            notification_type='blood_request',
+            data={
+                'request_id': blood_request.id,
+                'blood_group': blood_request.patient_blood_group,
+                'hospital': blood_request.hospital_name
+            }
+        )
+    
+    @staticmethod
+    def send_emergency_notification(donor, blood_request):
+        """Send emergency blood request notification"""
+        NotificationService.send_notification(
+            donor,
+            title="🚨 EMERGENCY Blood Request",
+            message=f"URGENT: {blood_request.patient_blood_group} blood needed immediately at {blood_request.hospital_name}",
+            notification_type='emergency',
+            data={
+                'request_id': blood_request.id,
+                'blood_group': blood_request.patient_blood_group,
+                'hospital': blood_request.hospital_name,
+                'priority': 'critical'
+            }
+        )
+    
+    @staticmethod
+    def send_request_accepted_notification(requester, donor, blood_request):
+        """Send notification when donor accepts request"""
+        NotificationService.send_notification(
+            requester,
+            title="Donor Accepted Your Request",
+            message=f"{donor.get_full_name()} has accepted your blood request for {blood_request.patient_blood_group}",
+            notification_type='request_accepted',
+            data={
+                'request_id': blood_request.id,
+                'donor_id': donor.id,
+                'donor_name': donor.get_full_name()
+            }
+        )
+    
+    @staticmethod
+    def send_donation_completed_notification(donor, blood_request):
+        """Send notification when donation is completed"""
+        NotificationService.send_notification(
+            donor,
+            title="Thank You for Donating!",
+            message=f"Your blood donation for {blood_request.patient_name} has been recorded. You're a hero!",
+            notification_type='donation_completed',
+            data={
+                'request_id': blood_request.id,
+                'patient_name': blood_request.patient_name
+            }
+        )
+
