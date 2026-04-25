@@ -121,9 +121,6 @@
                         <!-- NEW FEATURES -->
                         <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">New Features</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:donation-history' %}"><i class="bi bi-clock-history me-2" style="color: #f59e0b;"></i>Donation History</a></li>
-                        {% if user.is_staff or user.user_type == 'hospital' %}
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:hospital-dashboard' %}"><i class="bi bi-hospital me-2" style="color: #3b82f6;"></i>Hospital Dashboard</a></li>
-                        {% endif %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:admin-verify-requests' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
@@ -252,12 +249,6 @@
                         <i class="bi bi-clock-history me-2" style="color: #f59e0b;"></i>
                         Donation History
                     </a>
-                    {% if user.is_staff or user.user_type == 'hospital' %}
-                    <a href="{% url 'accounts:hospital-dashboard' %}" class="mobile-nav-link d-flex align-items-center">
-                        <i class="bi bi-hospital me-2" style="color: #3b82f6;"></i>
-                        Hospital Dashboard
-                    </a>
-                    {% endif %}
                     <a href="{% url 'requests:admin-verify-requests' %}" class="mobile-nav-link d-flex align-items-center">
                         <i class="bi bi-check-circle me-2" style="color: #10b981;"></i>
                         Verify Requests
