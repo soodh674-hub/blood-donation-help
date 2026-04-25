@@ -379,9 +379,9 @@ from .models_chat import ChatMessage  # Import from separate file
 
 class DonorRating(models.Model):
     """Rating system for donors and requesters"""
-    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
-    rated_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
-    request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE, related_name='ratings')
+    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blood_req_given_ratings')
+    rated_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blood_req_received_ratings')
+    request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE, related_name='blood_req_ratings')
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

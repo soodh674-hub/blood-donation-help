@@ -675,9 +675,9 @@ class DonorRating(models.Model):
         (5, 'Excellent'),
     ]
     
-    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
-    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
-    blood_request = models.ForeignKey('blood_requests_app.BloodRequest', on_delete=models.CASCADE, related_name='ratings', null=True, blank=True)
+    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts_received_ratings')
+    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts_given_ratings')
+    blood_request = models.ForeignKey('blood_requests_app.BloodRequest', on_delete=models.CASCADE, related_name='accounts_ratings', null=True, blank=True)
     
     rating = models.IntegerField(choices=RATING_CHOICES)
     review = models.TextField(blank=True, help_text="Optional review/comments")
