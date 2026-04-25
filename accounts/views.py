@@ -1929,13 +1929,17 @@ def my_donation_history(request):
 @login_required
 def hospital_partners(request):
     """View verified hospital partners"""
-    hospitals = Hospital.objects.filter(
-        verification_status='verified'
-    ).order_by('-trust_score', '-total_donations_processed')
+    # Try to get hospitals, handle case where Hospital model doesn't exist yet
+    try:
+        hospitals = Hospital.objects.filter(
+            verification_status='verified'
+        ).order_by('-trust_score', '-total_donations_processed')
+    except:
+        hospitals = []
     
     context = {
         'hospitals': hospitals,
-        'total_hospitals': hospitals.count(),
+        'total_hospitals': len(hospitals) if isinstance(hospitals, list) else hospitals.count(),
     }
     
     return render(request, 'accounts/hospital_partners.html', context)
@@ -1948,7 +1952,13 @@ def trust_signals(request):
     
     # Get platform statistics
     total_donors = User.objects.filter(user_type='donor', is_verified=True).count()
-    total_hospitals = Hospital.objects.filter(verification_status='verified').count()
+    
+    # Try to get hospital count, handle case where Hospital model doesn't exist yet
+    try:
+        total_hospitals = Hospital.objects.filter(verification_status='verified').count()
+    except:
+        total_hospitals = 0
+    
     total_donations = User.objects.aggregate(
         total=Count('donations_completed')
     )['total'] or 0

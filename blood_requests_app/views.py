@@ -1481,13 +1481,14 @@ def get_my_active_responses(request):
         )
 
 
+@login_required
 def verify_requests_page(request):
     """
     Admin verification page for pending blood requests
     Shows all pending requests with prescription preview and approve/reject actions
     """
     # Check if user is admin/staff
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not request.user.is_staff:
         return redirect('/accounts/login/?next=/admin/verify/')
     
     from django.db.models import Count, Q
