@@ -1977,3 +1977,194 @@ def smart_donor_match(request, blood_request_id):
     }
     
     return render(request, 'accounts/smart_donor_match.html', context)
+
+
+def register_step1(request):
+    """Step 1: Basic information (username, email, password)"""
+    # Get saved data from session
+    saved_data = request.session.get('registration_data', {})
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        
+        errors = {}
+        
+        if not username:
+            errors['username'] = ['Username is required.']
+        elif len(username) < 3:
+            errors['username'] = ['Username must be at least 3 characters.']
+        elif User.objects.filter(username=username).exists():
+            errors['username'] = ['Username already exists.']
+        
+        if not email:
+            errors['email'] = ['Email is required.']
+        elif '@' not in email:
+            errors['email'] = ['Please enter a valid email.']
+        elif User.objects.filter(email=email).exists():
+            errors['email'] = ['Email already exists.']
+        
+        if not password:
+            errors['password'] = ['Password is required.']
+        elif len(password) < 8:
+            errors['password'] = ['Password must be at least 8 characters.']
+        elif password != confirm_password:
+            errors['confirm_password'] = ['Passwords do not match.']
+        
+        if errors:
+            return render(request, 'accounts/register_step1.html', {
+                'errors': errors,
+                'saved_data': {**saved_data, **request.POST.dict()}
+            })
+        
+        # Auto-save to session
+        saved_data.update({
+            'username': username,
+            'email': email,
+            'password': password,
+        })
+        request.session['registration_data'] = saved_data
+        request.session.modified = True
+        
+        return redirect('register-step2')
+    
+    return render(request, 'accounts/register_step1.html', {'saved_data': saved_data})
+
+
+def register_step2(request):
+    """Step 2: Personal information (name, phone, DOB, blood group)"""
+    # Check if step 1 is completed
+    saved_data = request.session.get('registration_data', {})
+    if not saved_data.get('username') or not saved_data.get('email'):
+        return redirect('register-step1')
+    
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        blood_group = request.POST.get('blood_group', '').strip()
+        date_of_birth = request.POST.get('date_of_birth', '').strip()
+        
+        errors = {}
+        
+        if not first_name:
+            errors['first_name'] = ['First name is required.']
+        
+        if not phone_number:
+            errors['phone_number'] = ['Phone number is required.']
+        elif len(phone_number) < 10:
+            errors['phone_number'] = ['Please enter a valid phone number.']
+        
+        if not blood_group:
+            errors['blood_group'] = ['Blood group is required.']
+        
+        if not date_of_birth:
+            errors['date_of_birth'] = ['Date of birth is required.']
+        else:
+            try:
+                from datetime import datetime
+                dob = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
+                today = datetime.now().date()
+                age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                
+                if age < 18:
+                    errors['date_of_birth'] = ['You must be at least 18 years old.']
+            except ValueError:
+                errors['date_of_birth'] = ['Please enter a valid date (YYYY-MM-DD).']
+        
+        if errors:
+            return render(request, 'accounts/register_step2.html', {
+                'errors': errors,
+                'saved_data': {**saved_data, **request.POST.dict()}
+            })
+        
+        # Auto-save to session
+        saved_data.update({
+            'first_name': first_name,
+            'last_name': last_name,
+            'phone_number': phone_number,
+            'blood_group': blood_group,
+            'date_of_birth': date_of_birth,
+        })
+        request.session['registration_data'] = saved_data
+        request.session.modified = True
+        
+        return redirect('register-step3')
+    
+    return render(request, 'accounts/register_step2.html', {'saved_data': saved_data})
+
+
+def register_step3(request):
+    """Step 3: Location information (city, state, pincode) and final submission"""
+    # Check if step 2 is completed
+    saved_data = request.session.get('registration_data', {})
+    if not saved_data.get('first_name') or not saved_data.get('blood_group'):
+        return redirect('register-step2')
+    
+    if request.method == 'POST':
+        city = request.POST.get('city', '').strip()
+        state = request.POST.get('state', '').strip()
+        pincode = request.POST.get('pincode', '').strip()
+        country = request.POST.get('country', 'India').strip()
+        consent_given = request.POST.get('consent_given') == 'on'
+        
+        errors = {}
+        
+        if not city:
+            errors['city'] = ['City is required.']
+        
+        if not state:
+            errors['state'] = ['State is required.']
+        
+        if not pincode:
+            errors['pincode'] = ['Pincode is required.']
+        elif len(pincode) < 6:
+            errors['pincode'] = ['Please enter a valid pincode.']
+        
+        if not consent_given:
+            errors['consent'] = ['You must agree to the terms and conditions.']
+        
+        if errors:
+            return render(request, 'accounts/register_step3.html', {
+                'errors': errors,
+                'saved_data': {**saved_data, **request.POST.dict()}
+            })
+        
+        # Create user
+        try:
+            from datetime import datetime
+            
+            user = User.objects.create_user(
+                username=saved_data['username'],
+                email=saved_data['email'],
+                password=saved_data['password'],
+                first_name=saved_data['first_name'],
+                last_name=saved_data['last_name'],
+                phone_number=saved_data['phone_number'],
+                blood_group=saved_data['blood_group'],
+                date_of_birth=datetime.strptime(saved_data['date_of_birth'], '%Y-%m-%d').date(),
+                city=city,
+                state=state,
+                pincode=pincode,
+                country=country,
+                user_type='donor',
+            )
+            
+            # Clear session data
+            request.session.pop('registration_data', None)
+            request.session.modified = True
+            
+            messages.success(request, 'Registration successful! Please login.')
+            return redirect('login')
+            
+        except Exception as e:
+            logger.error(f'Registration error: {str(e)}', exc_info=True)
+            errors['general'] = ['Registration failed. Please try again.']
+            return render(request, 'accounts/register_step3.html', {
+                'errors': errors,
+                'saved_data': {**saved_data, **request.POST.dict()}
+            })
+    
+    return render(request, 'accounts/register_step3.html', {'saved_data': saved_data})

@@ -100,4 +100,9 @@ urlpatterns = [
     
     # Smart Donor Matching
     path('smart-match/<int:blood_request_id>/', views.smart_donor_match, name='smart-donor-match'),
+    
+    # 3-Step Registration with Auto-Save
+    path('register/step1/', views.register_step1, name='register-step1'),
+    path('register/step2/', views.register_step2, name='register-step2'),
+    path('register/step3/', views.register_step3, name='register-step3'),
 ]
