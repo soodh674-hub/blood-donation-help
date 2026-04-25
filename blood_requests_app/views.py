@@ -73,13 +73,12 @@ def time_ago(dt):
 
 
 @check_request_eligibility
+@login_required
 def create_request_unified_page(request):
     """
     Blood request creation page - handles both GET and POST
     Enhanced with GPS location detection and better validation
     """
-    if not request.user.is_authenticated:
-        return redirect('/accounts/login/?next=/requests/create/')
 
     # Handle POST request (form submission)
     if request.method == 'POST':

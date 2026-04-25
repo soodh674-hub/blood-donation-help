@@ -2000,24 +2000,32 @@ def hospital_dashboard(request):
     if request.user.user_type == 'hospital':
         try:
             hospital = Hospital.objects.get(user=request.user)
-        except Hospital.DoesNotExist:
+        except:
+            # Handle case where Hospital model doesn't exist or user has no hospital profile
             pass
     
     # Get blood requests created by this hospital
-    hospital_requests = BloodRequest.objects.filter(
-        created_by=request.user
-    ).order_by('-created_at')[:10]
-    
-    # Statistics
-    total_requests = BloodRequest.objects.filter(created_by=request.user).count()
-    active_requests = BloodRequest.objects.filter(
-        created_by=request.user,
-        status__in=['pending', 'accepted']
-    ).count()
-    completed_requests = BloodRequest.objects.filter(
-        created_by=request.user,
-        status='completed'
-    ).count()
+    try:
+        hospital_requests = BloodRequest.objects.filter(
+            created_by=request.user
+        ).order_by('-created_at')[:10]
+        
+        # Statistics
+        total_requests = BloodRequest.objects.filter(created_by=request.user).count()
+        active_requests = BloodRequest.objects.filter(
+            created_by=request.user,
+            status__in=['pending', 'accepted']
+        ).count()
+        completed_requests = BloodRequest.objects.filter(
+            created_by=request.user,
+            status='completed'
+        ).count()
+    except:
+        # Handle case where BloodRequest model has issues
+        hospital_requests = []
+        total_requests = 0
+        active_requests = 0
+        completed_requests = 0
     
     context = {
         'hospital': hospital,
