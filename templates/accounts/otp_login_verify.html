@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verify OTP - BloodLife{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center py-5 px-4" style="min-height: calc(100vh - 76px); background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 50%, var(--bg-primary) 100%);">
+    <div class="w-100" style="max-width: 450px;">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 64px; height: 64px; background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="bi bi-shield-lock text-white fs-4"></i>
+            </div>
+            <h2 class="display-6 fw-bold text-white mb-2">
+                Enter Verification Code
+            </h2>
+            <p class="small mb-0" style="color: var(--text-secondary);">
+                We sent a 6-digit code to <span id="displayEmail" class="text-danger font-medium">{{ email|default:"your email" }}</span>
+            </p>
+        </div>
+
+        <!-- OTP Verification Form -->
+        <div class="glass-card p-4">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form id="otpForm" method="POST" action="{% url 'otp-login-verify' %}">
+                {% csrf_token %}
+                
+                <input type="hidden" id="email" name="email" value="{{ email }}">
+                
+                <div class="mb-4">
+                    <label class="form-label text-white small fw-medium">6-Digit Code</label>
+                    <div class="d-flex justify-content-center gap-2">
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;" autofocus>
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
+                        <input type="text" maxlength="1" class="form-control text-center fs-4 fw-bold bg-white/10 border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
+                    </div>
+                    <input type="hidden" id="otp" name="otp">
+                </div>
+
+                <button type="submit" id="verifyBtn" class="btn btn-success w-100 mb-3">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Verify & Login
+                </button>
+
+                <div class="text-center">
+                    <p class="text-secondary small mb-2">
+                        Didn't receive the code?
+                    </p>
+                    <button type="button" id="resendBtn" class="btn btn-link text-danger p-0" disabled>
+                        Resend Code
+                    </button>
+                    <p id="timer" class="text-secondary small mt-1">
+                        Resend available in <span id="countdown">60</span>s
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.05);">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-info-circle text-info fs-5"></i>
+                <div>
+                    <p class="text-white small fw-semibold mb-1">Need Help?</p>
+                    <p class="text-secondary small mb-0">
+                        Check your spam folder. The code expires in 10 minutes.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const otpHidden = document.getElementById('otp');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const countdownEl = document.getElementById('countdown');
+    const timerEl = document.getElementById('timer');
+    
+    let countdown = 60;
+    let timerInterval;
+    
+    // OTP Input Handling
+    otpInputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+            // Move to next input
+            if (this.value.length === 1 && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+            
+            // Combine all OTP values
+            let otp = '';
+            otpInputs.forEach(inp => otp += inp.value);
+            otpHidden.value = otp;
+            
+            // Auto-submit when all digits entered
+            if (otp.length === 6) {
+                verifyBtn.focus();
+            }
+        });
+        
+        input.addEventListener('keydown', function(e) {
+            // Move to previous input on backspace
+            if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+        });
+        
+        // Only allow numbers
+        input.addEventListener('keypress', function(e) {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Countdown Timer
+    function startCountdown() {
+        countdown = 60;
+        resendBtn.disabled = true;
+        timerEl.style.display = 'block';
+        
+        timerInterval = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                resendBtn.disabled = false;
+                timerEl.style.display = 'none';
+            }
+        }, 1000);
+    }
+    
+    startCountdown();
+    
+    // Resend OTP
+    resendBtn.addEventListener('click', function() {
+        // Submit form to resend
+        const email = document.getElementById('email').value;
+        window.location.href = `/accounts/otp-login/?email=${encodeURIComponent(email)}`;
+    });
+});
+</script>
+
+<style>
+.otp-input:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25) !important;
+    outline: none;
+}
+
+.otp-input {
+    transition: all 0.2s ease;
+}
+
+.otp-input:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+</style>
+{% endblock %}

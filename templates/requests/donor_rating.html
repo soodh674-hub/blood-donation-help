@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rate Donor - {{ donor.get_full_name|default:donor.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rating-hero {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 3rem 0;
+        color: white;
+        text-align: center;
+    }
+    
+    .rating-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        max-width: 700px;
+        margin: -3rem auto 2rem;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+    
+    .star-rating label {
+        font-size: 3rem;
+        color: #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .star-rating label:hover,
+    .star-rating label:hover ~ label,
+    .star-rating input:checked ~ label {
+        color: #fbbf24;
+        transform: scale(1.1);
+    }
+    
+    .donor-info {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .donor-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .donor-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    
+    .donor-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .rating-summary {
+        background: #f9fafb;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .average-rating {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #111827;
+    }
+    
+    .rating-stars {
+        color: #fbbf24;
+        font-size: 1.5rem;
+    }
+    
+    .rating-bar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+    
+    .rating-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 0.75rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(245, 87, 108, 0.3);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .previous-ratings {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .rating-item {
+        background: #f9fafb;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .rating-comment {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rating-hero">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="bi bi-star-fill me-2"></i>
+            Rate This Donor
+        </h1>
+        <p class="lead">Help others by sharing your experience</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="rating-card">
+        <!-- Donor Information -->
+        <div class="donor-info">
+            <div class="donor-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="donor-name">{{ donor.get_full_name|default:donor.username }}</div>
+            <p class="text-muted mb-0">
+                <i class="bi bi-droplet-fill text-danger me-1"></i>
+                Blood Group: {{ donor.blood_group }}
+            </p>
+            
+            <div class="donor-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_donations }}</div>
+                    <div class="stat-label">Donations</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ avg_rating|floatformat:1 }}</div>
+                    <div class="stat-label">Avg Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_ratings }}</div>
+                    <div class="stat-label">Ratings</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rating Summary -->
+        {% if total_ratings > 0 %}
+        <div class="rating-summary">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                    <div class="average-rating">{{ avg_rating|floatformat:1 }}</div>
+                    <div class="rating-stars mb-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_rating %}
+                                <i class="bi bi-star-fill"></i>
+                            {% elif forloop.counter <= avg_rating|add:"0.5" %}
+                                <i class="bi bi-star-half"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="text-muted small">{{ total_ratings }} ratings</div>
+                </div>
+                <div class="col-md-8">
+                    {% for i in "54321" %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="me-2" style="width: 20px;">{{ i }}</div>
+                        <div class="flex-grow-1">
+                            <div class="rating-bar">
+                                <div class="rating-bar-fill" data-width="{{ rating_distribution.i|default:0 }}"></div>
+                            </div>
+                        </div>
+                        <div class="ms-2 text-muted small" style="width: 40px;">{{ rating_counts.i|default:0 }}</div>
+                    </div>
+                    {% endfor %}
+                    
+                    <script>
+                    // Set rating bar widths via JavaScript to avoid linter errors
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.querySelectorAll('.rating-bar-fill').forEach(function(bar) {
+                            var width = bar.getAttribute('data-width');
+                            if (width) {
+                                bar.style.width = width + '%';
+                            }
+                        });
+                    });
+                    </script>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Rating Form -->
+        <form method="POST" id="rating-form">
+            {% csrf_token %}
+            
+            <div class="text-center mb-4">
+                <h5 class="fw-bold mb-3">Your Rating</h5>
+                <div class="star-rating">
+                    <input type="radio" name="rating" value="5" id="star5" required>
+                    <label for="star5" title="5 stars"><i class="bi bi-star-fill"></i></label>
+                    
+                    <input type="radio" name="rating" value="4" id="star4">
+                    <label for="star4" title="4 stars"><i class="bi bi-star-fill"></i></label>
+                    
+                    <input type="radio" name="rating" value="3" id="star3">
+                    <label for="star3" title="3 stars"><i class="bi bi-star-fill"></i></label>
+                    
+                    <input type="radio" name="rating" value="2" id="star2">
+                    <label for="star2" title="2 stars"><i class="bi bi-star-fill"></i></label>
+                    
+                    <input type="radio" name="rating" value="1" id="star1">
+                    <label for="star1" title="1 star"><i class="bi bi-star-fill"></i></label>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="comment" class="form-label fw-bold">
+                    <i class="bi bi-chat-quote me-1"></i>
+                    Your Review (Optional)
+                </label>
+                <textarea 
+                    class="form-control" 
+                    id="comment" 
+                    name="comment" 
+                    rows="4" 
+                    placeholder="Share your experience with this donor..."
+                    style="border: 2px solid #e5e7eb; border-radius: 0.75rem;"
+                ></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn">
+                <i class="bi bi-check-circle me-2"></i>
+                Submit Rating
+            </button>
+        </form>
+        
+        <!-- Previous Ratings -->
+        {% if previous_ratings %}
+        <div class="previous-ratings">
+            <h5 class="fw-bold mb-3">
+                <i class="bi bi-clock-history me-2"></i>
+                Recent Ratings
+            </h5>
+            
+            {% for rating in previous_ratings %}
+            <div class="rating-item">
+                <div class="rating-header">
+                    <div>
+                        <strong>{{ rating.rater.get_full_name|default:rating.rater.username }}</strong>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= rating.rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ rating.created_at|date:"M d, Y" }}</small>
+                </div>
+                {% if rating.comment %}
+                <div class="rating-comment">{{ rating.comment }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('rating-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    form.addEventListener('submit', function(e) {
+        const rating = document.querySelector('input[name="rating"]:checked');
+        
+        if (!rating) {
+            e.preventDefault();
+            alert('Please select a rating');
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Submitting...';
+    });
+});
+</script>
+{% endblock %}

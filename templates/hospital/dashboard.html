@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hospital Dashboard - {{ hospital.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold text-white mb-1">
+                            <i class="bi bi-hospital me-2"></i>Hospital Dashboard
+                        </h2>
+                        <p class="text-secondary mb-0">{{ hospital.name }} - {{ hospital.get_hospital_type_display }}</p>
+                    </div>
+                    <div>
+                        {% if hospital.verification_status == 'verified' %}
+                            <span class="badge bg-success bg-opacity-25 text-success px-3 py-2">
+                                <i class="bi bi-check-circle me-1"></i>Verified
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-2">
+                                <i class="bi bi-clock me-1"></i>{{ hospital.get_verification_status_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="glass-card p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.2);">
+                        <i class="bi bi-droplet-fill text-danger fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-secondary small mb-0">Total Requests</p>
+                        <h4 class="text-white fw-bold mb-0">{{ total_requests }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="glass-card p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.2);">
+                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-secondary small mb-0">Fulfilled</p>
+                        <h4 class="text-white fw-bold mb-0">{{ fulfilled_requests }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="glass-card p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.2);">
+                        <i class="bi bi-clock-fill text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-secondary small mb-0">Pending</p>
+                        <h4 class="text-white fw-bold mb-0">{{ pending_requests }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="glass-card p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(59, 130, 246, 0.2);">
+                        <i class="bi bi-people-fill text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <p class="text-secondary small mb-0">Staff Members</p>
+                        <h4 class="text-white fw-bold mb-0">{{ staff_count }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <!-- Recent Requests -->
+        <div class="col-12 col-lg-8">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-white fw-bold mb-0">
+                        <i class="bi bi-list-ul me-2"></i>Recent Blood Requests
+                    </h5>
+                    <a href="{% url 'blood-request-create-page' %}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i>New Request
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Blood Group</th>
+                                <th>Units</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in recent_requests %}
+                            <tr>
+                                <td>{{ request.patient_name }}</td>
+                                <td>
+                                    <span class="badge bg-danger">{{ request.patient_blood_group }}</span>
+                                </td>
+                                <td>{{ request.fulfilled_units }}/{{ request.required_units }}</td>
+                                <td>
+                                    {% if request.priority == 'emergency' %}
+                                        <span class="badge bg-danger">Emergency</span>
+                                    {% elif request.priority == 'urgent' %}
+                                        <span class="badge bg-warning">Urgent</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Normal</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == 'fulfilled' %}
+                                        <span class="badge bg-success">Fulfilled</span>
+                                    {% elif request.status == 'active' %}
+                                        <span class="badge bg-primary">Active</span>
+                                    {% elif request.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ request.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ request.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'track-specific-request' request.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-secondary py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No blood requests yet
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Info -->
+        <div class="col-12 col-lg-4">
+            <!-- Quick Actions -->
+            <div class="glass-card p-4 mb-4">
+                <h5 class="text-white fw-bold mb-3">
+                    <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'blood-request-create-page' %}" class="btn btn-danger">
+                        <i class="bi bi-plus-circle me-2"></i>Create Blood Request
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-people me-2"></i>Manage Staff
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-graph-up me-2"></i>View Analytics
+                    </a>
+                    <a href="#" class="btn btn-outline-light">
+                        <i class="bi bi-gear me-2"></i>Hospital Settings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hospital Info -->
+            <div class="glass-card p-4 mb-4">
+                <h5 class="text-white fw-bold mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Hospital Information
+                </h5>
+                <div class="text-secondary small">
+                    <p class="mb-2">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        {{ hospital.address }}, {{ hospital.city }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-telephone me-2"></i>
+                        {{ hospital.phone }}
+                    </p>
+                    <p class="mb-2">
+                        <i class="bi bi-envelope me-2"></i>
+                        {{ hospital.email }}
+                    </p>
+                    <p class="mb-0">
+                        <i class="bi bi-hash me-2"></i>
+                        License: {{ hospital.license_number }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Blood Inventory -->
+            <div class="glass-card p-4">
+                <h5 class="text-white fw-bold mb-3">
+                    <i class="bi bi-box-seam me-2"></i>Blood Inventory
+                </h5>
+                <div class="row g-2">
+                    {% for group in 'A+|A-|B+|B-|AB+|AB-|O+|O-'.split('|' %}
+                    <div class="col-4">
+                        <div class="text-center p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                            <p class="text-danger fw-bold mb-0">{{ group }}</p>
+                            <small class="text-secondary">-- units</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
