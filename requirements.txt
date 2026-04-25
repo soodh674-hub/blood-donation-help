@@ -1,6 +1,6 @@
 Django==4.2.7
 djangorestframework==3.14.0
-djangorestframework-simplejwt==5.3.0
+djangorestframework-simplejwt==5.5.0  # Updated to fix pkg_resources issue in Python 3.13
 celery==5.3.4
 redis==5.0.1
 django-redis==5.2.0
@@ -26,4 +26,3 @@ psycopg[binary]==3.2.3  # PostgreSQL database adapter (modern psycopg 3.x for Py
 Pillow==11.0.0  # Image processing for profile photos and donor images
 requests==2.31.0
 firebase-admin==6.4.0  # Firebase Admin SDK for real-time chat and push notifications
-setuptools>=69.0.0  # Required for pkg_resources (used by djangorestframework-simplejwt in Python 3.13)

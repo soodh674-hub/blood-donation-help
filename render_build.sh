@@ -32,8 +32,10 @@ if [ ! -f "requirements.txt" ]; then
 else
     # Install dependencies
     echo "\n📦 Installing Python dependencies..."
-    pip install --upgrade pip setuptools wheel
+    pip install --upgrade pip wheel
     pip install -r requirements.txt
+    # Ensure setuptools is available for packages that need pkg_resources
+    pip install --upgrade setuptools
     echo "✅ Dependencies installed"
 fi
 
