@@ -1696,17 +1696,11 @@ def get_unread_chat_count(user):
     return ChatMessage.objects.filter(receiver=user, is_read=False).count()
 
 
+@login_required
 @csrf_exempt
 def unread_chat_count_api(request):
     """API endpoint to get unread chat count for navbar badge"""
     try:
-        # Return 0 for unauthenticated users
-        if not request.user.is_authenticated:
-            return JsonResponse({
-                'success': True,
-                'unread_count': 0,
-            })
-        
         unread_count = get_unread_chat_count(request.user)
         
         return JsonResponse({

@@ -1916,7 +1916,7 @@ def my_donation_history(request):
     donations = RequestResponse.objects.filter(
         donor=request.user,
         status='donated'
-    ).select_related('request').order_by('-updated_at')
+    ).select_related('request').order_by('-completed_at')
     
     context = {
         'donations': donations,
