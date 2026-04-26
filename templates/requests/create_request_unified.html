@@ -24,6 +24,29 @@
         z-index: 0;
     }
     
+    /* Map container fixes */
+    #location-picker-map {
+        height: 400px;
+        width: 100%;
+        border-radius: 10px;
+        z-index: 1;
+        min-height: 400px;
+    }
+    
+    @media (max-width: 768px) {
+        #location-picker-map {
+            height: 300px;
+            min-height: 300px;
+        }
+    }
+    
+    /* Map container wrapper */
+    .map-container-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+        z-index: 1;
+    }
+    
     .step-item {
         display: flex;
         flex-direction: column;
@@ -424,8 +447,15 @@
                 
                 <!-- Map Picker (Hidden by default) -->
                 <div id="map-picker-container" class="mb-3 d-none">
-                    <div id="location-picker-map" style="height: 300px; border-radius: 12px; border: 2px solid rgba(255, 255, 255, 0.2);"></div>
-                    <p class="small text-muted mt-2">Click on the map to select location</p>
+                    <div class="map-container-wrapper">
+                        <div id="location-picker-map"></div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="useCurrentLocation()">
+                            <i class="bi bi-geo-alt me-1"></i>Use Current Location
+                        </button>
+                        <p class="small text-muted mb-0 ms-auto">Click on map or drag marker to select location</p>
+                    </div>
                 </div>
                 
                 <!-- Hidden fields for coordinates -->
@@ -597,7 +627,8 @@
                     </button>
                     
                     <button type="submit" id="submit-btn"
-                            class="btn btn-modern btn-primary-modern">
+                            class="btn btn-modern btn-primary-modern"
+                            onclick="return validateForm()">
                         <span>Create Request</span>
                         <i class="bi bi-arrow-right ms-2"></i>
                     </button>
@@ -880,6 +911,13 @@ function initMapPicker() {
     const defaultLat = 20.5937;
     const defaultLng = 78.9629;
     
+    // Check if map container exists
+    const mapContainer = document.getElementById('location-picker-map');
+    if (!mapContainer) {
+        console.error('Map container not found');
+        return;
+    }
+    
     mapPicker = L.map('location-picker-map', {
         center: [defaultLat, defaultLng],
         zoom: 5,
@@ -895,16 +933,43 @@ function initMapPicker() {
     }).addTo(mapPicker);
     
     // Add location control for auto-detect
-    L.control.locate({
+    const locateControl = L.control.locate({
         position: 'topleft',
         flyTo: true,
         keepCurrentZoomLevel: true,
         showUserLocation: true,
         locateOptions: {
             enableHighAccuracy: true,
-            maxZoom: 16
+            maxZoom: 16,
+            timeout: 10000,
+            maximumAge: 0
         }
     }).addTo(mapPicker);
+    
+    // Handle location events
+    mapPicker.on('locationfound', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        if (mapMarker) {
+            mapMarker.setLatLng([lat, lng]);
+        } else {
+            mapMarker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(mapPicker);
+        }
+        
+        // Update coordinates
+        updateCoordinates(lat, lng);
+        
+        // Show success message
+        showLocationMessage('Location detected successfully!', 'success');
+    });
+    
+    mapPicker.on('locationerror', function(e) {
+        console.error('Location error:', e.message);
+        showLocationMessage('Unable to detect location. Please enable location permissions.', 'error');
+    });
     
     // Click handler
     mapPicker.on('click', async function(e) {
@@ -915,8 +980,13 @@ function initMapPicker() {
         if (mapMarker) {
             mapMarker.setLatLng([lat, lng]);
         } else {
-            mapMarker = L.marker([lat, lng]).addTo(mapPicker);
+            mapMarker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(mapPicker);
         }
+        
+        // Update coordinates
+        updateCoordinates(lat, lng);
         
         // Reverse geocode
         try {
@@ -940,6 +1010,65 @@ function initMapPicker() {
             mapMarker.bindPopup(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`).openPopup();
         }
     });
+    
+    // Add dragend event to update coordinates when marker is dragged
+    mapMarker.on('dragend', function(e) {
+        const lat = e.target.getLatLng().lat;
+        const lng = e.target.getLatLng().lng;
+        updateCoordinates(lat, lng);
+        
+        // Reverse geocode after drag
+        reverseGeocodeLocation(lat, lng);
+    });
+}
+
+// Function to reverse geocode location
+async function reverseGeocodeLocation(lat, lng) {
+    try {
+        const response = await fetch(`/accounts/api/location/reverse-geocode/?lat=${lat}&lon=${lng}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const address = data.address;
+            document.getElementById('location-search').value = address.display_name.split(',')[0];
+            document.getElementById('formatted-address').value = address.display_name;
+            document.getElementById('city').value = address.city || '';
+            document.getElementById('state').value = address.state || '';
+            document.getElementById('pincode').value = address.pincode || '';
+            
+            if (mapMarker) {
+                mapMarker.bindPopup(address.display_name).openPopup();
+            }
+        }
+    } catch (error) {
+        console.error('Error reverse geocoding:', error);
+    }
+}
+
+// Function to update coordinates
+function updateCoordinates(lat, lng) {
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+}
+
+// Function to show location messages
+function showLocationMessage(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'warning'} alert-dismissible fade show`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '80px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '10000';
+    alertDiv.style.minWidth = '300px';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
 }
 
 // Report User Function
@@ -976,6 +1105,74 @@ async function reportUser(userId) {
         console.error('Error reporting user:', error);
         alert('Failed to report user. Please try again.');
     }
+}
+
+// Manual "Use Current Location" button function
+function useCurrentLocation() {
+    if (!navigator.geolocation) {
+        showLocationMessage('Geolocation is not supported by your browser', 'error');
+        return;
+    }
+    
+    showLocationMessage('Detecting your location...', 'success');
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            if (mapPicker) {
+                mapPicker.setView([lat, lng], 16);
+                
+                if (mapMarker) {
+                    mapMarker.setLatLng([lat, lng]);
+                } else {
+                    mapMarker = L.marker([lat, lng], {
+                        draggable: true
+                    }).addTo(mapPicker);
+                }
+                
+                updateCoordinates(lat, lng);
+                reverseGeocodeLocation(lat, lng);
+                showLocationMessage('Location detected successfully!', 'success');
+            }
+        },
+        function(error) {
+            let errorMessage = 'Unable to detect location';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Location permission denied. Please enable location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Location request timed out.';
+                    break;
+                default:
+                    errorMessage = 'An unknown error occurred.';
+            }
+            showLocationMessage(errorMessage, 'error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
+// Form validation before submission
+function validateForm() {
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+    
+    if (!lat || !lng) {
+        showLocationMessage('Please select a location on the map before submitting.', 'error');
+        return false;
+    }
+    
+    return true;
 }
 
 // Get CSRF Token
