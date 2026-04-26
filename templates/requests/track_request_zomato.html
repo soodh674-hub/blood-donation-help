@@ -537,7 +537,7 @@
                     </button>
                     {% endif %}
                     
-                    <a href="{% url 'chat_conversation' blood_request.id %}" class="action-btn primary text-center text-decoration-none">
+                    <a href="{% url 'requests:chat-conversation' blood_request.requester.id %}" class="action-btn primary text-center text-decoration-none">
                         <i class="bi bi-chat-dots me-2"></i>
                         Open Chat
                     </a>

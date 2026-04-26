@@ -113,9 +113,11 @@ class SecurityMiddleware:
             # Check if path matches any blocked pattern
             for pattern in self.compiled_patterns:
                 if pattern.search(path):
-                    # Log the attempt (you can add proper logging here)
-                    print(f"[SECURITY] Blocked suspicious request: {path}")
-                    
+                    # Log the attempt using proper logging instead of print
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Blocked suspicious request: {path}")
+
                     # Return 403 Forbidden
                     return HttpResponseForbidden(
                         '<h1>403 Forbidden</h1><p>Access denied.</p>',
