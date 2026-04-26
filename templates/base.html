@@ -218,6 +218,28 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
         }
+
+        /* =========================================
+           NOTIFICATION TOAST STYLES - Fix Overlap
+           ========================================= */
+        
+        .notification-toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        @media (max-width: 768px) {
+            .notification-toast {
+                top: 75px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+        }
         
         @keyframes popupFadeIn {
             from {

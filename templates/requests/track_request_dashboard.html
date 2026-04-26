@@ -564,11 +564,31 @@ function initializeTrackingMap() {
     const mapElement = document.getElementById('tracking-map');
     const initialLat = parseFloat(mapElement.dataset.lat || '20.5937');
     const initialLng = parseFloat(mapElement.dataset.lng || '78.9629');
-    trackingMap = L.map('tracking-map').setView([initialLat, initialLng], 5);
+    trackingMap = L.map('tracking-map', {
+        center: [initialLat, initialLng],
+        zoom: 5,
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        dragging: true,
+        keyboard: true
+    });
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
+    }).addTo(trackingMap);
+    
+    // Add location control for auto-detect
+    L.control.locate({
+        position: 'topleft',
+        flyTo: true,
+        keepCurrentZoomLevel: true,
+        showUserLocation: true,
+        locateOptions: {
+            enableHighAccuracy: true,
+            maxZoom: 16
+        }
     }).addTo(trackingMap);
 }
 

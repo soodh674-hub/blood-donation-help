@@ -1,5 +1,5 @@
 <!-- Modern Professional Navigation Bar - Bootstrap 5 Version -->
-<nav class="navbar fixed-top navbar-expand-lg" id="mainNavbar" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1050 !important; background: rgba(15, 20, 25, 0.98) !important; backdrop-filter: blur(12px); border-bottom: 2px solid rgba(59, 130, 246, 0.4); height: 70px; box-shadow: 0 4px 30px rgba(59, 130, 246, 0.2), 0 2px 10px rgba(0, 0, 0, 0.5);">
+<nav class="navbar sticky-top navbar-expand-lg" id="mainNavbar" style="position: sticky !important; top: 0 !important; z-index: 1050 !important; background: rgba(15, 20, 25, 0.98) !important; backdrop-filter: blur(12px); border-bottom: 2px solid rgba(59, 130, 246, 0.4); height: 70px; box-shadow: 0 4px 30px rgba(59, 130, 246, 0.2), 0 2px 10px rgba(0, 0, 0, 0.5);">
     <div class="container-fluid px-3 px-sm-4 px-md-5" style="max-width: 1536px;">
         <!-- Logo -->
         <div class="d-flex align-items-center gap-2">
@@ -13,7 +13,7 @@
         </div>
 
         <!-- Mobile Toggle Button -->
-        <button class="navbar-toggler d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation" style="color: #60a5fa;">
+        <button class="navbar-toggler d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation" style="color: #60a5fa; padding: 10px 14px;">
             <i class="bi bi-list" style="font-size: 1.5rem;"></i>
         </button>
 
@@ -45,6 +45,16 @@
                 Track
             </a>
             {% endif %}
+
+            <!-- Search Bar -->
+            <div class="ms-3">
+                <div class="input-group" style="width: 250px;">
+                    <input type="text" class="form-control" placeholder="Search donors..." id="navbarSearch" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: white; font-size: 0.875rem;">
+                    <button class="btn btn-outline-light" type="button" onclick="performNavbarSearch()" style="border-color: rgba(59, 130, 246, 0.3);">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
 
             <!-- Auth Links - Guest User -->
             {% if not user.is_authenticated %}
@@ -566,7 +576,26 @@
 
 <!-- Navbar Scripts -->
 <script>
+    // Navbar search functionality
+    function performNavbarSearch() {
+        const searchInput = document.getElementById('navbarSearch');
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `{% url 'accounts:search-donors' %}?q=${encodeURIComponent(query)}`;
+        }
+    }
+
+    // Search on Enter key
     document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('navbarSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performNavbarSearch();
+                }
+            });
+        }
+
         // Navbar scroll effect
         const navbar = document.getElementById('mainNavbar');
         window.addEventListener('scroll', function() {

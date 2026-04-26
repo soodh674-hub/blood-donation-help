@@ -144,13 +144,33 @@ function liveMapTracker(requestId, targetLat, targetLng) {
             // Wait for DOM to be ready
             setTimeout(() => {
                 try {
-                    // Initialize Leaflet map
-                    this.map = L.map('map').setView([this.targetLat || 20.5937, this.targetLng || 78.9629], 13);
+                    // Initialize Leaflet map with full interactivity
+                    this.map = L.map('map', {
+                        center: [this.targetLat || 20.5937, this.targetLng || 78.9629],
+                        zoom: 13,
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        doubleClickZoom: true,
+                        dragging: true,
+                        keyboard: true
+                    });
                     
                     // Add OpenStreetMap tiles
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                         maxZoom: 19
+                    }).addTo(this.map);
+                    
+                    // Add location control for auto-detect
+                    L.control.locate({
+                        position: 'topleft',
+                        flyTo: true,
+                        keepCurrentZoomLevel: true,
+                        showUserLocation: true,
+                        locateOptions: {
+                            enableHighAccuracy: true,
+                            maxZoom: 16
+                        }
                     }).addTo(this.map);
                     
                     this.mapLoaded = true;

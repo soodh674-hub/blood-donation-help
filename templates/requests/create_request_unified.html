@@ -880,10 +880,30 @@ function initMapPicker() {
     const defaultLat = 20.5937;
     const defaultLng = 78.9629;
     
-    mapPicker = L.map('location-picker-map').setView([defaultLat, defaultLng], 5);
+    mapPicker = L.map('location-picker-map', {
+        center: [defaultLat, defaultLng],
+        zoom: 5,
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        dragging: true,
+        keyboard: true
+    });
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
+    }).addTo(mapPicker);
+    
+    // Add location control for auto-detect
+    L.control.locate({
+        position: 'topleft',
+        flyTo: true,
+        keepCurrentZoomLevel: true,
+        showUserLocation: true,
+        locateOptions: {
+            enableHighAccuracy: true,
+            maxZoom: 16
+        }
     }).addTo(mapPicker);
     
     // Click handler

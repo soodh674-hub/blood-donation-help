@@ -121,11 +121,31 @@ const HOSPITAL_LNG = parseFloat('{{ hospital_longitude|default:77.2090 }}') || 7
 
 // Initialize map
 function initMap() {
-    map = L.map('map').setView([HOSPITAL_LAT, HOSPITAL_LNG], 13);
+    map = L.map('map', {
+        center: [HOSPITAL_LAT, HOSPITAL_LNG],
+        zoom: 13,
+        zoomControl: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
+        dragging: true,
+        keyboard: true
+    });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
+    }).addTo(map);
+    
+    // Add location control for auto-detect
+    L.control.locate({
+        position: 'topleft',
+        flyTo: true,
+        keepCurrentZoomLevel: true,
+        showUserLocation: true,
+        locateOptions: {
+            enableHighAccuracy: true,
+            maxZoom: 16
+        }
     }).addTo(map);
 
     // Hospital marker

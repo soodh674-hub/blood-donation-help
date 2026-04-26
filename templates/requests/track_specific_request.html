@@ -433,10 +433,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const lng = parseFloat(mapElement.dataset.lng);
 
     if (typeof L !== 'undefined' && lat && lng) {
-        const map = L.map('map').setView([lat, lng], 13);
+        const map = L.map('map', {
+            center: [lat, lng],
+            zoom: 13,
+            zoomControl: true,
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+            dragging: true,
+            keyboard: true
+        });
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add location control for auto-detect
+        L.control.locate({
+            position: 'topleft',
+            flyTo: true,
+            keepCurrentZoomLevel: true,
+            showUserLocation: true,
+            locateOptions: {
+                enableHighAccuracy: true,
+                maxZoom: 16
+            }
         }).addTo(map);
         
         // Add marker for hospital location
