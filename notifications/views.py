@@ -163,9 +163,10 @@ def update_donation_status(request):
 @login_required
 def notification_list(request):
     """
-    Display all notifications for the user
+    Display all notifications for the user with pagination
     """
     try:
+        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
         from notifications.models import Notification
         
         # Get unread notifications
@@ -174,21 +175,37 @@ def notification_list(request):
             is_read=False
         )[:10]  # Show last 10 unread
         
-        # Get all notifications
+        # Get all notifications with pagination
         all_notifications = Notification.objects.filter(
             user=request.user
-        ).order_by('-created_at')[:50]  # Show last 50
+        ).order_by('-created_at')
+        
+        # Pagination
+        page = request.GET.get('page', 1)
+        paginator = Paginator(all_notifications, 20)  # 20 notifications per page
+        
+        try:
+            notifications_page = paginator.page(page)
+        except PageNotAnInteger:
+            notifications_page = paginator.page(1)
+        except EmptyPage:
+            notifications_page = paginator.page(paginator.num_pages)
         
         context = {
             'unread_count': unread_notifications.count(),
-            'notifications': all_notifications,
+            'notifications': notifications_page,
+            'page_obj': notifications_page,
         }
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Return as JSON for AJAX requests
             return JsonResponse({
                 'unread_count': context['unread_count'],
-                'notifications': list(all_notifications.values())
+                'notifications': list(notifications_page.object_list.values()),
+                'has_next': notifications_page.has_next(),
+                'has_previous': notifications_page.has_previous(),
+                'page': notifications_page.number,
+                'num_pages': paginator.num_pages
             })
         
         return render(request, 'notifications/notification_list.html', context)

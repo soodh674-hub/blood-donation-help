@@ -54,6 +54,32 @@ class BloodDonationCamp(models.Model):
         return 0
 
 
+class DonorRating(models.Model):
+    """Donor rating system for blood donations"""
+    
+    RATING_CHOICES = [
+        (1, 'Poor'),
+        (2, 'Fair'),
+        (3, 'Good'),
+        (4, 'Very Good'),
+        (5, 'Excellent'),
+    ]
+    
+    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
+    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
+    blood_request = models.ForeignKey('BloodRequest', on_delete=models.CASCADE, related_name='donor_ratings')
+    rating = models.IntegerField(choices=RATING_CHOICES)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['donor', 'rater', 'blood_request']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.rater.username} rated {self.donor.username}: {self.rating}/5"
+
+
 class BloodRequest(models.Model):
     """Enhanced Blood request with real-time tracking support"""
     
@@ -262,9 +288,111 @@ class BloodRequest(models.Model):
             self.status = 'expired'
             self.add_status_change('expired', 'Request expired due to time limit')
             self.save(update_fields=['status', 'updated_at', 'status_history'])
-            logger.info(f"Request #{self.id} expired: {old_status} → expired")
             return True
         return False
+    
+    def check_duplicate_request(self, user, blood_group, city, hours=24):
+        """Check for duplicate requests from same user within specified hours"""
+        from django.utils import timezone
+        cutoff_time = timezone.now() - timezone.timedelta(hours=hours)
+        
+        duplicates = BloodRequest.objects.filter(
+            requester=user,
+            patient_blood_group=blood_group,
+            city=city,
+            created_at__gte=cutoff_time,
+            status__in=['pending', 'approved', 'active', 'partially_fulfilled']
+        ).exclude(id=self.id if self.id else None)
+        
+        return duplicates.exists()
+    
+    @property
+    def average_rating(self):
+        """Calculate average rating for this request's donors"""
+        ratings = self.donor_ratings.all()
+        if ratings.exists():
+            return sum(r.rating for r in ratings) / ratings.count()
+        return 0
+    
+    def find_matching_donors(self, max_distance_km=50, limit=20):
+        """Smart donor matching algorithm based on multiple factors"""
+        from django.db.models import Q, F
+        from accounts.models import User
+        
+        # Get eligible donors
+        eligible_donors = User.objects.filter(
+            is_donor=True,
+            is_active=True,
+            is_available=True,
+            is_verified=True,
+            blood_group=self.patient_blood_group
+        ).exclude(id=self.requester.id)
+        
+        # Calculate distance for each donor
+        matched_donors = []
+        for donor in eligible_donors:
+            if hasattr(donor, 'latitude') and hasattr(donor, 'longitude') and donor.latitude and donor.longitude:
+                distance = self.calculate_distance(
+                    float(self.latitude), float(self.longitude),
+                    float(donor.latitude), float(donor.longitude)
+                )
+                
+                if distance <= max_distance_km:
+                    # Calculate compatibility score
+                    score = self.calculate_compatibility_score(donor, distance)
+                    matched_donors.append({
+                        'donor': donor,
+                        'distance': distance,
+                        'score': score
+                    })
+        
+        # Sort by compatibility score (highest first)
+        matched_donors.sort(key=lambda x: x['score'], reverse=True)
+        
+        return matched_donors[:limit]
+    
+    def calculate_distance(self, lat1, lon1, lat2, lon2):
+        """Calculate distance between two points using Haversine formula"""
+        import math
+        R = 6371  # Earth's radius in km
+        dLat = (lat2 - lat1) * math.pi / 180
+        dLon = (lon2 - lon1) * math.pi / 180
+        a = math.sin(dLat/2) * math.sin(dLat/2) + \
+            math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) * \
+            math.sin(dLon/2) * math.sin(dLon/2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        return R * c
+    
+    def calculate_compatibility_score(self, donor, distance):
+        """Calculate compatibility score for donor matching"""
+        score = 100
+        
+        # Distance penalty (closer is better)
+        if distance <= 5:
+            score += 30
+        elif distance <= 10:
+            score += 20
+        elif distance <= 20:
+            score += 10
+        elif distance <= 50:
+            score += 5
+        
+        # Trust score bonus
+        score += donor.trust_score * 0.3
+        
+        # Donation history bonus
+        score += donor.donations_completed * 2
+        
+        # Recent donation penalty (if donated recently, might not be eligible)
+        if donor.last_donation_date:
+            days_since = (timezone.now().date() - donor.last_donation_date).days
+            if days_since < 90:
+                score -= 50  # Not eligible yet
+            elif days_since < 120:
+                score -= 10  # Recently donated, lower priority
+        
+        # Cap score at 100
+        return min(100, max(0, score))
     
     def activate_request(self):
         """Activate the request and start searching for donors"""
@@ -424,24 +552,6 @@ class RequestUpdate(models.Model):
 
 # ChatMessage moved to models_chat.py to avoid conflicts
 from .models_chat import ChatMessage  # Import from separate file
-
-class DonorRating(models.Model):
-    """Rating system for donors and requesters"""
-    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blood_req_given_ratings')
-    rated_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blood_req_received_ratings')
-    request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE, related_name='blood_req_ratings')
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])  # 1-5 stars
-    comment = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['rater', 'rated_user', 'request']
-    
-    @property
-    def average_rating(self):
-        """Get user's average rating"""
-        ratings = self.__class__.objects.filter(rated_user=self.rated_user)
-        return ratings.aggregate(avg=models.Avg('rating'))['avg'] or 0
 
 
 # Register for audit logging
