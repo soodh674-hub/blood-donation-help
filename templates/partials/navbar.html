@@ -18,7 +18,7 @@
         </button>
 
         <!-- Desktop Menu -->
-        <div class="d-none d-md-flex align-items-center gap-2" id="desktopMenu">
+        <div class="d-none d-md-flex align-items-center gap-1" id="desktopMenu">
             <a href="{% url 'home' %}" class="nav-link-custom d-flex align-items-center {% if request.path == '/' %}active{% endif %}">
                 <i class="bi bi-house-door me-1"></i>
                 Home
@@ -47,11 +47,11 @@
             {% endif %}
 
             <!-- Search Bar -->
-            <div class="ms-3">
-                <div class="input-group" style="width: 250px;">
-                    <input type="text" class="form-control" placeholder="Search donors..." id="navbarSearch" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: white; font-size: 0.875rem;">
-                    <button class="btn btn-outline-light" type="button" onclick="performNavbarSearch()" style="border-color: rgba(59, 130, 246, 0.3);">
-                        <i class="bi bi-search"></i>
+            <div class="ms-2">
+                <div class="input-group" style="width: 180px;">
+                    <input type="text" class="form-control" placeholder="Search..." id="navbarSearch" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: white; font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                    <button class="btn btn-outline-light" type="button" onclick="performNavbarSearch()" style="border-color: rgba(59, 130, 246, 0.3); padding: 0.25rem 0.5rem;">
+                        <i class="bi bi-search" style="font-size: 0.875rem;"></i>
                     </button>
                 </div>
             </div>
@@ -302,9 +302,9 @@
     
     .nav-link-custom {
         color: #d1d5db;
-        padding: 0.375rem 0.625rem;
+        padding: 0.25rem 0.5rem;
         border-radius: 0.5rem;
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         font-weight: 500;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
