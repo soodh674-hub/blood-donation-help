@@ -531,19 +531,15 @@ PASSWORD_RESET_EMAIL_TEMPLATE = 'emails/password_reset_email.html'
 
 # Email Configuration
 if IS_RENDER:
-    # Production email settings for Render with Brevo SMTP
-    # Brevo SMTP is more reliable on Render than MailerCloud
+    # Production email settings for Render with Brevo HTTP API
+    # Using HTTP API backend since BREVO_API_KEY is an API key, not SMTP key
     
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp-relay.brevo.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = 'hsood3560@gmail.com'
-    EMAIL_HOST_PASSWORD = config('BREVO_API_KEY', default='')
+    EMAIL_BACKEND = 'accounts.backends.BrevoEmailBackend'
+    BREVO_API_KEY = config('BREVO_API_KEY', default='')
     DEFAULT_FROM_EMAIL = 'hsood3560@gmail.com'
     SERVER_EMAIL = 'hsood3560@gmail.com'
     
-    logger.info(f"✅ Brevo SMTP configured - using {EMAIL_HOST}:{EMAIL_PORT} with TLS")
+    logger.info(f"✅ Brevo HTTP API configured for email sending")
     
     # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
     # Optional: Google Maps API key if you prefer Google over OpenStreetMap
