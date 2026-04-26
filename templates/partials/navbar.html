@@ -40,7 +40,7 @@
             </a>
 
             {% if user.is_authenticated %}
-            <a href="{% url 'requests:track' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
+            <a href="{% url 'requests:track-request-dashboard' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
                 <i class="bi bi-geo-alt me-1"></i>
                 Track
             </a>
@@ -103,7 +103,7 @@
                         <!-- Quick Actions -->
                         <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Quick Actions</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2" style="color: #3b82f6;"></i>Create Request</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track' %}"><i class="bi bi-geo-alt me-2" style="color: #10b981;"></i>Track Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-dashboard' %}"><i class="bi bi-geo-alt me-2" style="color: #10b981;"></i>Track Requests</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2" style="color: #f59e0b;"></i>Find Donors</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
@@ -161,7 +161,7 @@
                 <i class="bi bi-plus-circle me-2" style="width: 20px; height: 20px;"></i>
                 Create Request
             </a>
-            <a href="{% url 'requests:track' %}" class="mobile-nav-link d-flex align-items-center">
+            <a href="{% url 'requests:track-request-dashboard' %}" class="mobile-nav-link d-flex align-items-center">
                 <i class="bi bi-geo-alt me-2" style="width: 20px; height: 20px;"></i>
                 Track Requests
             </a>
