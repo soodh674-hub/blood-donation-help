@@ -339,7 +339,7 @@ def create_request_unified_page(request):
 def track_request_dashboard(request):
     """
     Enhanced unified tracking dashboard for blood requests
-    Shows user's own requests AND live requests they can respond to
+    Shows user's own requests with stats
     """
     if not request.user.is_authenticated:
         from django.shortcuts import redirect
@@ -348,118 +348,27 @@ def track_request_dashboard(request):
     # Get all requests for the current user
     from .models import BloodRequest, RequestResponse
     from django.utils import timezone
-    from django.core.serializers.json import DjangoJSONEncoder
-    import json
-
-    now = timezone.now()
 
     # User's own requests
     user_requests = BloodRequest.objects.filter(
         requester=request.user
     ).order_by('-created_at')
 
-    # Live requests that user can respond to (not their own, active, not expired)
-    # Show ALL requests for debugging - remove status filter temporarily
-    live_requests_qs = BloodRequest.objects.all().exclude(
-        requester=request.user
-    ).order_by(
-        '-priority',
-        '-created_at'
-    )[:50]
-
-    logger.info(f'Total requests in DB: {BloodRequest.objects.count()}')
-    logger.info(f'Live requests query count: {live_requests_qs.count()}')
-    logger.info(f'Current user: {request.user.id}')
-
-    # Serialize live requests for JavaScript
-    live_requests = []
-
-    # TEMPORARY: Add dummy data if no requests in DB for testing
-    if BloodRequest.objects.count() == 0:
-        logger.warning('No requests in database, adding dummy data for testing')
-        live_requests = [
-            {
-                'id': 999,
-                'blood_group': 'A+',
-                'hospital': 'City Hospital',
-                'city': 'Delhi',
-                'state': 'Delhi',
-                'priority': 'emergency',
-                'status': 'active',
-                'latitude': 28.6139,
-                'longitude': 77.2090,
-                'created_at': timezone.now().isoformat(),
-                'required_by': (timezone.now() + timezone.timedelta(hours=24)).isoformat(),
-            },
-            {
-                'id': 998,
-                'blood_group': 'O+',
-                'hospital': 'Apollo Hospital',
-                'city': 'Mumbai',
-                'state': 'Maharashtra',
-                'priority': 'urgent',
-                'status': 'active',
-                'latitude': 19.0760,
-                'longitude': 72.8777,
-                'created_at': timezone.now().isoformat(),
-                'required_by': (timezone.now() + timezone.timedelta(hours=12)).isoformat(),
-            }
-        ]
-    else:
-        for req in live_requests_qs:
-            live_requests.append({
-                'id': req.id,
-                'blood_group': req.patient_blood_group,
-                'hospital': req.hospital_name,
-                'city': req.city,
-                'state': req.state,
-                'priority': req.priority,
-                'status': req.status,
-                'latitude': req.latitude,
-                'longitude': req.longitude,
-                'created_at': req.created_at.isoformat() if req.created_at else None,
-                'required_by': req.required_by.isoformat() if req.required_by else None,
-            })
-
-    # Get user's responses for live requests
-    user_responses_qs = RequestResponse.objects.filter(
-        donor=request.user,
-        request__in=live_requests_qs
-    )
-
-    # Serialize user responses
-    user_responses = {}
-    for resp in user_responses_qs:
-        user_responses[resp.request_id] = {
-            'id': resp.id,
-            'status': resp.status,
-            'responded_at': resp.responded_at.isoformat() if resp.responded_at else None,
-        }
-
-    # Calculate statistics
-    total_requests = user_requests.count()
-    pending_requests = user_requests.filter(status='pending').count()
-    active_requests = user_requests.filter(status='active').count()
-    completed_requests = user_requests.filter(status='completed').count()
-    cancelled_requests = user_requests.filter(status='cancelled').count()
-
-    # Get recent activity
-    recent_requests = user_requests[:10]
+    # Calculate stats
+    total_count = user_requests.count()
+    active_count = user_requests.filter(status='active').count()
+    fulfilled_count = user_requests.filter(status='fulfilled').count()
+    urgent_count = user_requests.filter(priority__in=['urgent', 'emergency']).count()
 
     context = {
-        'user_requests': user_requests,
-        'live_requests': live_requests,
-        'user_responses': user_responses,
-        'recent_requests': recent_requests,
-        'total_requests': total_requests,
-        'pending_requests': pending_requests,
-        'active_requests': active_requests,
-        'completed_requests': completed_requests,
-        'cancelled_requests': cancelled_requests,
-        'current_time': now,
+        'requests': user_requests,
+        'total_count': total_count,
+        'active_count': active_count,
+        'fulfilled_count': fulfilled_count,
+        'urgent_count': urgent_count,
     }
 
-    return render(request, 'requests/track_request_dashboard.html', context)
+    return render(request, 'requests/track_request_list.html', context)
 
 
 def track_specific_request(request, request_id):
@@ -2355,7 +2264,7 @@ def track_request_zomato(request, request_id):
         blood_request = BloodRequest.objects.get(id=request_id)
     except BloodRequest.DoesNotExist:
         messages.error(request, 'Request not found')
-        return redirect('/requests/track-request-dashboard/')
+        return redirect('/requests/track/')
     
     # Get all responses for this request
     responses = blood_request.responses.filter(status='accepted').select_related('donor')
@@ -2373,10 +2282,19 @@ def track_request_zomato(request, request_id):
     }
     current_step = status_to_step.get(blood_request.status, 1)
     
+    # Get matched donors using smart matching algorithm
+    matched_donors = []
+    if blood_request.status in ['active', 'approved']:
+        try:
+            matched_donors = blood_request.find_matching_donors(max_distance_km=50, limit=10)
+        except Exception as e:
+            logger.error(f'Error finding matched donors: {str(e)}')
+    
     context = {
-        'request': blood_request,
+        'blood_request': blood_request,
         'responses': responses,
         'current_step': current_step,
+        'matched_donors': matched_donors,
     }
     
     return render(request, 'requests/track_request_zomato.html', context)

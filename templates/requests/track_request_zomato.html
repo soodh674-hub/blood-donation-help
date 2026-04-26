@@ -8,9 +8,18 @@
     /* Zomato-style Progress Tracker */
     .tracking-hero {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 3rem 0;
+        padding: 2rem 0;
         margin-bottom: 2rem;
         color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .tracking-hero {
+            padding: 1.5rem 0;
+        }
+        .tracking-hero h1 {
+            font-size: 1.75rem;
+        }
     }
     
     .progress-steps {
@@ -18,6 +27,9 @@
         justify-content: space-between;
         position: relative;
         margin: 2rem 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 1rem;
     }
     
     .progress-steps::before {
@@ -36,6 +48,7 @@
         z-index: 2;
         text-align: center;
         flex: 1;
+        min-width: 80px;
     }
     
     .step-icon {
@@ -46,31 +59,49 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1rem;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
+        margin: 0 auto 0.75rem;
+        font-size: 1.25rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @media (max-width: 768px) {
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            margin: 0 auto 0.5rem;
+        }
     }
     
     .step-icon.completed {
         background: #10b981;
         box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        animation: slideIn 0.5s ease-out;
     }
     
     .step-icon.active {
         background: #f59e0b;
         box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
-        animation: pulse 2s infinite;
+        animation: pulse 2s infinite, slideIn 0.5s ease-out;
     }
     
     .step-label {
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         font-weight: 500;
         opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 768px) {
+        .step-label {
+            font-size: 0.65rem;
+        }
     }
     
     .step-label.active {
         opacity: 1;
         font-weight: 700;
+        color: white;
     }
     
     @keyframes pulse {
@@ -78,13 +109,42 @@
         50% { transform: scale(1.1); }
     }
     
-    /* Status Card */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     .status-card {
         background: white;
         border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    @media (max-width: 768px) {
+        .status-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
     }
     
     .status-badge {
@@ -404,8 +464,59 @@
             </div>
         </div>
         
-        <!-- Right Column - Actions -->
+        <!-- Right Column - Actions & Donors -->
         <div class="col-lg-4">
+            <!-- Matched Donors -->
+            {% if blood_request.status == 'active' or blood_request.status == 'approved' %}
+            <div class="status-card">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-people me-2"></i>
+                    Matched Donors
+                </h4>
+                
+                {% if matched_donors %}
+                <div class="list-group list-group-flush">
+                    {% for match in matched_donors %}
+                    <div class="list-group-item px-0 py-3 border-0 border-bottom">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="fw-bold mb-1">{{ match.donor.get_full_name|default:match.donor.username }}</h6>
+                                <div class="small text-muted mb-2">
+                                    <i class="bi bi-geo-alt me-1"></i>
+                                    {{ match.distance|floatformat:1 }} km away
+                                    <span class="mx-2">|</span>
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    {{ match.donor.trust_score|floatformat:1 }}
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="badge bg-{{ 'success' if match.score >= 80 else 'warning' if match.score >= 60 else 'secondary' }}">
+                                        {{ match.score|floatformat:0 }}% Match
+                                    </span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>
+                                        ~{{ match.distance|floatformat:0|add:15 }} min ETA
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-search fs-1 mb-2 d-block"></i>
+                    <p class="mb-0">No matched donors found yet</p>
+                    <small>Request is being broadcast to nearby donors</small>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
             <!-- Quick Actions -->
             <div class="status-card">
                 <h4 class="fw-bold mb-4">
@@ -428,9 +539,9 @@
                     </a>
                     {% endif %}
                     
-                    <a href="/requests/" class="action-btn success text-center text-decoration-none">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        Back to Requests
+                    <a href="/requests/track/" class="action-btn success text-center text-decoration-none">
+                        <i class="bi bi-list me-2"></i>
+                        All My Requests
                     </a>
                 </div>
             </div>

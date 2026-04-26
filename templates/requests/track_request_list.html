@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track My Requests{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-dashboard {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .request-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border-left: 4px solid #667eea;
+    }
+    
+    .request-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .request-card.urgent {
+        border-left-color: #ef4444;
+    }
+    
+    .request-card.emergency {
+        border-left-color: #dc2626;
+        animation: pulse-border 2s infinite;
+    }
+    
+    @keyframes pulse-border {
+        0%, 100% { border-left-color: #dc2626; }
+        50% { border-left-color: #f87171; }
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
+    .status-indicator.pending { background: #f59e0b; }
+    .status-indicator.approved { background: #3b82f6; }
+    .status-indicator.active { background: #10b981; }
+    .status-indicator.fulfilled { background: #065f46; }
+    .status-indicator.cancelled { background: #6b7280; }
+    .status-indicator.expired { background: #9ca3af; }
+    
+    .progress-mini {
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+    
+    .progress-mini-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tracking-dashboard">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="bi bi-geo-alt me-2"></i>
+                Track My Requests
+            </h1>
+            <p class="lead">Monitor your blood requests in real-time</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="text-primary fs-2 fw-bold">{{ total_count }}</div>
+                    <div class="text-muted small">Total Requests</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="text-warning fs-2 fw-bold">{{ active_count }}</div>
+                    <div class="text-muted small">Active</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="text-success fs-2 fw-bold">{{ fulfilled_count }}</div>
+                    <div class="text-muted small">Fulfilled</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="text-danger fs-2 fw-bold">{{ urgent_count }}</div>
+                    <div class="text-muted small">Urgent</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Requests List -->
+    {% if requests %}
+    <div class="row">
+        <div class="col-12">
+            {% for request in requests %}
+            <a href="{% url 'track-request-zomato' request.id %}" class="text-decoration-none">
+                <div class="request-card {{ request.priority }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="status-indicator {{ request.status }}"></span>
+                                <h5 class="fw-bold mb-0 text-dark">{{ request.patient_name }}</h5>
+                                <span class="badge bg-light text-dark ms-2">{{ request.get_priority_display }}</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <i class="bi bi-droplet-fill text-danger me-1"></i>
+                                {{ request.patient_blood_group }}
+                                <span class="mx-2">|</span>
+                                <i class="bi bi-hospital me-1"></i>
+                                {{ request.hospital_name }}
+                            </p>
+                            <div class="small text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                Created {{ request.created_at|date:"M d, Y H:i" }}
+                                <span class="mx-2">|</span>
+                                <i class="bi bi-calendar me-1"></i>
+                                Required by {{ request.required_by|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="mb-2">
+                                {% if request.status == 'fulfilled' %}
+                                    <span class="badge bg-success">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'active' %}
+                                    <span class="badge bg-primary">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'pending' %}
+                                    <span class="badge bg-warning">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'cancelled' %}
+                                    <span class="badge bg-secondary">{{ request.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ request.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted">
+                                {{ request.fulfilled_units }} / {{ request.required_units }} units
+                            </div>
+                            <div class="progress-mini">
+                                <div class="progress-mini-bar" data-fulfilled="{{ request.fulfilled_units }}" data-required="{{ request.required_units }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3>No Blood Requests Yet</h3>
+        <p class="mb-4">You haven't created any blood requests. Start by creating one now!</p>
+        <a href="{% url 'blood-request-create-page' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>
+            Create Blood Request
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Calculate progress bar widths dynamically
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-mini-bar');
+    progressBars.forEach(bar => {
+        const fulfilled = parseInt(bar.dataset.fulfilled) || 0;
+        const required = parseInt(bar.dataset.required) || 1;
+        const percentage = Math.min((fulfilled / required) * 100, 100);
+        bar.style.width = percentage + '%';
+    });
+});
+</script>
+{% endblock %}
