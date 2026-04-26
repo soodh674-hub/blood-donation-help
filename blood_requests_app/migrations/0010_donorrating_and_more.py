@@ -176,7 +176,7 @@ class Migration(migrations.Migration):
         # Add DonorRating fields
         migrations.AddField(
             model_name='donorrating',
-            name='rated_user',
+            name='donor',
             field=models.ForeignKey(
                 on_delete=models.deletion.CASCADE,
                 related_name='received_ratings',
@@ -194,15 +194,15 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='donorrating',
-            name='request',
+            name='blood_request',
             field=models.ForeignKey(
                 on_delete=models.deletion.CASCADE,
-                related_name='ratings',
+                related_name='donor_ratings',
                 to='blood_requests_app.bloodrequest'
             ),
         ),
         migrations.AlterUniqueTogether(
             name='donorrating',
-            unique_together={('rater', 'rated_user', 'request')},
+            unique_together={('donor', 'rater', 'blood_request')},
         ),
     ]
