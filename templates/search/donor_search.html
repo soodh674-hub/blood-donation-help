@@ -304,11 +304,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             
             <div class="pt-3 mt-3 border-top border-secondary border-opacity-25 d-flex gap-2">
-                <button onclick="event.stopPropagation(); openDonorProfile('${donor.id}')" 
-                        class="btn btn-primary flex-grow-1" style="background: linear-gradient(90deg, #3b82f6, #2563eb);">
+                <a href="/donors/profile/${donor.id}/"
+                   class="btn btn-primary flex-grow-1 text-center text-decoration-none" style="background: linear-gradient(90deg, #3b82f6, #2563eb);">
                     View Profile
-                </button>
-                <button onclick="event.stopPropagation(); contactDonor('${donor.id}', '${donor.first_name} ${donor.last_name}', '${donor.phone_number || 'Not available'}', '${donor.email || 'Not available'}')" 
+                </a>
+                <button onclick="event.stopPropagation(); contactDonor('${donor.id}', '${donor.first_name} ${donor.last_name}', '${donor.phone_number || 'Not available'}', '${donor.email || 'Not available'}')"
                         class="btn btn-danger flex-grow-1" style="background: linear-gradient(90deg, #ef4444, #dc2626);">
                     Contact
                 </button>

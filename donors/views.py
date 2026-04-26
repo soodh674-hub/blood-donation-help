@@ -242,11 +242,19 @@ def donor_profile(request, user_id):
         compatibility_info = BloodMatcher.get_compatibility_info(donor.blood_group)
         compatibility_count = compatibility_info.get('total_compatible_types', 0)
 
+        # Get total requests completed
+        total_requests = BloodRequest.objects.filter(donor=donor, status='fulfilled').count()
+
+        # Calculate rating (placeholder - can be enhanced later)
+        rating = getattr(donor.donor_profile, 'rating', 0) if hasattr(donor, 'donor_profile') and donor.donor_profile else 0
+
         context_data = {
             'total_donations': total_donations,
             'donation_history': donation_history,
             'days_since_last': days_since_last,
             'compatibility_count': compatibility_count,
+            'total_requests': total_requests,
+            'rating': rating,
         }
 
         # Cache the computed data (not the donor object)

@@ -281,21 +281,27 @@
 
         <!-- Stats Section -->
         <div class="row g-4 mt-4 animate-slide-up stagger-6">
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="glass-card p-4 p-md-5 text-center hover-lift">
                     <p class="display-6 fw-bold text-danger">{{ total_donations|default:0 }}</p>
                     <p class="text-muted small mt-1">Total Donations</p>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="glass-card p-4 p-md-5 text-center hover-lift">
-                    <p class="display-6 fw-bold text-success">{{ days_since_last|default:"N/A" }}</p>
-                    <p class="text-muted small mt-1">Days Since Last</p>
+                    <p class="display-6 fw-bold text-success">{{ total_requests|default:0 }}</p>
+                    <p class="text-muted small mt-1">Requests Fulfilled</p>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="glass-card p-4 p-md-5 text-center hover-lift">
-                    <p class="display-6 fw-bold text-primary">{{ compatibility_count|default:3 }}+</p>
+                    <p class="display-6 fw-bold text-warning">{{ rating|default:0 }}</p>
+                    <p class="text-muted small mt-1">Rating</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="glass-card p-4 p-md-5 text-center hover-lift">
+                    <p class="display-6 fw-bold text-primary">{{ compatibility_count|default:0 }}</p>
                     <p class="text-muted small mt-1">Can Donate To</p>
                 </div>
             </div>
