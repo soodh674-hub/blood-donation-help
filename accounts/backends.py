@@ -64,6 +64,10 @@ class BrevoEmailBackend(BaseEmailBackend):
                     'textContent': text_content,
                 }
                 
+                # Log email details for debugging
+                logger.info(f"Sending email: From={message.from_email}, To={message.to}, Subject={message.subject}")
+                logger.info(f"Email data: {email_data}")
+                
                 # Add CC if present
                 if message.cc:
                     email_data['cc'] = [{'email': addr} for addr in message.cc]
@@ -80,9 +84,11 @@ class BrevoEmailBackend(BaseEmailBackend):
                     timeout=30
                 )
                 
+                logger.info(f"Brevo API Response: Status={response.status_code}, Body={response.text}")
+                
                 if response.status_code in [200, 201, 202]:
                     sent_count += 1
-                    logger.info(f"Email sent successfully to {message.to}")
+                    logger.info(f"Email sent successfully to {message.to}. Message ID: {response.json().get('messageId', 'N/A')}")
                 else:
                     logger.error(f"Failed to send email to {message.to}: {response.status_code} - {response.text}")
                     if not self.fail_silently:
