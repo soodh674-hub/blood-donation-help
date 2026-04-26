@@ -32,7 +32,7 @@
                 </div>
                 {% endif %}
 
-                <form method="POST" action="{% url 'register-step3' %}">
+                <form method="POST" action="/accounts/register/step3/">
                     {% csrf_token %}
                     
                     <div class="mb-3">
@@ -59,7 +59,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="consent_given" id="consent" required>
                             <label class="form-check-label text-secondary small" for="consent">
-                                I agree to the <a href="{% url 'terms_of_service' %}" class="text-danger">Terms of Service</a> and <a href="{% url 'privacy_policy' %}" class="text-danger">Privacy Policy</a>
+                                I agree to the <a href="/accounts/terms/" class="text-danger">Terms of Service</a> and <a href="/accounts/privacy/" class="text-danger">Privacy Policy</a>
                             </label>
                         </div>
                     </div>

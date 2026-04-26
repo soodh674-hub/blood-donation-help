@@ -2209,7 +2209,7 @@ def register_step1(request):
         request.session['registration_data'] = saved_data
         request.session.modified = True
         
-        return redirect('register-step2')
+        return redirect('/accounts/register/step2/')
     
     return render(request, 'accounts/register_step1.html', {'saved_data': saved_data})
 
@@ -2219,7 +2219,7 @@ def register_step2(request):
     # Check if step 1 is completed
     saved_data = request.session.get('registration_data', {})
     if not saved_data.get('username') or not saved_data.get('email'):
-        return redirect('register-step1')
+        return redirect('/accounts/register/step1/')
     
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
@@ -2272,7 +2272,7 @@ def register_step2(request):
         request.session['registration_data'] = saved_data
         request.session.modified = True
         
-        return redirect('register-step3')
+        return redirect('/accounts/register/step3/')
     
     return render(request, 'accounts/register_step2.html', {'saved_data': saved_data})
 
@@ -2282,7 +2282,7 @@ def register_step3(request):
     # Check if step 2 is completed
     saved_data = request.session.get('registration_data', {})
     if not saved_data.get('first_name') or not saved_data.get('blood_group'):
-        return redirect('register-step2')
+        return redirect('/accounts/register/step2/')
     
     if request.method == 'POST':
         city = request.POST.get('city', '').strip()
@@ -2381,7 +2381,7 @@ def register_step3(request):
             request.session.modified = True
             
             messages.success(request, 'Registration successful! Please check your email to verify your account.')
-            return redirect('login')
+            return redirect('/accounts/login/')
             
         except Exception as e:
             logger.error(f'Registration error: {str(e)}', exc_info=True)
@@ -2413,8 +2413,8 @@ def verify_email(request, uidb64, token):
             return redirect('/accounts/dashboard/')
         else:
             messages.error(request, 'Invalid or expired verification link.')
-            return redirect('login')
+            return redirect('/accounts/login/')
             
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         messages.error(request, 'Invalid verification link.')
-        return redirect('login')
+        return redirect('/accounts/login/')

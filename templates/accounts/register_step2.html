@@ -32,7 +32,7 @@
                 </div>
                 {% endif %}
 
-                <form method="POST" action="{% url 'register-step2' %}">
+                <form method="POST" action="/accounts/register/step2/">
                     {% csrf_token %}
                     
                     <div class="row">
