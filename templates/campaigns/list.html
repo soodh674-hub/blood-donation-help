@@ -84,7 +84,7 @@
             </h1>
             <p class="lead">Join blood donation campaigns near you and save lives</p>
             {% if user.is_authenticated and (user.is_staff or user.user_type == 'hospital') %}
-            <a href="{% url 'campaign-create' %}" class="btn btn-light btn-lg mt-3">
+            <a href="{% url 'requests:campaign-create' %}" class="btn btn-light btn-lg mt-3">
                 <i class="bi bi-plus-circle me-2"></i>
                 Create Campaign
             </a>
@@ -140,7 +140,7 @@
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     {% if campaign.status == 'ongoing' or campaign.status == 'upcoming' %}
-                    <a href="{% url 'campaign-join' campaign.id %}" class="btn btn-primary">
+                    <a href="{% url 'requests:campaign-join' campaign.id %}" class="btn btn-primary">
                         <i class="bi bi-hand-thumbs-up me-2"></i>
                         Join Campaign
                     </a>

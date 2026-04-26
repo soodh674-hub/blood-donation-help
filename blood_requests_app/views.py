@@ -1485,7 +1485,7 @@ def campaign_create(request):
     """
     if not (request.user.is_staff or request.user.user_type == 'hospital'):
         messages.error(request, 'You do not have permission to create campaigns.')
-        return redirect('/campaigns/')
+        return redirect('requests:campaign-list')
     
     if request.method == 'POST':
         try:
@@ -1505,7 +1505,7 @@ def campaign_create(request):
                 status='upcoming'
             )
             messages.success(request, f'Campaign "{camp.name}" created successfully!')
-            return redirect('/campaigns/')
+            return redirect('requests:campaign-list')
         except Exception as e:
             messages.error(request, f'Error creating campaign: {str(e)}')
     
@@ -1523,12 +1523,12 @@ def campaign_join(request, campaign_id):
     
     if campaign.status not in ['ongoing', 'upcoming']:
         messages.error(request, 'This campaign is not accepting registrations.')
-        return redirect('/campaigns/')
+        return redirect('requests:campaign-list')
     
     # For now, just show a success message
     # In a full implementation, you'd create a CampaignParticipant model
     messages.success(request, f'You have registered for "{campaign.name}". Contact: {campaign.contact_number}')
-    return redirect('/campaigns/')
+    return redirect('requests:campaign-list')
 
 
 @login_required
