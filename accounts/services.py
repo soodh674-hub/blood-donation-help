@@ -335,64 +335,21 @@ def send_otp_email(email, otp, user_name=None):
         from django.template.loader import render_to_string
         from django.utils.html import strip_tags
         
-        # Create email content
-        subject = "Your BloodLife Login OTP"
+        # Render HTML email template
+        html_message = render_to_string('emails/otp_email.html', {
+            'otp': otp,
+            'user_name': user_name or 'User'
+        })
         
-        # Plain text version
-        plain_message = f"""
-Hello {user_name or 'User'},
-
-Your One-Time Password (OTP) for BloodLife login is: {otp}
-
-This OTP is valid for 5 minutes. Please do not share this with anyone.
-
-If you did not request this OTP, please ignore this email.
-
-Best regards,
-BloodLife Team
-"""
+        # Create plain text version
+        plain_message = strip_tags(html_message)
         
-        # HTML version
-        html_message = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .otp {{ font-size: 32px; font-weight: bold; color: #ef4444; letter-spacing: 5px; text-align: center; margin: 20px 0; }}
-        .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 20px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>BloodLife Login OTP</h1>
-        </div>
-        <div class="content">
-            <p>Hello {user_name or 'User'},</p>
-            <p>Your One-Time Password (OTP) for BloodLife login is:</p>
-            <div class="otp">{otp}</div>
-            <p>This OTP is valid for <strong>5 minutes</strong>. Please do not share this with anyone.</p>
-            <p>If you did not request this OTP, please ignore this email.</p>
-            <p>Best regards,<br>BloodLife Team</p>
-        </div>
-        <div class="footer">
-            <p>This is an automated email. Please do not reply.</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
-        
-        # Send email
+        # Send email with both HTML and plain text
         send_mail(
-            subject,
-            plain_message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
+            subject='Your OTP Code - BloodLife',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
             html_message=html_message,
             fail_silently=False
         )
@@ -405,12 +362,48 @@ BloodLife Team
         return False, f"Failed to send OTP: {str(e)}"
 
 
+def send_welcome_email(user):
+    """
+    Send welcome email to newly registered user
+    """
+    try:
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+        from django.utils.html import strip_tags
+        from django.conf import settings
+        
+        # Render HTML email template
+        html_message = render_to_string('emails/welcome_email.html', {
+            'user_name': user.get_full_name() or user.username,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Create plain text version
+        plain_message = strip_tags(html_message)
+        
+        # Send email with both HTML and plain text
+        send_mail(
+            subject='Welcome to BloodLife - Your Account is Ready!',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False
+        )
+        
+        logger.info(f"Welcome email sent to {user.email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Welcome email sending failed: {str(e)}", exc_info=True)
+        return False
+
+
 class NotificationService:
     """Unified notification service that handles SMS, push, and email"""
     
     @staticmethod
     def send_notification(user, title, message, notification_type='info', data=None):
-        """
         Send notification via enabled channels
         Args:
             user: User object

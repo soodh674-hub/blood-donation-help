@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to BloodLife</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #b70011, #dc2626);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-box {
+            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .welcome-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #b70011, #dc2626);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #b70011;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩸 BloodLife</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Welcome to the Lifesaver Community</p>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #333; margin-top: 0;">Hello {{ user_name|default:'User' }},</h2>
+            
+            <p style="color: #666; line-height: 1.6;">
+                Welcome to BloodLife! Your account has been successfully created and verified. You're now part of a community dedicated to saving lives through blood donation.
+            </p>
+            
+            <div class="welcome-box">
+                <div class="welcome-icon">❤️</div>
+                <h3 style="color: #b70011; margin: 0 0 10px 0;">You're Now a Lifesaver!</h3>
+                <p style="color: #666; margin: 0;">
+                    One donation can save up to 3 lives. Thank you for joining us in this noble cause.
+                </p>
+            </div>
+            
+            <h3 style="color: #333;">What You Can Do Now:</h3>
+            <ul style="color: #666; line-height: 1.8;">
+                <li>📍 <strong>Complete Your Profile</strong> - Add your blood group and location to help donors find you</li>
+                <li>🔍 <strong>Find Donors</strong> - Search for blood donors in your area</li>
+                <li>📢 <strong>Create Requests</strong> - Post blood requests when you or someone needs blood</li>
+                <li>💬 <strong>Connect</strong> - Chat with donors and other community members</li>
+            </ul>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}/accounts/dashboard/" class="cta-button">Go to Dashboard</a>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 0;">
+                If you have any questions, feel free to reach out to our support team.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 0;">
+                Best regards,<br>
+                <strong>The BloodLife Team</strong>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">© 2024 BloodLife. All rights reserved.</p>
+            <p style="margin: 10px 0 0 0;">
+                <a href="{{ site_url }}/accounts/privacy/">Privacy Policy</a> | 
+                <a href="{{ site_url }}/accounts/terms/">Terms of Service</a>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #888;">
+                This is an automated email. Please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

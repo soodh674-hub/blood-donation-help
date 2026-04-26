@@ -19,6 +19,9 @@ urlpatterns = [
     
     # OTP Registration endpoints
     path('otp-register-request/', views.otp_register_request, name='otp-register-request'),
+    
+    # Test email endpoint
+    path('test-email/', views.test_email, name='test-email'),
     path('donors/', views.donor_search_page, name='donor-search-page'),
     path('search/', views.donor_search_page, name='search-donors-page'),
     path('users/', views.user_search_page, name='user-search-page'),

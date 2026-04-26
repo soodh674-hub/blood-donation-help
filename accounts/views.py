@@ -860,6 +860,25 @@ def otp_login_request(request):
         return JsonResponse({'success': False, 'message': message})
 
 
+def test_email(request):
+    """Test email view to verify SMTP configuration"""
+    from django.core.mail import send_mail
+    from django.http import HttpResponse
+    from django.conf import settings
+    
+    try:
+        send_mail(
+            subject='SMTP Working - BloodLife Test',
+            message='Your MailerCloud SMTP is working on Render. This is a test email from BloodLife.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=['hsood3560@gmail.com'],
+            fail_silently=False,
+        )
+        return HttpResponse("✅ Email Sent Successfully! Check your inbox.")
+    except Exception as e:
+        return HttpResponse(f"❌ Email Failed: {str(e)}")
+
+
 @require_POST
 @csrf_exempt
 def otp_register_request(request):

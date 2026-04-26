@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your OTP Code - BloodLife</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #b70011, #dc2626);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .otp-box {
+            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+            border: 2px solid #b70011;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .otp-code {
+            font-size: 48px;
+            font-weight: 800;
+            color: #b70011;
+            letter-spacing: 8px;
+            margin: 10px 0;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #b70011;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .footer {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #b70011;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+            }
+            .otp-code {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩸 BloodLife</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Secure OTP Verification</p>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #333; margin-top: 0;">Hello {{ user_name|default:'User' }},</h2>
+            
+            <p style="color: #666; line-height: 1.6;">
+                Your One-Time Password (OTP) for BloodLife account verification is:
+            </p>
+            
+            <div class="otp-box">
+                <p style="margin: 0; color: #666; font-size: 14px;">Your Verification Code</p>
+                <div class="otp-code">{{ otp }}</div>
+                <p style="margin: 10px 0 0 0; color: #999; font-size: 12px;">Valid for 5 minutes</p>
+            </div>
+            
+            <div class="info-box">
+                <p style="margin: 0; color: #333; font-size: 14px;">
+                    <strong>⚠️ Security Notice:</strong> Never share this OTP with anyone, including BloodLife staff. We will never ask for your OTP via phone or email.
+                </p>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6;">
+                If you didn't request this OTP, please ignore this email. Your account remains secure.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 0;">
+                Best regards,<br>
+                <strong>The BloodLife Team</strong>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">© 2024 BloodLife. All rights reserved.</p>
+            <p style="margin: 10px 0 0 0;">
+                <a href="https://bloodis-life.online/accounts/privacy/">Privacy Policy</a> | 
+                <a href="https://bloodis-life.online/accounts/terms/">Terms of Service</a>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #888;">
+                This is an automated email. Please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

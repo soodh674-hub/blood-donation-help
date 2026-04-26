@@ -526,25 +526,23 @@ SIMPLE_JWT = {
 
 # Email Configuration
 if IS_RENDER:
-    # Production email settings for Render with Brevo HTTP API (NOT SMTP)
-    # HTTP API is more reliable on Render free tier as it uses HTTPS (port 443)
-    # instead of SMTP (port 587) which can be blocked
+    # Production email settings for Render with MailerCloud SMTP
+    # Using SMTP backend for reliable email delivery
     
-    # Use Brevo HTTP API backend instead of SMTP
-    EMAIL_BACKEND = config('EMAIL_BACKEND', default='blood_donation.email_backend.BrevoAPIEmailBackend')
-    
-    # Brevo API Key (REQUIRED - set in Render environment variables)
-    BREVO_API_KEY = config('BREVO_API_KEY', default='')  # Must start with 'xkeysib-'
-    
-    # Sender information - MUST use verified email in Brevo
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@bloodis-life.online')
+    EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp-prod.mailrcld.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='hsood3560@gmail.com')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='hsood3560@gmail.com')
     DEFAULT_FROM_EMAIL_NAME = config('DEFAULT_FROM_EMAIL_NAME', default='Blood Donation Help')
     
     # Log configuration status
-    if not BREVO_API_KEY or BREVO_API_KEY == 'your-brevo-api-key-here':
-        logger.error("BREVO_API_KEY not configured! Email sending will FAIL. Add BREVO_API_KEY to Render environment variables immediately!")
+    if not EMAIL_HOST_PASSWORD or EMAIL_HOST_PASSWORD == 'your_smtp_password':
+        logger.error("EMAIL_HOST_PASSWORD not configured! Email sending will FAIL. Add EMAIL_HOST_PASSWORD to Render environment variables immediately!")
     else:
-        logger.info(f"✅ Brevo HTTP API configured - using HTTPS for reliable email delivery (key length: {len(BREVO_API_KEY)})")
+        logger.info(f"✅ MailerCloud SMTP configured - using {EMAIL_HOST}:{EMAIL_PORT} with TLS")
     
     # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
     # Optional: Google Maps API key if you prefer Google over OpenStreetMap
@@ -571,8 +569,8 @@ if IS_RENDER:
     NOMINATIM_API_URL = "https://nominatim.openstreetmap.org/search"
     NOMINATIM_USER_AGENT = "BloodDonationApp/1.0"
     
-    # No SMTP settings needed - using HTTP API instead
-    # This avoids port 587 blocking on Render free tier
+    # SITE_URL for email verification links
+    SITE_URL = config('SITE_URL', default='https://bloodis-life.online')
 else:
     # Development email settings
     EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.filebased.EmailBackend')
@@ -586,6 +584,9 @@ else:
     
     # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
     GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
+    
+    # SITE_URL for email verification links (local development)
+    SITE_URL = config('SITE_URL', default='http://localhost:8000')
 
 # CORS Settings
 CORS_ALLOWED_ORIGINS = [
