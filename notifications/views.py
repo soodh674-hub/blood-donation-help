@@ -160,7 +160,6 @@ def update_donation_status(request):
         }, status=500)
 
 
-@login_required
 def notification_list(request):
     """
     Display all notifications for the user with pagination
@@ -168,6 +167,19 @@ def notification_list(request):
     try:
         from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
         from notifications.models import Notification
+        
+        # Check if user is authenticated
+        if not request.user.is_authenticated:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'unread_count': 0,
+                    'notifications': [],
+                    'has_next': False,
+                    'has_previous': False,
+                    'page': 1,
+                    'num_pages': 1
+                })
+            return redirect('/accounts/login/?next=/notifications/')
         
         # Get unread notifications
         unread_notifications = Notification.objects.filter(
