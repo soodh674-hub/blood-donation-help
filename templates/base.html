@@ -70,6 +70,7 @@
     <!-- Bootstrap Custom Styles - Original UI Design -->
     <style>
         :root {
+            /* Dark Theme (Default) */
             --bg-primary: #0f1419;
             --bg-secondary: #1a1f2e;
             --bg-tertiary: #252b3d;
@@ -83,6 +84,23 @@
             --text-muted: rgba(255, 255, 255, 0.5);
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --neon-red: #dc2626;
+            --neon-coral: #ef4444;
+            --neon-orange: #f97316;
+            --accent-blue: #2563eb;
+            --accent-blue-light: #3b82f6;
+            --text-primary: #111827;
+            --text-secondary: rgba(17, 24, 39, 0.75);
+            --text-muted: rgba(17, 24, 39, 0.5);
+            --glass-bg: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(0, 0, 0, 0.1);
         }
 
         /* =========================================
@@ -1568,6 +1586,74 @@
             console.log('Firebase initialized successfully');
         } catch (error) {
             console.error('Firebase initialization error:', error);
+        }
+
+        // Theme Management
+        window.themeManager = {
+            currentTheme: 'dark',
+            
+            init: function() {
+                // Load theme from localStorage or use user's saved theme
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                const userTheme = '{{ user.profile.theme|default:"dark" }}';
+                this.setTheme(savedTheme || userTheme);
+            },
+            
+            setTheme: function(theme) {
+                this.currentTheme = theme;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                
+                // Update theme toggle button icon
+                const toggleBtn = document.getElementById('theme-toggle-btn');
+                if (toggleBtn) {
+                    const icon = toggleBtn.querySelector('i');
+                    if (theme === 'light') {
+                        icon.classList.remove('bi-moon');
+                        icon.classList.add('bi-sun');
+                    } else {
+                        icon.classList.remove('bi-sun');
+                        icon.classList.add('bi-moon');
+                    }
+                }
+            },
+            
+            toggle: function() {
+                const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+                
+                // Save to server if user is logged in
+                if (typeof saveThemePreference === 'function') {
+                    saveThemePreference(newTheme);
+                }
+            }
+        };
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.themeManager) {
+                window.themeManager.init();
+            }
+        });
+
+        // Save theme preference to server
+        async function saveThemePreference(theme) {
+            try {
+                const response = await fetch('/accounts/api/settings/theme/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({ theme: theme })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Theme preference saved');
+                }
+            } catch (error) {
+                console.error('Error saving theme preference:', error);
+            }
         }
     </script>
     

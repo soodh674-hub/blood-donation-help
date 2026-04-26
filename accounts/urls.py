@@ -73,6 +73,7 @@ urlpatterns = [
     # Settings API endpoints
     path('api/settings/update/', views.update_user_settings, name='update-settings-api'),
     path('api/settings/change-password/', views.change_password, name='change-password-api'),
+    path('api/settings/theme/', views.update_theme_preference, name='update-theme-api'),
 
     # Phase 2: Profile editing
     path('edit-profile/', views.edit_profile, name='edit_profile'),

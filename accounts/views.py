@@ -168,8 +168,32 @@ def forgot_password(request):
             # If someone accesses this endpoint directly in browser with GET, redirect to frontend page
             from django.shortcuts import redirect
             return redirect('forgot_password')
-            
+
         logger.info(f"Password reset request received: {request.data}")
+        
+        # CAPTCHA validation (if captcha is available)
+        has_captcha = 'captcha' in settings.INSTALLED_APPS
+        if has_captcha:
+            try:
+                from captcha.models import CaptchaStore
+                # Test if captcha table exists
+                CaptchaStore.objects.exists()
+                captcha_response = request.data.get('captcha_0', '')
+                captcha_key = request.data.get('captcha_1', '')
+                
+                if captcha_response and captcha_key:
+                    try:
+                        CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                    except CaptchaStore.DoesNotExist:
+                        return Response({'error': 'Invalid CAPTCHA. Please try again.'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    # If captcha is not provided, skip validation (captcha might not be rendered)
+                    logger.debug('CAPTCHA not provided in forgot password request, skipping validation')
+            except Exception as e:
+                logger.warning(f'CAPTCHA error in forgot password: {str(e)}')
+                # Continue without captcha if table doesn't exist
+                has_captcha = False
+        
         serializer = PasswordResetRequestSerializer(data=request.data)
         
         if not serializer.is_valid():
@@ -466,7 +490,24 @@ def send_password_reset_email_direct(user, otp):
 # Frontend view functions
 def forgot_password_page(request):
     """Render forgot password page"""
-    return render(request, 'accounts/forgot_password.html')
+    # Check if captcha is available and import CaptchaForm
+    has_captcha = 'captcha' in settings.INSTALLED_APPS
+    CaptchaForm = None
+    
+    if has_captcha:
+        try:
+            from captcha.forms import CaptchaForm as CF
+            from captcha.models import CaptchaStore
+            # Test if captcha table exists
+            CaptchaStore.objects.exists()
+            CaptchaForm = CF
+        except Exception as e:
+            logger.debug(f"Captcha not available (table may not exist yet): {e}")
+            has_captcha = False
+            CaptchaForm = None
+    
+    captcha_form = CaptchaForm() if CaptchaForm else None
+    return render(request, 'accounts/forgot_password.html', {'captcha_form': captcha_form})
 
 def verify_otp_page(request):
     """Render OTP verification page"""
@@ -1558,7 +1599,7 @@ def update_user_settings(request):
         # Update UI preferences
         if 'theme' in data:
             user.theme = data['theme']
-        
+
         user.save()
         
         # Update Notification Settings if provided
@@ -1629,6 +1670,27 @@ def update_user_settings(request):
             'success': False,
             'message': f'Failed to update settings: {str(e)}'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_theme_preference(request):
+    """API endpoint to update user theme preference"""
+    try:
+        user = request.user
+        data = request.data
+        theme = data.get('theme', 'dark')
+        
+        if theme not in ['dark', 'light']:
+            return Response({'success': False, 'error': 'Invalid theme preference'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.theme = theme
+        user.save()
+        
+        return Response({'success': True, 'theme': theme})
+    except Exception as e:
+        logger.error(f'Error updating theme preference: {str(e)}')
+        return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
