@@ -323,15 +323,20 @@ function requestOTP() {
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
 
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
     fetch('/accounts/otp-login-request/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
         },
         body: new URLSearchParams({
             'email': email,
             'captcha_0': captchaResponse,
-            'captcha_1': captchaKey
+            'captcha_1': captchaKey,
+            'csrfmiddlewaretoken': csrfToken
         })
     })
     .then(response => {
@@ -375,14 +380,19 @@ function verifyOTP() {
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Verifying...';
 
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
     fetch('/accounts/otp-login-verify/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
         },
         body: new URLSearchParams({
             'email': email,
-            'otp': otp
+            'otp': otp,
+            'csrfmiddlewaretoken': csrfToken
         })
     })
     .then(response => {
@@ -416,13 +426,18 @@ function resendOTP() {
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
 
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
     fetch('/accounts/otp-login-request/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
         },
         body: new URLSearchParams({
-            'email': email
+            'email': email,
+            'csrfmiddlewaretoken': csrfToken
         })
     })
     .then(response => response.json())
