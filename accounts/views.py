@@ -2238,17 +2238,23 @@ def my_donation_history(request):
 @login_required
 def hospital_partners(request):
     """View verified hospital partners"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     # Try to get hospitals, handle case where Hospital model doesn't exist yet
     try:
         hospitals = Hospital.objects.filter(
             verification_status='verified'
         ).order_by('-trust_score', '-total_donations_processed')
-    except:
+        total_hospitals = hospitals.count()
+    except Exception as e:
+        logger.error(f'Error fetching hospital partners: {str(e)}', exc_info=True)
         hospitals = []
+        total_hospitals = 0
     
     context = {
         'hospitals': hospitals,
-        'total_hospitals': len(hospitals) if isinstance(hospitals, list) else hospitals.count(),
+        'total_hospitals': total_hospitals,
     }
     
     return render(request, 'accounts/hospital_partners.html', context)
@@ -2257,6 +2263,9 @@ def hospital_partners(request):
 @login_required
 def trust_signals(request):
     """View trust signals and platform verification"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     from django.db.models import Count, Avg
     
     # Get platform statistics
@@ -2265,7 +2274,8 @@ def trust_signals(request):
     # Try to get hospital count, handle case where Hospital model doesn't exist yet
     try:
         total_hospitals = Hospital.objects.filter(verification_status='verified').count()
-    except:
+    except Exception as e:
+        logger.error(f'Error fetching hospital count: {str(e)}', exc_info=True)
         total_hospitals = 0
     
     total_donations = User.objects.aggregate(
@@ -2273,15 +2283,23 @@ def trust_signals(request):
     )['total'] or 0
     
     # Get top rated donors
-    top_donors = User.objects.filter(
-        user_type='donor',
-        donations_completed__gt=0
-    ).order_by('-donations_completed', '-trust_score')[:10]
+    try:
+        top_donors = User.objects.filter(
+            user_type='donor',
+            donations_completed__gt=0
+        ).order_by('-donations_completed', '-trust_score')[:10]
+    except Exception as e:
+        logger.error(f'Error fetching top donors: {str(e)}', exc_info=True)
+        top_donors = []
     
     # Get verified hospitals
-    verified_hospitals = Hospital.objects.filter(
-        verification_status='verified'
-    ).order_by('-trust_score')[:10]
+    try:
+        verified_hospitals = Hospital.objects.filter(
+            verification_status='verified'
+        ).order_by('-trust_score')[:10]
+    except Exception as e:
+        logger.error(f'Error fetching verified hospitals: {str(e)}', exc_info=True)
+        verified_hospitals = []
     
     context = {
         'total_donors': total_donors,
@@ -2297,6 +2315,9 @@ def trust_signals(request):
 @login_required
 def hospital_dashboard(request):
     """Hospital dashboard for hospital users"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if request.user.user_type != 'hospital' and not request.user.is_staff:
         messages.error(request, 'Access denied. Hospital dashboard is for hospital users only.')
         return redirect('/accounts/dashboard/')
@@ -2309,7 +2330,8 @@ def hospital_dashboard(request):
     if request.user.user_type == 'hospital':
         try:
             hospital = Hospital.objects.get(user=request.user)
-        except:
+        except Exception as e:
+            logger.error(f'Error fetching hospital profile: {str(e)}', exc_info=True)
             # Handle case where Hospital model doesn't exist or user has no hospital profile
             pass
     
@@ -2329,7 +2351,8 @@ def hospital_dashboard(request):
             created_by=request.user,
             status='completed'
         ).count()
-    except:
+    except Exception as e:
+        logger.error(f'Error fetching hospital requests: {str(e)}', exc_info=True)
         # Handle case where BloodRequest model has issues
         hospital_requests = []
         total_requests = 0
