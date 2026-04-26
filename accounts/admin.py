@@ -1,6 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib import messages
 from .models import User
+import logging
+
+logger = logging.getLogger(__name__)
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -36,3 +40,26 @@ class UserAdmin(BaseUserAdmin):
             )
         }),
     )
+    
+    def delete_model(self, request, obj):
+        """Override delete_model to handle cascade delete errors"""
+        try:
+            obj.delete()
+            messages.success(request, f'User "{obj.username}" was deleted successfully.')
+        except Exception as e:
+            logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
+            messages.error(request, f'Error deleting user: {str(e)}. Some related data may not exist in the database.')
+    
+    def delete_queryset(self, request, queryset):
+        """Override delete_queryset to handle cascade delete errors for bulk delete"""
+        try:
+            for obj in queryset:
+                try:
+                    obj.delete()
+                except Exception as e:
+                    logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
+                    messages.warning(request, f'Could not delete user "{obj.username}": {str(e)}')
+            messages.success(request, 'Bulk delete completed with some warnings.')
+        except Exception as e:
+            logger.error(f'Error in bulk delete: {str(e)}', exc_info=True)
+            messages.error(request, f'Error in bulk delete: {str(e)}')
