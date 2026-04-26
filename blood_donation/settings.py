@@ -531,11 +531,11 @@ PASSWORD_RESET_EMAIL_TEMPLATE = 'emails/password_reset_email.html'
 
 # Email Configuration
 if IS_RENDER:
-    # Production email settings for Render with MailerCloud SMTP
-    # Using SMTP backend for reliable email delivery
+    # Production email settings for Render with Brevo SMTP
+    # Brevo SMTP is more reliable on Render than MailerCloud
     
     EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST = config('EMAIL_HOST', default='smtp-prod.mailrcld.com')
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
     EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='hsood3560@gmail.com')
@@ -547,7 +547,7 @@ if IS_RENDER:
     if not EMAIL_HOST_PASSWORD or EMAIL_HOST_PASSWORD == 'your_smtp_password':
         logger.error("EMAIL_HOST_PASSWORD not configured! Email sending will FAIL. Add EMAIL_HOST_PASSWORD to Render environment variables immediately!")
     else:
-        logger.info(f"✅ MailerCloud SMTP configured - using {EMAIL_HOST}:{EMAIL_PORT} with TLS")
+        logger.info(f"✅ Brevo SMTP configured - using {EMAIL_HOST}:{EMAIL_PORT} with TLS")
     
     # Maps: Using FREE OpenStreetMap + Leaflet (NO API KEY REQUIRED!)
     # Optional: Google Maps API key if you prefer Google over OpenStreetMap
