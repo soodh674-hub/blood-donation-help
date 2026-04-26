@@ -42,6 +42,17 @@ class BrevoEmailBackend(BaseEmailBackend):
         for message in email_messages:
             try:
                 # Prepare email data for Brevo API
+                # Handle both EmailMessage and EmailMultiAlternatives
+                html_content = None
+                text_content = message.body
+                
+                # Check if message has HTML alternatives (EmailMultiAlternatives)
+                if hasattr(message, 'alternatives') and message.alternatives:
+                    for content, mimetype in message.alternatives:
+                        if mimetype == 'text/html':
+                            html_content = content
+                            break
+                
                 email_data = {
                     'sender': {
                         'name': 'BloodLife',
@@ -49,8 +60,8 @@ class BrevoEmailBackend(BaseEmailBackend):
                     },
                     'to': [{'email': addr for addr in message.to}],
                     'subject': message.subject,
-                    'htmlContent': message.html_body if message.html_body else message.body,
-                    'textContent': message.body,
+                    'htmlContent': html_content if html_content else text_content,
+                    'textContent': text_content,
                 }
                 
                 # Add CC if present
