@@ -78,11 +78,11 @@ def enhanced_dashboard_view(request):
             }
         }
         
-        return render(request, 'requests/home_dashboard.html', context)
-        
+        return render(request, 'requests/track_request_dashboard.html', context)
+
     except Exception as e:
         # Fallback to basic dashboard
-        return render(request, 'requests/home_dashboard.html', {
+        return render(request, 'requests/track_request_dashboard.html', {
             'live_requests': [],
             'interested_donors': [],
             'nearby_donors': []
