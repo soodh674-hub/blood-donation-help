@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blood_requests_app', '0012_add_hospital_models'),
+        ('blood_requests_app', '0011_add_verification_status'),
     ]
 
     operations = [

@@ -239,7 +239,8 @@ def donor_profile(request, user_id):
             days_since_last = None
 
         # Count compatible recipients (how many blood groups this donor can donate to)
-        compatibility_count = len(BloodMatcher.get_compatibility_info(donor.blood_group)['can_donate_to'])
+        compatibility_info = BloodMatcher.get_compatibility_info(donor.blood_group)
+        compatibility_count = compatibility_info.get('total_compatible_types', 0)
 
         context_data = {
             'total_donations': total_donations,
@@ -280,7 +281,7 @@ def recommended_donors(request):
 
         # Get compatible blood groups
         compatibility_info = BloodMatcher.get_compatibility_info(request.user.blood_group)
-        compatible_blood_groups = compatibility_info['can_donate_to']
+        compatible_blood_groups = compatibility_info.get('compatible_donors', [])
 
         # Get user's location if available
         user_lat = getattr(request.user, 'latitude', None)
