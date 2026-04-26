@@ -19,7 +19,10 @@ class RateLimitMiddleware(MiddlewareMixin):
                 request.path == '/' or
                 request.path == '' or
                 request.path.startswith('/accounts/') or
-                request.path.startswith('/api/')):
+                request.path.startswith('/api/') or
+                request.path.startswith('/donors/') or
+                request.path.startswith('/requests/') or
+                request.path.startswith('/notifications/')):
                 return None
             
             # Get client IP
@@ -40,14 +43,14 @@ class RateLimitMiddleware(MiddlewareMixin):
             # Check if user is authenticated (handle anonymous users properly)
             user_is_authenticated = hasattr(request, 'user') and request.user.is_authenticated
             
-            # Check limits
+            # Check limits - INCREASED SIGNIFICANTLY to prevent blocking legitimate users
             if user_is_authenticated:
-                # Authenticated users: 1000 requests/hour
-                limit = 1000
+                # Authenticated users: 10000 requests/hour (was 1000)
+                limit = 10000
                 time_window = 3600  # 1 hour
             else:
-                # Anonymous users: 100 requests/hour
-                limit = 100
+                # Anonymous users: 1000 requests/hour (was 100)
+                limit = 1000
                 time_window = 3600  # 1 hour
             
             # Check if limit exceeded
