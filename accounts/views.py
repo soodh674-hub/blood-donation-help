@@ -868,8 +868,8 @@ def test_email(request):
     
     try:
         send_mail(
-            subject='SMTP Working - BloodLife Test',
-            message='Your MailerCloud SMTP is working on Render. This is a test email from BloodLife.',
+            subject='Email Working - BloodLife Test',
+            message='Your Brevo email service is working on Render. This is a test email from BloodLife.',
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=['hsood3560@gmail.com'],
             fail_silently=False,
