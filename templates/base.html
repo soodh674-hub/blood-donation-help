@@ -104,6 +104,158 @@
         }
 
         /* =========================================
+           CAMPAIGN POPUP MODAL STYLES
+           ========================================= */
+        
+        .campaign-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: popupFadeIn 0.3s ease;
+        }
+        
+        .campaign-popup-card {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            animation: popupSlideUp 0.4s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .campaign-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border: none;
+            background: rgba(0, 0, 0, 0.1);
+            color: #666;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .campaign-close-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        
+        .campaign-popup-banner {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        
+        .campaign-popup-title {
+            color: #dc2626;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .campaign-popup-description {
+            color: #4b5563;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .campaign-popup-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .campaign-popup-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .campaign-popup-info-item i {
+            color: #dc2626;
+            font-size: 1.1rem;
+        }
+        
+        .campaign-popup-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        
+        .campaign-popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+        }
+        
+        @keyframes popupFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes popupSlideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .campaign-popup-card {
+                width: 95%;
+                padding: 20px;
+            }
+            
+            .campaign-popup-title {
+                font-size: 1.3rem;
+            }
+            
+            .campaign-popup-btn {
+                padding: 12px 24px;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* =========================================
            GLOBAL RESPONSIVE BASE RULES
            Applied to ALL pages automatically
            ========================================= */
@@ -1690,7 +1842,77 @@
                 element.innerHTML = originalContent;
             }
         };
+
+        // Campaign Popup Logic
+        function closeCampaignPopup() {
+            const popup = document.getElementById('campaignPopup');
+            if (popup) {
+                popup.style.display = 'none';
+                localStorage.setItem('campaignPopupClosed', 'true');
+                localStorage.setItem('campaignPopupClosedDate', new Date().toISOString());
+            }
+        }
+
+        // Check if popup should be shown (once per day)
+        window.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('campaignPopup');
+            if (popup) {
+                const popupClosed = localStorage.getItem('campaignPopupClosed');
+                const popupClosedDate = localStorage.getItem('campaignPopupClosedDate');
+                
+                // Show popup if never closed or closed more than 24 hours ago
+                if (!popupClosed) {
+                    // Never closed - show popup
+                    popup.style.display = 'flex';
+                } else if (popupClosedDate) {
+                    // Check if 24 hours have passed
+                    const closedTime = new Date(popupClosedDate);
+                    const now = new Date();
+                    const hoursSinceClosed = (now - closedTime) / (1000 * 60 * 60);
+                    
+                    if (hoursSinceClosed >= 24) {
+                        // More than 24 hours - show popup again
+                        popup.style.display = 'flex';
+                        localStorage.removeItem('campaignPopupClosed');
+                        localStorage.removeItem('campaignPopupClosedDate');
+                    } else {
+                        // Less than 24 hours - hide popup
+                        popup.style.display = 'none';
+                    }
+                } else {
+                    // No date stored - hide popup
+                    popup.style.display = 'none';
+                }
+            }
+        });
     </script>
+    
+    <!-- Campaign Popup Modal -->
+    {% if active_campaign_popup %}
+    <div id="campaignPopup" class="campaign-popup-overlay">
+        <div class="campaign-popup-card">
+            <button class="campaign-close-btn" onclick="closeCampaignPopup()">✕</button>
+            {% if active_campaign_popup.banner_image %}
+            <img src="{{ active_campaign_popup.banner_image.url }}" class="campaign-popup-banner" alt="Campaign Banner">
+            {% endif %}
+            <h2 class="campaign-popup-title">{{ active_campaign_popup.name }}</h2>
+            <p class="campaign-popup-description">{{ active_campaign_popup.description|truncatewords:30 }}</p>
+            <div class="campaign-popup-info">
+                <div class="campaign-popup-info-item">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>{{ active_campaign_popup.venue }}, {{ active_campaign_popup.city }}</span>
+                </div>
+                <div class="campaign-popup-info-item">
+                    <i class="bi bi-calendar"></i>
+                    <span>{{ active_campaign_popup.start_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            <a href="{% url 'requests:campaign-list' %}" class="campaign-popup-btn">
+                <i class="bi bi-heart me-2"></i>View Campaign
+            </a>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Chat Widget -->
     {% include 'partials/chat_widget.html' %}

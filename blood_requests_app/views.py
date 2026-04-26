@@ -1502,8 +1502,15 @@ def campaign_create(request):
                 contact_number=request.POST.get('contact_number'),
                 contact_email=request.POST.get('contact_email'),
                 organizer=request.user,
-                status='upcoming'
+                status='upcoming',
+                show_as_popup=request.POST.get('show_as_popup') == 'on'
             )
+            
+            # Handle banner image upload
+            if 'banner_image' in request.FILES:
+                camp.banner_image = request.FILES['banner_image']
+                camp.save()
+            
             messages.success(request, f'Campaign "{camp.name}" created successfully!')
             return redirect('requests:campaign-list')
         except Exception as e:

@@ -31,6 +31,11 @@ class BloodDonationCamp(models.Model):
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organized_camps')
     contact_number = models.CharField(max_length=15)
     contact_email = models.EmailField()
+    
+    # Popup modal fields
+    show_as_popup = models.BooleanField(default=False, help_text="Show this campaign as a popup modal on the website")
+    banner_image = models.ImageField(upload_to='campaign_banners/', blank=True, null=True, help_text="Banner image for popup modal")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

@@ -148,6 +148,7 @@ TEMPLATES = [
                 'apps.core.context_processors.smart_banner_context',
                 'apps.core.context_processors.notification_count_context',
                 'notifications.context_processors.donation_status_popup',
+                'blood_requests_app.context_processors.active_campaign_popup',
             ],
         },
     },
