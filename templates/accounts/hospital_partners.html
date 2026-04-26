@@ -8,7 +8,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="display-5 display-md-4 fw-bold text-white mb-2">Verified Hospital Partners</h1>
-            <p class="text-secondary mb-0">{{ total_hospitals }} verified hospitals on our platform</p>
+            <p class="text-secondary mb-0">{{ total_hospitals|default:0 }} verified hospitals on our platform</p>
         </div>
     </div>
 
@@ -20,22 +20,22 @@
             <div class="glass-card p-4 h-100">
                 <div class="d-flex align-items-start justify-content-between mb-3">
                     <div>
-                        <h5 class="fw-bold text-white mb-1">{{ hospital.name }}</h5>
+                        <h5 class="fw-bold text-white mb-1">{{ hospital.name|default:"Hospital Name" }}</h5>
                         <span class="badge bg-success">Verified</span>
                     </div>
                     <div class="text-warning">
-                        ★ {{ hospital.trust_score }}/100
+                        ★ {{ hospital.trust_score|default:50 }}/100
                     </div>
                 </div>
                 
                 <p class="text-secondary small mb-2">
                     <i class="bi bi-geo-alt me-1"></i>
-                    {{ hospital.city }}, {{ hospital.state }}
+                    {{ hospital.city|default:"N/A" }}, {{ hospital.state|default:"N/A" }}
                 </p>
                 
                 <p class="text-secondary small mb-2">
                     <i class="bi bi-building me-1"></i>
-                    {{ hospital.get_hospital_type_display }}
+                    {{ hospital.get_hospital_type_display|default:"Hospital" }}
                 </p>
                 
                 {% if hospital.has_blood_bank %}
@@ -48,15 +48,15 @@
                 <div class="row row-cols-2 g-2 mb-3">
                     <div class="col">
                         <div class="text-secondary small">Donations</div>
-                        <div class="text-white">{{ hospital.total_donations_processed }}</div>
+                        <div class="text-white">{{ hospital.total_donations_processed|default:0 }}</div>
                     </div>
                     <div class="col">
                         <div class="text-secondary small">Active Requests</div>
-                        <div class="text-white">{{ hospital.active_requests }}</div>
+                        <div class="text-white">{{ hospital.active_requests|default:0 }}</div>
                     </div>
                 </div>
                 
-                <a href="tel:{{ hospital.phone }}" class="btn btn-outline-light w-100">
+                <a href="tel:{{ hospital.phone|default:"" }}" class="btn btn-outline-light w-100">
                     <i class="bi bi-telephone me-1"></i>
                     Contact
                 </a>

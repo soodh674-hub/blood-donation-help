@@ -17,21 +17,21 @@
         <div class="col">
             <div class="glass-card p-4 text-center">
                 <i class="bi bi-people display-4 text-primary mb-3"></i>
-                <div class="h3 text-white mb-1">{{ total_donors }}</div>
+                <div class="h3 text-white mb-1">{{ total_donors|default:0 }}</div>
                 <div class="text-secondary">Verified Donors</div>
             </div>
         </div>
         <div class="col">
             <div class="glass-card p-4 text-center">
                 <i class="bi bi-hospital display-4 text-success mb-3"></i>
-                <div class="h3 text-white mb-1">{{ total_hospitals }}</div>
+                <div class="h3 text-white mb-1">{{ total_hospitals|default:0 }}</div>
                 <div class="text-secondary">Verified Hospitals</div>
             </div>
         </div>
         <div class="col">
             <div class="glass-card p-4 text-center">
                 <i class="bi bi-heart-pulse display-4 text-danger mb-3"></i>
-                <div class="h3 text-white mb-1">{{ total_donations }}</div>
+                <div class="h3 text-white mb-1">{{ total_donations|default:0 }}</div>
                 <div class="text-secondary">Total Donations</div>
             </div>
         </div>
@@ -47,16 +47,16 @@
                 <div class="glass-card p-3 h-100">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="rounded-circle bg-gradient-red d-flex align-items-center justify-content-center text-white fw-bold" style="width: 50px; height: 50px; background: linear-gradient(135deg, #ef4444, #dc2626);">
-                            {{ donor.first_name|first|upper }}{{ donor.last_name|first|upper }}
+                            {{ donor.first_name|first|upper|default:"D" }}{{ donor.last_name|first|upper|default:"" }}
                         </div>
                         <div>
-                            <h6 class="fw-bold text-white mb-0">{{ donor.get_full_name|default:donor.username }}</h6>
+                            <h6 class="fw-bold text-white mb-0">{{ donor.get_full_name|default:donor.username|default:"Donor" }}</h6>
                             <p class="text-secondary small mb-0">{{ donor.blood_group|default:"N/A" }}</p>
                         </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-warning">★ {{ donor.trust_score }}/100</span>
-                        <span class="text-secondary small">{{ donor.donations_completed }} donations</span>
+                        <span class="text-warning">★ {{ donor.trust_score|default:50 }}/100</span>
+                        <span class="text-secondary small">{{ donor.donations_completed|default:0 }} donations</span>
                     </div>
                 </div>
             </div>
@@ -76,16 +76,16 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold text-white mb-0">{{ hospital.name }}</h6>
+                        <h6 class="fw-bold text-white mb-0">{{ hospital.name|default:"Hospital Name" }}</h6>
                         <span class="badge bg-success">Verified</span>
                     </div>
                     <p class="text-secondary small mb-2">
                         <i class="bi bi-geo-alt me-1"></i>
-                        {{ hospital.city }}, {{ hospital.state }}
+                        {{ hospital.city|default:"N/A" }}, {{ hospital.state|default:"N/A" }}
                     </p>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-warning">★ {{ hospital.trust_score }}/100</span>
-                        <span class="text-secondary small">{{ hospital.total_donations_processed }} donations</span>
+                        <span class="text-warning">★ {{ hospital.trust_score|default:50 }}/100</span>
+                        <span class="text-secondary small">{{ hospital.total_donations_processed|default:0 }} donations</span>
                     </div>
                 </div>
             </div>
