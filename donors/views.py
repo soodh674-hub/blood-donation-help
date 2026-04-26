@@ -196,6 +196,21 @@ def compatibility_info(request, blood_group):
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from django.shortcuts import redirect
+
+
+def donor_profile_redirect(request):
+    """
+    Redirect /donors/profile/ to appropriate page
+    If user is logged in, redirect to their own profile
+    Otherwise, redirect to donor search page
+    """
+    if request.user.is_authenticated:
+        # Redirect to user's own profile via accounts:profile
+        return redirect('/accounts/profile/')
+    else:
+        # Redirect to donor search page
+        return redirect('/accounts/search-donors/')
 
 
 @cache_page(60 * 5)  # Cache for 5 minutes
@@ -220,7 +235,7 @@ def donor_profile(request, user_id):
 
         donor = get_object_or_404(
             User.objects.select_related('donor_profile'),
-            id=user_id, user_type='donor', is_active=True
+            id=user_id, is_active=True
         )
 
         # Ensure donor_profile exists
