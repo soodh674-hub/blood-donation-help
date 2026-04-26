@@ -525,6 +525,11 @@ SIMPLE_JWT = {
 }
 
 # Email Configuration
+
+# Custom password reset email template
+PASSWORD_RESET_EMAIL_TEMPLATE = 'emails/password_reset_email.html'
+
+# Email Configuration
 if IS_RENDER:
     # Production email settings for Render with MailerCloud SMTP
     # Using SMTP backend for reliable email delivery

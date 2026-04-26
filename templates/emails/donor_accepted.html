@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Accepted Your Request - BloodLife</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .success-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 2px solid #22c55e;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .donor-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .detail-value {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .secondary-button {
+            display: inline-block;
+            background: #f8f9fa;
+            color: #333;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+        }
+        .footer {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #b70011;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+            }
+            .detail-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩸 BloodLife</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Great News! A Donor Has Accepted</p>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #333; margin-top: 0;">Hello {{ requester_name }},</h2>
+            
+            <div class="success-box">
+                <div class="success-icon">✅</div>
+                <h3 style="color: #22c55e; margin: 0 0 10px 0;">Donor Found!</h3>
+                <p style="color: #666; margin: 0;">
+                    A donor has accepted your blood request for {{ blood_group }} blood.
+                </p>
+            </div>
+            
+            <div class="donor-details">
+                <h3 style="color: #333; margin: 0 0 20px 0;">Donor Information</h3>
+                
+                <div class="detail-row">
+                    <span class="detail-label">Donor Name:</span>
+                    <span class="detail-value">{{ donor_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Blood Group:</span>
+                    <span class="detail-value">{{ donor_blood_group }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Location:</span>
+                    <span class="detail-value">{{ donor_location }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Response Time:</span>
+                    <span class="detail-value">{{ response_time }}</span>
+                </div>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6;">
+                <strong>Next Steps:</strong>
+            </p>
+            <ul style="color: #666; line-height: 1.8;">
+                <li>💬 Contact the donor using the chat feature</li>
+                <li>📞 Confirm donation details with the donor</li>
+                <li>🏥 Coordinate with the hospital for the donation</li>
+                <li>⭐ Rate the donor after successful donation</li>
+            </ul>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}/accounts/dashboard/" class="cta-button">Contact Donor</a>
+                <br>
+                <a href="{{ site_url }}/donor/{{ donor_id }}/" class="secondary-button">View Donor Profile</a>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 0;">
+                Thank you for using BloodLife. Together, we're saving lives.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-bottom: 0;">
+                Best regards,<br>
+                <strong>The BloodLife Team</strong>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p style="margin: 0;">© 2024 BloodLife. All rights reserved.</p>
+            <p style="margin: 10px 0 0 0;">
+                <a href="{{ site_url }}/accounts/privacy/">Privacy Policy</a> | 
+                <a href="{{ site_url }}/accounts/terms/">Terms of Service</a>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #888;">
+                This is an automated email. Please do not reply.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

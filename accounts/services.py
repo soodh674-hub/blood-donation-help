@@ -399,11 +399,104 @@ def send_welcome_email(user):
         return False
 
 
+def send_blood_request_created_email(user, blood_request):
+    """
+    Send email when blood request is created
+    """
+    try:
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+        from django.utils.html import strip_tags
+        from django.conf import settings
+        
+        # Render HTML email template
+        html_message = render_to_string('emails/blood_request_created.html', {
+            'user_name': user.get_full_name() or user.username,
+            'blood_group': blood_request.patient_blood_group,
+            'hospital_name': blood_request.hospital_name,
+            'location': blood_request.city,
+            'urgency': blood_request.urgency,
+            'required_date': blood_request.required_date,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Create plain text version
+        plain_message = strip_tags(html_message)
+        
+        # Send email with both HTML and plain text
+        send_mail(
+            subject='Blood Request Created Successfully - BloodLife',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message,
+            fail_silently=False
+        )
+        
+        logger.info(f"Blood request created email sent to {user.email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Blood request created email sending failed: {str(e)}", exc_info=True)
+        return False
+
+
+def send_donor_accepted_email(requester, donor, blood_request):
+    """
+    Send email when donor accepts blood request
+    """
+    try:
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+        from django.utils.html import strip_tags
+        from django.conf import settings
+        from django.utils import timezone
+        
+        # Calculate response time
+        created_time = blood_request.created_at
+        response_time = timezone.now() - created_time
+        response_minutes = int(response_time.total_seconds() / 60)
+        response_time_str = f"{response_minutes} minutes ago"
+        
+        # Render HTML email template
+        html_message = render_to_string('emails/donor_accepted.html', {
+            'requester_name': requester.get_full_name() or requester.username,
+            'donor_name': donor.get_full_name() or donor.username,
+            'donor_blood_group': donor.blood_group,
+            'donor_location': f"{donor.city}, {donor.state}",
+            'blood_group': blood_request.patient_blood_group,
+            'response_time': response_time_str,
+            'donor_id': donor.id,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Create plain text version
+        plain_message = strip_tags(html_message)
+        
+        # Send email with both HTML and plain text
+        send_mail(
+            subject='Donor Accepted Your Request - BloodLife',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[requester.email],
+            html_message=html_message,
+            fail_silently=False
+        )
+        
+        logger.info(f"Donor accepted email sent to {requester.email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Donor accepted email sending failed: {str(e)}", exc_info=True)
+        return False
+
+
 class NotificationService:
     """Unified notification service that handles SMS, push, and email"""
     
     @staticmethod
     def send_notification(user, title, message, notification_type='info', data=None):
+        """
         Send notification via enabled channels
         Args:
             user: User object
