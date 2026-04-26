@@ -79,25 +79,38 @@
                 <div>
                     <label class="form-label text-white small fw-medium">Enter 6-digit Code</label>
                     <div class="d-flex justify-content-center gap-2">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
-                        <input type="text" maxlength="1" 
+                        <input type="text" maxlength="1"
                                class="form-control text-center fs-4 fw-bold bg-white/10 border border-white/20 text-white otp-input" style="width: 48px; height: 48px;">
                     </div>
                     <input type="hidden" id="otp" name="otp">
                     <input type="hidden" id="email" name="email">
                 </div>
 
+                <!-- CAPTCHA for OTP Verification -->
+                {% if captcha_form %}
+                <div class="mb-3 mt-3">
+                    <label class="form-label text-white small fw-medium">
+                        <i class="bi bi-shield-check me-1" style="color: var(--neon-red);"></i>
+                        Security Verification
+                    </label>
+                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.5rem; padding: 1rem;">
+                        {{ captcha_form }}
+                    </div>
+                </div>
+                {% endif %}
+
                 <div>
-                    <button type="submit" 
+                    <button type="submit"
                             class="btn btn-gradient w-100">
                         <span id="buttonText">Verify Code</span>
                     </button>
@@ -302,12 +315,20 @@ document.addEventListener('DOMContentLoaded', function() {
         setButtonLoading(true);
         
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        const captchaResponse = document.querySelector('input[name="captcha_0"]')?.value || '';
+        const captchaKey = document.querySelector('input[name="captcha_1"]')?.value || '';
 
         const formData = new FormData();
         formData.append('email', emailInput.value);
         formData.append('otp', hiddenOtpInput.value);
         if (csrfToken) {
             formData.append('csrfmiddlewaretoken', csrfToken);
+        }
+        if (captchaResponse) {
+            formData.append('captcha_0', captchaResponse);
+        }
+        if (captchaKey) {
+            formData.append('captcha_1', captchaKey);
         }
 
         try {

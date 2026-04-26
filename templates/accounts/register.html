@@ -273,6 +273,19 @@
                         <input type="text" id="otp-code" maxlength="6" pattern="[0-9]{6}" class="form-control text-center" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: var(--text-primary); letter-spacing: 0.5em; font-size: 1.5rem;" placeholder="••••••">
                     </div>
 
+                    <!-- CAPTCHA for OTP Verification -->
+                    {% if captcha_form %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium" style="color: var(--text-secondary);">
+                            <i class="bi bi-shield-check me-1" style="color: var(--neon-red);"></i>
+                            Security Verification
+                        </label>
+                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.5rem; padding: 1rem;">
+                            {{ captcha_form }}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <button type="button" onclick="verifyRegistrationOTP()" id="verify-otp-btn" class="btn w-100 py-2 mb-2" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; font-weight: 500;">
                         Verify & Register <i class="bi bi-check-circle ms-2"></i>
                     </button>

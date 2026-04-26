@@ -1606,11 +1606,25 @@
                         });
                     },
                     (error) => {
-                        reject(error);
+                        let errorMessage = 'Unable to retrieve location';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location permission denied. Please enable location services.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Location request timed out. Please try again.';
+                                break;
+                            default:
+                                errorMessage = 'An unknown error occurred.';
+                        }
+                        reject(new Error(errorMessage));
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 5000,
+                        timeout: 15000,
                         maximumAge: 0
                     }
                 );
@@ -1637,17 +1651,23 @@
                     `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
                     {
                         headers: {
-                            'Accept-Language': 'en'
+                            'Accept-Language': 'en',
+                            'User-Agent': 'BloodLife-Donation-App'
                         }
                     }
                 );
+                
+                if (!response.ok) {
+                    throw new Error(`Geocoding API returned ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data && data.address) {
                     const addr = data.address;
                     return {
-                        city: addr.city || addr.town || addr.village || addr.suburb || '',
-                        state: addr.state || addr.region || '',
+                        city: addr.city || addr.town || addr.village || addr.suburb || addr.district || '',
+                        state: addr.state || addr.region || addr.province || '',
                         country: addr.country || 'India',
                         pincode: addr.postcode || '',
                         fullAddress: data.display_name || '',
