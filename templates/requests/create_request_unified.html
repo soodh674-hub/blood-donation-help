@@ -889,6 +889,67 @@ function useMyLocation() {
     });
 }
 
+// Auto-detect location function (called from button)
+function autoDetectLocation(options) {
+    if (!navigator.geolocation) {
+        showLocationMessage('Geolocation is not supported by your browser', 'error');
+        return;
+    }
+    
+    showLocationMessage('Detecting your location...', 'success');
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Update form fields
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+            
+            // Reverse geocode to get address details
+            reverseGeocodeLocation(lat, lng);
+            
+            // If map is open, show location on map
+            if (mapPicker) {
+                mapPicker.setView([lat, lng], 16);
+                
+                if (mapMarker) {
+                    mapMarker.setLatLng([lat, lng]);
+                } else {
+                    mapMarker = L.marker([lat, lng], {
+                        draggable: true
+                    }).addTo(mapPicker);
+                }
+            }
+            
+            showLocationMessage('Location detected successfully!', 'success');
+        },
+        function(error) {
+            let errorMessage = 'Unable to detect location';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Location permission denied. Please enable location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Location request timed out.';
+                    break;
+                default:
+                    errorMessage = 'An unknown error occurred.';
+            }
+            showLocationMessage(errorMessage, 'error');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
+
 // Map Picker
 let mapPicker = null;
 let mapMarker = null;
@@ -899,6 +960,10 @@ function toggleMapPicker() {
     if (container.classList.contains('d-none')) {
         container.classList.remove('d-none');
         initMapPicker();
+        // Auto-detect location when map opens
+        setTimeout(() => {
+            useCurrentLocation();
+        }, 500);
     } else {
         container.classList.add('d-none');
     }
