@@ -198,12 +198,12 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 
 
-@login_required
 @cache_page(60 * 5)  # Cache for 5 minutes
 def donor_profile(request, user_id):
     """
     Display donor profile page (Instagram-style)
     Phase 3: Added caching for performance optimization
+    Public view - no login required to view donor profiles
     """
     try:
         # Try to get cached profile data
