@@ -447,11 +447,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: headers
             });
             
+            console.log('API Response status:', response.status);
+            
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error response:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('API Response data:', data);
             
             // Hide loading spinner
             loadingSpinner.classList.add('d-none');

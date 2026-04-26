@@ -223,6 +223,12 @@ def donor_profile(request, user_id):
             id=user_id, user_type='donor', is_active=True
         )
 
+        # Ensure donor_profile exists
+        if not hasattr(donor, 'donor_profile'):
+            from accounts.models import DonorProfile
+            donor_profile, created = DonorProfile.objects.get_or_create(user=donor)
+            donor.donor_profile = donor_profile
+
         # Get donation history stats - optimized with count()
         total_donations = DonorHistory.objects.filter(donor=donor).count()
 

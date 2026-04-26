@@ -1174,7 +1174,14 @@ def otp_login_verify(request):
 
 def donor_search_page(request):
     """Donor search page"""
-    return render(request, 'search/donor_search.html')
+    # Get all available blood groups for the dropdown
+    from accounts.models import User
+    blood_groups = User.objects.filter(user_type='donor', blood_group__isnull=False).values_list('blood_group', flat=True).distinct()
+    
+    context = {
+        'blood_groups': sorted(set(blood_groups)),
+    }
+    return render(request, 'search/donor_search.html', context)
 
 
 def user_search_page(request):
