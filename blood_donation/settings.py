@@ -536,7 +536,7 @@ if IS_RENDER:
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='hsood3560@gmail.com')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='hsood3560@gmail.com')
-    DEFAULT_FROM_EMAIL_NAME = config('DEFAULT_FROM_EMAIL_NAME', default='Blood Donation Help')
+    DEFAULT_FROM_EMAIL_NAME = config('DEFAULT_FROM_EMAIL_NAME', default='BloodLife')
     
     # Log configuration status
     if not EMAIL_HOST_PASSWORD or EMAIL_HOST_PASSWORD == 'your_smtp_password':
