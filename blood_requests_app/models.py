@@ -70,9 +70,9 @@ class DonorRating(models.Model):
         (5, 'Excellent'),
     ]
     
-    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_ratings')
-    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_ratings')
-    blood_request = models.ForeignKey('BloodRequest', on_delete=models.CASCADE, related_name='donor_ratings')
+    donor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='received_ratings')
+    rater = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='given_ratings')
+    blood_request = models.ForeignKey('BloodRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='donor_ratings')
     rating = models.IntegerField(choices=RATING_CHOICES)
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -82,7 +82,7 @@ class DonorRating(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.rater.username} rated {self.donor.username}: {self.rating}/5"
+        return f"{self.rater.username if self.rater else 'Unknown'} rated {self.donor.username if self.donor else 'Unknown'}: {self.rating}/5"
 
 
 class BloodRequest(models.Model):
