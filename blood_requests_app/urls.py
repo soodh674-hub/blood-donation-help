@@ -136,6 +136,9 @@ urlpatterns = [
     # Chat conversation with specific user
     path("chat/<int:user_id>/", views.chat_conversation, name='chat-conversation'),
     
+    # Start chat with donor (from donor search profile)
+    path("chat/start/<int:donor_id>/", views.start_chat_with_donor, name='start-chat-with-donor'),
+    
     # Send chat message (AJAX)
     path("chat/api/send/", views.send_chat_message, name='chat-send'),
     

@@ -1804,6 +1804,17 @@ def chat_conversation(request, user_id):
 
 
 @login_required
+def start_chat_with_donor(request, donor_id):
+    """Start chat with a donor from donor search profile"""
+    from accounts.models import User
+    
+    donor = get_object_or_404(User, id=donor_id, is_active=True)
+    
+    # Redirect to the existing chat conversation view
+    return redirect('chat-conversation', user_id=donor_id)
+
+
+@login_required
 def send_chat_message(request):
     """Send chat message (AJAX)"""
     if request.method != 'POST':
