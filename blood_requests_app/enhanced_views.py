@@ -9,18 +9,28 @@ import json
 
 @login_required
 def enhanced_dashboard_view(request):
-    """Enhanced dashboard view with real-time updates"""
+    """Enhanced dashboard view with real-time updates - Zomato style"""
     try:
         # Get user location
         user_lat = getattr(request.user, 'latitude', None)
         user_lng = getattr(request.user, 'longitude', None)
-        
-        # Get live blood requests
+
+        # Get user's requests
+        my_requests = BloodRequest.objects.filter(
+            requester=request.user
+        ).order_by('-created_at')
+
+        # Categorize requests
+        active_requests = my_requests.filter(status__in=['active', 'partially_fulfilled'])
+        completed_requests = my_requests.filter(status='fulfilled')
+        cancelled_requests = my_requests.filter(status__in=['cancelled', 'expired'])
+
+        # Get live blood requests (for donors to see)
         live_requests = BloodRequest.objects.filter(
             status__in=['active', 'partially_fulfilled']
-        ).select_related('requester').order_by('-created_at')[:10]
-        
-        # Calculate distances for requests
+        ).exclude(requester=request.user).select_related('requester').order_by('-created_at')[:10]
+
+        # Calculate distances for live requests
         requests_with_distance = []
         for req in live_requests:
             distance = None
@@ -29,63 +39,35 @@ def enhanced_dashboard_view(request):
                     user_lat, user_lng,
                     req.latitude, req.longitude
                 )
-            
+
             requests_with_distance.append({
                 'request': req,
                 'distance': round(distance, 1) if distance else None,
                 'time_ago': get_time_ago(req.created_at)
             })
-        
-        # Get interested donors (users who responded to user's requests)
-        user_requests = BloodRequest.objects.filter(requester=request.user)
-        interested_donors = RequestResponse.objects.filter(
-            blood_request__in=user_requests,
-            status='accepted'
-        ).select_related('donor').order_by('-response_time')[:10]
-        
-        # Get nearby donors
-        nearby_donors = []
-        if user_lat and user_lng:
-            all_donors = User.objects.filter(
-                is_donor=True,
-                is_active=True,
-                is_available=True
-            ).exclude(id=request.user.id)
-            
-            for donor in all_donors:
-                if hasattr(donor, 'latitude') and hasattr(donor, 'longitude'):
-                    distance = calculate_distance(
-                        user_lat, user_lng,
-                        donor.latitude, donor.longitude
-                    )
-                    if distance <= 10:  # Within 10km
-                        nearby_donors.append({
-                            'donor': donor,
-                            'distance': round(distance, 1)
-                        })
-        
-        # Sort nearby donors by distance
-        nearby_donors.sort(key=lambda x: x['distance'])
-        nearby_donors = nearby_donors[:5]  # Limit to 5
-        
+
         context = {
+            'my_requests': my_requests,
+            'active_requests': active_requests,
+            'completed_requests': completed_requests,
+            'cancelled_requests': cancelled_requests,
             'live_requests': requests_with_distance,
-            'interested_donors': interested_donors,
-            'nearby_donors': nearby_donors,
             'user_location': {
                 'lat': user_lat,
                 'lng': user_lng
             }
         }
-        
-        return render(request, 'requests/track_request_dashboard.html', context)
+
+        return render(request, 'requests/track_request_dashboard_zomato.html', context)
 
     except Exception as e:
         # Fallback to basic dashboard
-        return render(request, 'requests/track_request_dashboard.html', {
-            'live_requests': [],
-            'interested_donors': [],
-            'nearby_donors': []
+        return render(request, 'requests/track_request_dashboard_zomato.html', {
+            'my_requests': [],
+            'active_requests': [],
+            'completed_requests': [],
+            'cancelled_requests': [],
+            'live_requests': []
         })
 
 @login_required
@@ -129,15 +111,27 @@ def enhanced_track_request_view(request, request_id=None):
                     'distance': round(distance, 1) if distance else None
                 })
             
+            # Calculate current step based on status
+            status_to_step = {
+                'pending': 1,
+                'active': 2,
+                'partially_fulfilled': 3,
+                'fulfilled': 5,
+                'cancelled': 1,
+                'expired': 1
+            }
+            current_step = status_to_step.get(blood_request.status, 1)
+
             context = {
-                'request': blood_request,
+                'blood_request': blood_request,
                 'responses': responses_with_distance,
                 'can_manage': blood_request.requester == request.user,
                 'user_lat': getattr(request.user, 'latitude', None),
-                'user_lng': getattr(request.user, 'longitude', None)
+                'user_lng': getattr(request.user, 'longitude', None),
+                'current_step': current_step
             }
-            
-            return render(request, 'requests/track_request_enhanced.html', context)
+
+            return render(request, 'requests/track_request_zomato.html', context)
         else:
             # Show user's requests to track
             user_requests = BloodRequest.objects.filter(
