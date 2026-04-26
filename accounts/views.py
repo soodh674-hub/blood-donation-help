@@ -121,13 +121,19 @@ def verify_email(request):
 
 
 # Helper functions (implement properly in production)
-def send_verification_email(user):
+def send_verification_email(user, token=None):
     """Send email verification"""
     try:
         code = ''.join(random.choices(string.digits, k=6))
         # Store code in cache with expiration
         subject = 'Verify your email - Blood Donation Platform'
-        message = f'Your verification code is: {code}'
+        
+        if token:
+            # Use token-based verification link
+            verification_url = f"{settings.SITE_URL or 'http://localhost:8000'}/accounts/verify-email/{token}/"
+            message = f'Your verification link is: {verification_url}\n\nOr use this code: {code}'
+        else:
+            message = f'Your verification code is: {code}'
         
         # Use explicit Brevo backend connection
         from django.core.mail import get_connection
@@ -852,6 +858,209 @@ def otp_login_request(request):
         # Clear OTP if email failed
         otp_services.clear_reset_state(user.id)
         return JsonResponse({'success': False, 'message': message})
+
+
+@require_POST
+@csrf_exempt
+def otp_register_request(request):
+    """
+    Handle OTP request for registration - generate and send OTP via email
+    Returns JSON response for AJAX requests
+    """
+    email = request.POST.get('email')
+    captcha_response = request.POST.get('captcha_0', '')
+    captcha_key = request.POST.get('captcha_1', '')
+
+    if not email:
+        return JsonResponse({'success': False, 'message': 'Email is required'})
+
+    # Check if user already exists with this email
+    User = get_user_model()
+    try:
+        User.objects.get(email=email)
+        return JsonResponse({'success': False, 'message': 'An account with this email already exists'})
+    except User.DoesNotExist:
+        pass
+
+    # CAPTCHA validation (if captcha is available)
+    has_captcha = 'captcha' in settings.INSTALLED_APPS
+    if has_captcha:
+        try:
+            from captcha.models import CaptchaStore
+            if captcha_response and captcha_key:
+                CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+            else:
+                return JsonResponse({'success': False, 'message': 'Please complete the security verification'})
+        except CaptchaStore.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA'})
+        except Exception as e:
+            logger.warning(f'CAPTCHA error in registration OTP request: {str(e)}')
+
+    # Check rate limit (use email as identifier since user doesn't exist yet)
+    allowed, remaining = otp_services.check_rate_limit(email)
+    if not allowed:
+        return JsonResponse({
+            'success': False,
+            'message': f'Please wait {remaining} seconds before requesting another OTP'
+        })
+
+    # Generate OTP
+    otp = otp_services.generate_otp()
+
+    # Store OTP in cache (use email as key)
+    if not otp_services.store_otp(hash(email), otp):
+        return JsonResponse({'success': False, 'message': 'Failed to generate OTP. Please try again'})
+
+    # Send OTP via email
+    from .services import send_otp_email
+    success, message = send_otp_email(email, otp, 'User')
+
+    if success:
+        # Set rate limit
+        otp_services.set_rate_limit(email)
+        return JsonResponse({'success': True, 'message': 'OTP sent successfully'})
+    else:
+        # Clear OTP if email failed
+        otp_services.clear_reset_state(hash(email))
+        return JsonResponse({'success': False, 'message': message})
+
+
+def register_with_otp(request):
+    """
+    Single-page registration with OTP verification
+    Combines all registration steps with OTP email verification
+    """
+    if request.method == 'GET':
+        # Initialize CAPTCHA form
+        captcha_form = None
+        if 'captcha' in settings.INSTALLED_APPS:
+            from captcha.fields import CaptchaField
+            from django import forms
+            class CaptchaForm(forms.Form):
+                captcha = CaptchaField()
+            captcha_form = CaptchaForm()
+        
+        return render(request, 'accounts/register.html', {'captcha_form': captcha_form})
+    
+    elif request.method == 'POST':
+        # Verify OTP and complete registration
+        email = request.POST.get('email')
+        otp = request.POST.get('otp')
+        
+        if not email or not otp:
+            return JsonResponse({'success': False, 'message': 'Email and OTP are required'})
+        
+        # Verify OTP
+        success, message = otp_services.verify_otp_cache(hash(email), otp)
+        if not success:
+            return JsonResponse({'success': False, 'message': message})
+        
+        # OTP verified, proceed with registration
+        User = get_user_model()
+        
+        try:
+            # Check if user already exists
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'success': False, 'message': 'An account with this email already exists'})
+            
+            # Extract form data
+            first_name = request.POST.get('first_name', '').strip()
+            phone_number = request.POST.get('phone_number', '').strip()
+            password = request.POST.get('password', '')
+            blood_group = request.POST.get('blood_group', '').strip()
+            date_of_birth = request.POST.get('date_of_birth', '').strip()
+            city = request.POST.get('city', '').strip()
+            state = request.POST.get('state', '').strip()
+            user_type = request.POST.get('user_type', 'donor')
+            consent_given = request.POST.get('consent_given') == 'on'
+            
+            # Validation
+            errors = {}
+            
+            if not first_name:
+                errors['first_name'] = ['First name is required.']
+            
+            if not phone_number or len(phone_number) < 10:
+                errors['phone_number'] = ['Please enter a valid phone number.']
+            
+            if not blood_group:
+                errors['blood_group'] = ['Blood group is required.']
+            
+            if not password or len(password) < 8:
+                errors['password'] = ['Password must be at least 8 characters.']
+            
+            if not date_of_birth:
+                errors['date_of_birth'] = ['Date of birth is required.']
+            else:
+                try:
+                    from datetime import datetime
+                    dob = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
+                    today = datetime.now().date()
+                    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                    
+                    if age < 18:
+                        errors['date_of_birth'] = ['You must be at least 18 years old.']
+                except ValueError:
+                    errors['date_of_birth'] = ['Please enter a valid date.']
+            
+            if not city:
+                errors['city'] = ['City is required.']
+            
+            if not state:
+                errors['state'] = ['State is required.']
+            
+            if not consent_given:
+                errors['consent'] = ['You must agree to the terms and conditions.']
+            
+            if errors:
+                return JsonResponse({'success': False, 'message': 'Validation failed', 'errors': errors})
+            
+            # Generate username from email
+            username = email.split('@')[0]
+            base_username = username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            # Create user
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                is_active=False  # Will be activated after email verification
+            )
+            
+            # Update user profile
+            user.phone_number = phone_number
+            user.blood_group = blood_group
+            user.date_of_birth = date_of_birth
+            user.city = city
+            user.state = state
+            user.user_type = user_type
+            user.consent_given = consent_given
+            user.save()
+            
+            # Generate email verification token
+            from .utils import generate_verification_token
+            verification_token = generate_verification_token(user)
+            
+            # Send verification email
+            from .services import send_verification_email
+            send_verification_email(user, verification_token)
+            
+            # Clear OTP
+            otp_services.clear_reset_state(hash(email))
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Registration successful! Please check your email to verify your account.'
+            })
+            
+        except Exception as e:
+            logger.error(f'Registration error: {str(e)}', exc_info=True)
+            return JsonResponse({'success': False, 'message': 'Registration failed. Please try again.'})
 
 
 @require_POST
