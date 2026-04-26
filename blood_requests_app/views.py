@@ -338,37 +338,98 @@ def create_request_unified_page(request):
 
 def track_request_dashboard(request):
     """
-    Enhanced unified tracking dashboard for blood requests
-    Shows user's own requests with stats
+    Enhanced unified tracking dashboard for blood requests - Zomato style
+    Shows user's own requests with stats and live requests
     """
     if not request.user.is_authenticated:
         from django.shortcuts import redirect
         return redirect('/accounts/login/?next=/requests/track/')
 
-    # Get all requests for the current user
+    # Get user location
+    user_lat = getattr(request.user, 'latitude', None)
+    user_lng = getattr(request.user, 'longitude', None)
+
+    # Get user's requests
     from .models import BloodRequest, RequestResponse
     from django.utils import timezone
 
-    # User's own requests
-    user_requests = BloodRequest.objects.filter(
+    my_requests = BloodRequest.objects.filter(
         requester=request.user
     ).order_by('-created_at')
 
+    # Categorize requests
+    active_requests = my_requests.filter(status__in=['active', 'partially_fulfilled'])
+    completed_requests = my_requests.filter(status='fulfilled')
+    cancelled_requests = my_requests.filter(status__in=['cancelled', 'expired'])
+
+    # Get live blood requests (for donors to see)
+    live_requests = BloodRequest.objects.filter(
+        status__in=['active', 'partially_fulfilled']
+    ).exclude(requester=request.user).select_related('requester').order_by('-created_at')[:10]
+
+    # Calculate distances for live requests
+    requests_with_distance = []
+    for req in live_requests:
+        distance = None
+        if user_lat and user_lng and hasattr(req, 'latitude') and hasattr(req, 'longitude'):
+            from .utils import calculate_distance
+            distance = calculate_distance(
+                user_lat, user_lng,
+                req.latitude, req.longitude
+            )
+
+        requests_with_distance.append({
+            'request': req,
+            'distance': round(distance, 1) if distance else None,
+            'time_ago': get_time_ago(req.created_at)
+        })
+
     # Calculate stats
-    total_count = user_requests.count()
-    active_count = user_requests.filter(status='active').count()
-    fulfilled_count = user_requests.filter(status='fulfilled').count()
-    urgent_count = user_requests.filter(priority__in=['urgent', 'emergency']).count()
+    total_count = my_requests.count()
+    active_count = active_requests.count()
+    fulfilled_count = completed_requests.count()
+    urgent_count = my_requests.filter(priority__in=['urgent', 'emergency']).count()
 
     context = {
-        'requests': user_requests,
+        'my_requests': my_requests,
+        'active_requests': active_requests,
+        'completed_requests': completed_requests,
+        'cancelled_requests': cancelled_requests,
+        'live_requests': requests_with_distance,
         'total_count': total_count,
         'active_count': active_count,
         'fulfilled_count': fulfilled_count,
         'urgent_count': urgent_count,
+        'user_location': {
+            'lat': user_lat,
+            'lng': user_lng
+        }
     }
 
-    return render(request, 'requests/track_request_list.html', context)
+    return render(request, 'requests/track_request_dashboard_zomato.html', context)
+
+
+def get_time_ago(created_at):
+    """Calculate time ago string"""
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    now = timezone.now()
+    diff = now - created_at
+    
+    if diff < timedelta(minutes=1):
+        return 'Just now'
+    elif diff < timedelta(hours=1):
+        minutes = int(diff.total_seconds() / 60)
+        return f'{minutes}m ago'
+    elif diff < timedelta(days=1):
+        hours = int(diff.total_seconds() / 3600)
+        return f'{hours}h ago'
+    elif diff < timedelta(days=7):
+        days = diff.days
+        return f'{days}d ago'
+    else:
+        return created_at.strftime('%b %d')
 
 
 def track_specific_request(request, request_id):
