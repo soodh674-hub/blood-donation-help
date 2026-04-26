@@ -539,7 +539,7 @@ if IS_RENDER:
     EMAIL_PORT = 587
     EMAIL_USE_TLS = True
     EMAIL_HOST_USER = 'hsood3560@gmail.com'
-    EMAIL_HOST_PASSWORD = 'xkeysib-your-brevo-smtp-key-here'  # REPLACE THIS WITH YOUR ACTUAL BREVO SMTP KEY
+    EMAIL_HOST_PASSWORD = config('BREVO_API_KEY', default='')
     DEFAULT_FROM_EMAIL = 'hsood3560@gmail.com'
     SERVER_EMAIL = 'hsood3560@gmail.com'
     
