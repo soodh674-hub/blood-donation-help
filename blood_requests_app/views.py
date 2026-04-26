@@ -339,36 +339,75 @@ def create_request_unified_page(request):
 def track_request_dashboard(request):
     """
     Enhanced unified tracking dashboard for blood requests
-    Shows user's own requests with stats
+    Shows user's own requests with stats and live requests from other donors
+    Zomato-style UI with live map, donor tracking, and real-time updates
     """
     if not request.user.is_authenticated:
         from django.shortcuts import redirect
         return redirect('/accounts/login/?next=/requests/track/')
 
-    # Get all requests for the current user
-    from .models import BloodRequest, RequestResponse
-    from django.utils import timezone
+    try:
+        # Get user location
+        user_lat = getattr(request.user, 'latitude', None)
+        user_lng = getattr(request.user, 'longitude', None)
 
-    # User's own requests
-    user_requests = BloodRequest.objects.filter(
-        requester=request.user
-    ).order_by('-created_at')
+        # Get user's requests
+        from .models import BloodRequest, RequestResponse
+        from django.utils import timezone
 
-    # Calculate stats
-    total_count = user_requests.count()
-    active_count = user_requests.filter(status='active').count()
-    fulfilled_count = user_requests.filter(status='fulfilled').count()
-    urgent_count = user_requests.filter(priority__in=['urgent', 'emergency']).count()
+        my_requests = BloodRequest.objects.filter(
+            requester=request.user
+        ).order_by('-created_at')
 
-    context = {
-        'requests': user_requests,
-        'total_count': total_count,
-        'active_count': active_count,
-        'fulfilled_count': fulfilled_count,
-        'urgent_count': urgent_count,
-    }
+        # Categorize requests
+        active_requests = my_requests.filter(status__in=['active', 'partially_fulfilled'])
+        completed_requests = my_requests.filter(status='fulfilled')
+        cancelled_requests = my_requests.filter(status__in=['cancelled', 'expired'])
 
-    return render(request, 'requests/track_request_list.html', context)
+        # Get live blood requests (for donors to see)
+        live_requests = BloodRequest.objects.filter(
+            status__in=['active', 'partially_fulfilled']
+        ).exclude(requester=request.user).select_related('requester').order_by('-created_at')[:10]
+
+        # Calculate distances for live requests
+        requests_with_distance = []
+        for req in live_requests:
+            distance = None
+            if user_lat and user_lng and hasattr(req, 'latitude') and hasattr(req, 'longitude'):
+                distance = calculate_distance(
+                    user_lat, user_lng,
+                    float(req.latitude), float(req.longitude)
+                )
+
+            requests_with_distance.append({
+                'request': req,
+                'distance': round(distance, 1) if distance else None,
+                'time_ago': get_time_ago(req.created_at)
+            })
+
+        context = {
+            'my_requests': my_requests,
+            'active_requests': active_requests,
+            'completed_requests': completed_requests,
+            'cancelled_requests': cancelled_requests,
+            'live_requests': requests_with_distance,
+            'user_location': {
+                'lat': user_lat,
+                'lng': user_lng
+            }
+        }
+
+        return render(request, 'requests/track_request_dashboard_zomato.html', context)
+
+    except Exception as e:
+        # Fallback to basic dashboard
+        return render(request, 'requests/track_request_dashboard_zomato.html', {
+            'my_requests': [],
+            'active_requests': [],
+            'completed_requests': [],
+            'cancelled_requests': [],
+            'live_requests': []
+        })
 
 
 def track_specific_request(request, request_id):
@@ -808,16 +847,33 @@ import math
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate distance between two points using Haversine formula"""
     R = 6371  # Earth's radius in kilometers
-    
+
     lat1_rad = math.radians(lat1)
     lat2_rad = math.radians(lat2)
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
-    
+
     a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
     c = 2 * math.asin(math.sqrt(a))
-    
+
     return R * c
+
+
+def get_time_ago(created_at):
+    """Get human-readable time ago string"""
+    now = timezone.now()
+    diff = now - created_at
+
+    if diff.days > 0:
+        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+    elif diff.seconds > 3600:
+        hours = diff.seconds // 3600
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    elif diff.seconds > 60:
+        minutes = diff.seconds // 60
+        return f"{minutes} min ago"
+    else:
+        return "Just now"
 
 
 @api_view(['GET'])
