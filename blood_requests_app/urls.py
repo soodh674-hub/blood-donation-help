@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 
 from . import views
 from . import views_api
+from . import enhanced_views
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -31,6 +32,7 @@ urlpatterns = [
     path("", views.create_request_unified_page, name="blood-request-create-page"),
     path("create/", views.create_request_unified_page, name="blood-request-create-unified"),
     path("track/", views.track_request_dashboard, name="track-request-dashboard"),
+    path("track-enhanced/", enhanced_views.enhanced_dashboard_view, name="track-request-enhanced"),
     path("manage/<int:request_id>/", views.manage_request, name="manage-request"),
     path("my-requests/", views.my_requests_page, name="my-blood-requests"),
     

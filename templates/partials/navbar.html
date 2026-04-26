@@ -24,7 +24,7 @@
                 Home
             </a>
 
-            <a href="{% url 'requests:track-request-dashboard' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
+            <a href="{% url 'requests:track-request-enhanced' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
                 <i class="bi bi-grid-fill me-1"></i>
                 Feed
             </a>
@@ -45,7 +45,7 @@
                 My Requests
             </a>
 
-            <a href="{% url 'requests:track-request-dashboard' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
+            <a href="{% url 'requests:track-request-enhanced' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
                 <i class="bi bi-broadcast me-1"></i>
                 Track Requests
             </a>
@@ -115,7 +115,7 @@
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2"></i>Create Request</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:manage-all-requests' %}"><i class="bi bi-list-check me-2"></i>My Requests</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-dashboard' %}"><i class="bi bi-broadcast me-2"></i>Track Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-enhanced' %}"><i class="bi bi-broadcast me-2"></i>Track Requests</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
                         <!-- NEW FEATURES -->
@@ -170,7 +170,7 @@
                 <i class="bi bi-list-check me-2" style="width: 20px; height: 20px;"></i>
                 My Requests
             </a>
-            <a href="{% url 'requests:track-request-dashboard' %}" class="mobile-nav-link d-flex align-items-center">
+            <a href="{% url 'requests:track-request-enhanced' %}" class="mobile-nav-link d-flex align-items-center">
                 <i class="bi bi-broadcast me-2" style="width: 20px; height: 20px;"></i>
                 Track Requests
             </a>
