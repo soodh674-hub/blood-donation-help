@@ -12,7 +12,7 @@
             </a>
         </div>
 
-        <!-- Mobile Toggle Button (Only One) -->
+        <!-- Mobile Toggle Button -->
         <button class="navbar-toggler d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle navigation" style="color: #60a5fa;">
             <i class="bi bi-list" style="font-size: 1.5rem;"></i>
         </button>
@@ -35,26 +35,11 @@
             </a>
 
             {% if user.is_authenticated %}
-            <a href="{% url 'requests:blood-request-create-unified' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/create' in request.path %}active{% endif %}">
-                <i class="bi bi-plus-circle me-1"></i>
-                Create Request
-            </a>
-
-            <a href="{% url 'requests:manage-all-requests' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/manage-all' in request.path %}active{% endif %}">
-                <i class="bi bi-list-check me-1"></i>
-                My Requests
-            </a>
-
-            <a href="{% url 'requests:track-request-enhanced' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
-                <i class="bi bi-broadcast me-1"></i>
-                Track Requests
+            <a href="{% url 'requests:track' %}" class="nav-link-custom d-flex align-items-center {% if '/requests/track' in request.path %}active{% endif %}">
+                <i class="bi bi-geo-alt me-1"></i>
+                Track
             </a>
             {% endif %}
-
-            <a href="{% url 'accounts:search-donors' %}" class="nav-link-custom d-flex align-items-center {% if '/search-donors' in request.path %}active{% endif %}">
-                <i class="bi bi-people me-1"></i>
-                Find Donors
-            </a>
 
             <!-- Auth Links - Guest User -->
             {% if not user.is_authenticated %}
@@ -110,32 +95,34 @@
                             <p class="mb-0 text-secondary" style="font-size: 0.75rem;">{{ user.email }}</p>
                         </li>
                         
-                        <!-- Menu Items -->
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i>Home</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:chat-inbox' %}"><i class="bi bi-chat-dots me-2"></i>Messages</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-users' %}"><i class="bi bi-geo-alt me-2"></i>Find Users Near Me</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart me-2"></i>Favorites</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2"></i>Search Donors</a></li>
-                        <li><hr class="dropdown-divider border-gray-700"></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2"></i>Create Request</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:manage-all-requests' %}"><i class="bi bi-list-check me-2"></i>My Requests</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-enhanced' %}"><i class="bi bi-broadcast me-2"></i>Track Requests</a></li>
+                        <!-- Quick Actions -->
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Quick Actions</small></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2" style="color: #3b82f6;"></i>Create Request</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track' %}"><i class="bi bi-geo-alt me-2" style="color: #10b981;"></i>Track Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2" style="color: #f59e0b;"></i>Find Donors</a></li>
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
-                        <!-- NEW FEATURES -->
-                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">New Features</small></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:donation-history' %}"><i class="bi bi-clock-history me-2" style="color: #f59e0b;"></i>Donation History</a></li>
+                        <!-- Profile -->
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Profile</small></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:donation-history' %}"><i class="bi bi-clock-history me-2"></i>Donation History</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart me-2"></i>Favorites</a></li>
+                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        
+                        <!-- Features -->
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Features</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:hospital-partners' %}"><i class="bi bi-hospital me-2" style="color: #3b82f6;"></i>Hospital Partners</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:trust-signals' %}"><i class="bi bi-shield-check me-2" style="color: #10b981;"></i>Trust Signals</a></li>
                         {% if user.is_staff or user.user_type == 'hospital' %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:hospital-dashboard' %}"><i class="bi bi-grid me-2" style="color: #8b5cf6;"></i>Hospital Dashboard</a></li>
                         {% endif %}
+                        {% if user.is_staff %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:verify-requests-page' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
+                        {% endif %}
                         <li><hr class="dropdown-divider border-gray-700"></li>
                         
+                        <!-- Settings -->
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:settings' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'notifications:notification-list-full' %}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:dashboard' %}"><i class="bi bi-grid-3x3-gap me-2"></i>Dashboard</a></li>
                         {% if user.is_staff %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Admin Panel</a></li>
@@ -154,8 +141,6 @@
             </div>
             {% endif %}
         </div>
-
-
     </div>
 
     <!-- Mobile Menu -->
@@ -171,12 +156,8 @@
                 <i class="bi bi-plus-circle me-2" style="width: 20px; height: 20px;"></i>
                 Create Request
             </a>
-            <a href="{% url 'requests:manage-all-requests' %}" class="mobile-nav-link d-flex align-items-center">
-                <i class="bi bi-list-check me-2" style="width: 20px; height: 20px;"></i>
-                My Requests
-            </a>
-            <a href="{% url 'requests:track-request-enhanced' %}" class="mobile-nav-link d-flex align-items-center">
-                <i class="bi bi-broadcast me-2" style="width: 20px; height: 20px;"></i>
+            <a href="{% url 'requests:track' %}" class="mobile-nav-link d-flex align-items-center">
+                <i class="bi bi-geo-alt me-2" style="width: 20px; height: 20px;"></i>
                 Track Requests
             </a>
             {% endif %}
