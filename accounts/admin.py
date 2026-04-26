@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import messages
-from .models import User
+from django.db import transaction
+from .models import User, UserReport, DonorRating, FavoriteDonor, Follow, PasswordResetOTP, LoginOTP, UserActivityLog
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,8 +45,12 @@ class UserAdmin(BaseUserAdmin):
     def delete_model(self, request, obj):
         """Override delete_model to handle cascade delete errors"""
         try:
-            obj.delete()
-            messages.success(request, f'User "{obj.username}" was deleted successfully.')
+            with transaction.atomic():
+                # Manually delete related objects that might cause issues
+                self._delete_related_objects(obj)
+                # Now delete the user
+                obj.delete()
+                messages.success(request, f'User "{obj.username}" was deleted successfully.')
         except Exception as e:
             logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
             messages.error(request, f'Error deleting user: {str(e)}. Some related data may not exist in the database.')
@@ -53,13 +58,55 @@ class UserAdmin(BaseUserAdmin):
     def delete_queryset(self, request, queryset):
         """Override delete_queryset to handle cascade delete errors for bulk delete"""
         try:
-            for obj in queryset:
-                try:
-                    obj.delete()
-                except Exception as e:
-                    logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
-                    messages.warning(request, f'Could not delete user "{obj.username}": {str(e)}')
-            messages.success(request, 'Bulk delete completed with some warnings.')
+            with transaction.atomic():
+                for obj in queryset:
+                    try:
+                        # Manually delete related objects
+                        self._delete_related_objects(obj)
+                        # Delete the user
+                        obj.delete()
+                    except Exception as e:
+                        logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
+                        messages.warning(request, f'Could not delete user "{obj.username}": {str(e)}')
+                messages.success(request, 'Bulk delete completed with some warnings.')
         except Exception as e:
             logger.error(f'Error in bulk delete: {str(e)}', exc_info=True)
             messages.error(request, f'Error in bulk delete: {str(e)}')
+    
+    def _delete_related_objects(self, user):
+        """Helper method to delete related objects safely"""
+        # Try to delete each related model individually
+        related_models = [
+            ('UserReport', UserReport),
+            ('DonorRating', DonorRating),
+            ('FavoriteDonor', FavoriteDonor),
+            ('Follow', Follow),
+            ('PasswordResetOTP', PasswordResetOTP),
+            ('LoginOTP', LoginOTP),
+            ('UserActivityLog', UserActivityLog),
+        ]
+        
+        for model_name, model_class in related_models:
+            try:
+                # Try to find and delete related objects
+                if model_name == 'UserReport':
+                    model_class.objects.filter(reporter=user).delete()
+                    model_class.objects.filter(reported_user=user).delete()
+                elif model_name == 'DonorRating':
+                    model_class.objects.filter(donor=user).delete()
+                    model_class.objects.filter(rater=user).delete()
+                elif model_name == 'FavoriteDonor':
+                    model_class.objects.filter(user=user).delete()
+                    model_class.objects.filter(favorite_donor=user).delete()
+                elif model_name == 'Follow':
+                    model_class.objects.filter(follower=user).delete()
+                    model_class.objects.filter(following=user).delete()
+                elif model_name == 'PasswordResetOTP':
+                    model_class.objects.filter(user=user).delete()
+                elif model_name == 'LoginOTP':
+                    model_class.objects.filter(user=user).delete()
+                elif model_name == 'UserActivityLog':
+                    model_class.objects.filter(user=user).delete()
+            except Exception as e:
+                # Log but don't fail if a related model doesn't exist
+                logger.warning(f'Could not delete {model_name} for user {user.username}: {str(e)}')
