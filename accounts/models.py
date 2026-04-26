@@ -563,8 +563,8 @@ class UserReport(models.Model):
         ('dismissed', 'Dismissed'),
     ]
     
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
-    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_received')
+    reporter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='reports_made')
+    reported_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='reports_received')
     reason = models.CharField(max_length=50, choices=REPORT_REASON_CHOICES)
     description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=REPORT_STATUS_CHOICES, default='pending')
@@ -675,9 +675,9 @@ class DonorRating(models.Model):
         (5, 'Excellent'),
     ]
     
-    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts_received_ratings')
-    rater = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts_given_ratings')
-    blood_request = models.ForeignKey('blood_requests_app.BloodRequest', on_delete=models.CASCADE, related_name='accounts_ratings', null=True, blank=True)
+    donor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='accounts_received_ratings')
+    rater = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='accounts_given_ratings')
+    blood_request = models.ForeignKey('blood_requests_app.BloodRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='accounts_ratings')
     
     rating = models.IntegerField(choices=RATING_CHOICES)
     review = models.TextField(blank=True, help_text="Optional review/comments")
