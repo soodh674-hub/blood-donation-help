@@ -105,27 +105,27 @@
                     <!-- Dropdown Menu -->
                     <ul class="dropdown-menu dropdown-menu-end">
                         <!-- User Info -->
-                        <li class="px-3 py-2 border-bottom-custom">
+                        <li class="px-3 py-1 border-bottom-custom">
                             <p class="mb-0 text-white small fw-medium">{{ user.get_full_name|default:user.username }}</p>
-                            <p class="mb-0 text-secondary" style="font-size: 0.75rem;">{{ user.email }}</p>
+                            <p class="mb-0 text-secondary" style="font-size: 0.7rem;">{{ user.email }}</p>
                         </li>
                         
                         <!-- Quick Actions -->
-                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Quick Actions</small></li>
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.6rem; letter-spacing: 0.5px;">Quick Actions</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:blood-request-create-unified' %}"><i class="bi bi-plus-circle me-2" style="color: #3b82f6;"></i>Create Request</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:track-request-dashboard' %}"><i class="bi bi-geo-alt me-2" style="color: #10b981;"></i>Track Requests</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:search-donors' %}"><i class="bi bi-search me-2" style="color: #f59e0b;"></i>Find Donors</a></li>
-                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><hr class="dropdown-divider border-gray-700 my-1"></li>
                         
                         <!-- Profile -->
-                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Profile</small></li>
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.6rem; letter-spacing: 0.5px;">Profile</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:donation-history' %}"><i class="bi bi-clock-history me-2"></i>Donation History</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:favorites_list' %}"><i class="bi bi-heart me-2"></i>Favorites</a></li>
-                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><hr class="dropdown-divider border-gray-700 my-1"></li>
                         
                         <!-- Features -->
-                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.5px;">Features</small></li>
+                        <li class="px-3 py-1"><small class="text-uppercase text-muted" style="font-size: 0.6rem; letter-spacing: 0.5px;">Features</small></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:hospital-partners' %}"><i class="bi bi-hospital me-2" style="color: #3b82f6;"></i>Hospital Partners</a></li>
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:trust-signals' %}"><i class="bi bi-shield-check me-2" style="color: #10b981;"></i>Trust Signals</a></li>
                         {% if user.is_staff or user.user_type == 'hospital' %}
@@ -134,7 +134,7 @@
                         {% if user.is_staff %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:verify-requests-page' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
                         {% endif %}
-                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><hr class="dropdown-divider border-gray-700 my-1"></li>
                         
                         <!-- Settings -->
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'accounts:settings' %}"><i class="bi bi-gear me-2"></i>Settings</a></li>
@@ -142,7 +142,7 @@
                         {% if user.is_staff %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock me-2"></i>Admin Panel</a></li>
                         {% endif %}
-                        <li><hr class="dropdown-divider border-gray-700"></li>
+                        <li><hr class="dropdown-divider border-gray-700 my-1"></li>
                         <li>
                             <form method="POST" action="{% url 'accounts:logout' %}">
                                 {% csrf_token %}
@@ -302,9 +302,9 @@
     
     .nav-link-custom {
         color: #d1d5db;
-        padding: 0.5rem 0.875rem;
+        padding: 0.375rem 0.625rem;
         border-radius: 0.5rem;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
@@ -449,9 +449,11 @@
         border: 1px solid #374151;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         border-radius: 0.5rem;
-        padding: 0.5rem 0;
+        padding: 0.25rem 0;
         margin-top: 0.5rem;
         z-index: 1100;
+        max-height: 80vh;
+        overflow-y: auto;
     }
     
     .border-bottom-custom {
@@ -464,8 +466,8 @@
     
     .dropdown-item-custom {
         color: #d1d5db;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+        padding: 0.375rem 0.875rem;
+        font-size: 0.8125rem;
         transition: all 0.2s;
     }
     
