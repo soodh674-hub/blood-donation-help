@@ -5,43 +5,172 @@
 
 {% block extra_css %}
 <style>
-    /* Urgency selector */
-    .urgency-option {
+    /* Zomato-inspired modern design */
+    .step-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .step-progress::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 0;
+    }
+    
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        flex: 1;
+    }
+    
+    .step-circle {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
         transition: all 0.3s ease;
+    }
+    
+    .step-item.active .step-circle {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-color: #ef4444;
+        color: white;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+    
+    .step-item.completed .step-circle {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        border-color: #22c55e;
+        color: white;
+    }
+    
+    .step-label {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        font-weight: 500;
+    }
+    
+    .step-item.active .step-label {
+        color: #ef4444;
+    }
+    
+    .step-item.completed .step-label {
+        color: #22c55e;
+    }
+    
+    /* Modern card design */
+    .modern-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-card:hover {
+        border-color: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.1);
+    }
+    
+    /* Urgency selector - Zomato style */
+    .urgency-option {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
+        border-radius: 12px;
+        padding: 1.25rem;
+        border: 2px solid transparent;
+        background: rgba(255, 255, 255, 0.05);
     }
     
     .urgency-option:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
     }
     
     .urgency-option.selected {
-        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 0 0 5px currentColor;
+        border-color: currentColor;
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), 0 12px 24px rgba(0, 0, 0, 0.3);
     }
     
-    /* Form section animations */
-    .form-section {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: slideUp 0.5s ease forwards;
+    /* Input styling */
+    .modern-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        color: white;
+        transition: all 0.3s ease;
     }
     
-    @keyframes slideUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .modern-input:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #ef4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        outline: none;
     }
     
-    .form-section:nth-child(1) { animation-delay: 0.1s; }
-    .form-section:nth-child(2) { animation-delay: 0.2s; }
-    .form-section:nth-child(3) { animation-delay: 0.3s; }
-    .form-section:nth-child(4) { animation-delay: 0.4s; }
-    .form-section:nth-child(5) { animation-delay: 0.5s; }
+    .modern-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
     
-    /* Input focus effects */
-    .input-enhanced:focus {
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    /* Button styling */
+    .btn-modern {
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+    }
+    
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .btn-primary-modern {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+    
+    .btn-primary-modern:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+    
+    /* Section header */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+        color: #ef4444;
     }
     
     /* Loading spinner */
@@ -58,6 +187,27 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .step-progress {
+            margin-bottom: 1.5rem;
+        }
+        
+        .step-circle {
+            width: 36px;
+            height: 36px;
+        }
+        
+        .step-label {
+            font-size: 0.65rem;
+        }
+        
+        .modern-card {
+            padding: 1.25rem;
+            border-radius: 12px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -68,7 +218,7 @@
         <!-- Header -->
         <div class="text-center mb-4 mb-md-5" data-aos="fade-down" data-aos-delay="100">
             <h1 class="display-5 display-md-4 fw-bold text-white mb-3">
-                <span class="text-gradient-red">
+                <span style="background: linear-gradient(90deg, #ef4444, #dc2626); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     Create Blood Request
                 </span>
             </h1>
@@ -77,39 +227,64 @@
             </p>
         </div>
 
+        <!-- Step Progress Indicator -->
+        <div class="step-progress" data-aos="fade-up" data-aos-delay="150">
+            <div class="step-item active" data-step="1">
+                <div class="step-circle">1</div>
+                <span class="step-label">Patient Info</span>
+            </div>
+            <div class="step-item" data-step="2">
+                <div class="step-circle">2</div>
+                <span class="step-label">Request Details</span>
+            </div>
+            <div class="step-item" data-step="3">
+                <div class="step-circle">3</div>
+                <span class="step-label">Location</span>
+            </div>
+            <div class="step-item" data-step="4">
+                <div class="step-circle">4</div>
+                <span class="step-label">Contact</span>
+            </div>
+            <div class="step-item" data-step="5">
+                <div class="step-circle">5</div>
+                <span class="step-label">Settings</span>
+            </div>
+        </div>
+
         <!-- Unified Request Form -->
         <form id="unified-request-form" method="POST" enctype="multipart/form-data" data-aos="fade-up" data-aos-delay="200">
             {% csrf_token %}
             
             <!-- Section 1: Patient Information -->
-            <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="300">
-                <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-3">
-                    <i class="bi bi-person" style="color: #ff6b6b;"></i>
-                    Patient Information
-                </h2>
+            <div class="modern-card" data-aos="fade-up" data-aos-delay="300">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">
+                        Patient Information
+                    </h2>
+                </div>
                 
                 <div class="row g-3 g-md-4">
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Patient Name *</label>
                         <input type="text" name="patient_name" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="Enter patient name">
                     </div>
                     
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Patient Age *</label>
                         <input type="number" name="patient_age" required min="1" max="120"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="Age">
                     </div>
                     
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Blood Group *</label>
                         <select name="patient_blood_group" required
-                                class="form-select bg-transparent text-white border-secondary"
-                                style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                                class="form-select modern-input">
                             <option value="" class="text-dark">Select blood group</option>
                             <option value="A+" class="text-dark">A+</option>
                             <option value="A-" class="text-dark">A-</option>
@@ -125,25 +300,27 @@
             </div>
 
             <!-- Section 2: Request Details -->
-            <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="400">
-                <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-3">
-                    <i class="bi bi-clipboard-check" style="color: #ff6b6b;"></i>
-                    Request Details
-                </h2>
+            <div class="modern-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">
+                        Request Details
+                    </h2>
+                </div>
                 
                 <div class="row g-3 g-md-4 mb-4">
                     <div class="col-12 col-md-6">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Units Required *</label>
                         <input type="number" name="required_units" required min="1" max="20" value="1"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                     </div>
                     
                     <div class="col-12 col-md-6">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Required By *</label>
                         <input type="datetime-local" name="required_by" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                     </div>
                 </div>
                 
@@ -204,18 +381,21 @@
                 <div>
                     <label class="form-label small fw-medium" style="color: var(--text-secondary);">Medical Reason *</label>
                     <textarea name="reason" required rows="3"
-                              class="form-control bg-transparent text-white border-secondary"
-                              style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                              class="form-control modern-input"
                               placeholder="Brief description of why blood is needed..."></textarea>
                 </div>
             </div>
 
             <!-- Section 3: Location Details -->
-            <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="500">
-                <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-3">
-                    <i class="bi bi-geo-alt" style="color: #ff6b6b;"></i>
-                    Hospital Location Details
-                </h2>
+            <div class="modern-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">
+                        Hospital Location Details
+                    </h2>
+                </div>
                 
                 <!-- Location Information -->
                 <div class="row g-3 g-md-4 mb-3">
@@ -223,8 +403,7 @@
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">📍 Enter Hospital / Area Name *</label>
                         <div class="position-relative">
                             <input type="text" name="location_search" id="location-search" required
-                                   class="form-control bg-transparent text-white border-secondary input-enhanced"
-                                   style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                                   class="form-control modern-input"
                                    placeholder="e.g., Sun Green Hospital Ambala, Civil Hospital, etc."
                                    autocomplete="off">
                             <!-- Autocomplete Dropdown -->
@@ -233,10 +412,10 @@
                             </div>
                         </div>
                         <div class="d-flex gap-2 mt-2">
-                            <button type="button" onclick="useMyLocation()" class="btn btn-sm btn-outline-primary">
+                            <button type="button" onclick="useMyLocation()" class="btn btn-sm btn-modern" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.5); color: #3b82f6;">
                                 <i class="bi bi-geo-alt me-1"></i> Use My Location
                             </button>
-                            <button type="button" onclick="toggleMapPicker()" class="btn btn-sm btn-outline-success">
+                            <button type="button" onclick="toggleMapPicker()" class="btn btn-sm btn-modern" style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.5); color: #22c55e;">
                                 <i class="bi bi-map me-1"></i> Pick on Map
                             </button>
                         </div>
@@ -258,16 +437,14 @@
                     <div class="col-12 col-md-6">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Hospital Name *</label>
                         <input type="text" name="hospital_name" id="hospital-name" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="Hospital name">
                     </div>
                     
                     <div class="col-12 col-md-6">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Exact Address</label>
                         <input type="text" name="exact_address" id="exact-address"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="Full address for navigation">
                     </div>
                 </div>
@@ -276,89 +453,88 @@
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">City *</label>
                         <input type="text" name="city" id="city" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                     </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">State *</label>
                         <input type="text" name="state" id="state" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                     </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Pincode *</label>
                         <input type="text" name="pincode" id="pincode" required pattern="[0-9]{6}"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="6 digits">
                     </div>
                     
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Country</label>
                         <input type="text" name="country" id="country" value="India"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                     </div>
                 </div>
             </div>
 
             <!-- Section 4: Contact Information -->
-            <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="600">
-                <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-3">
-                    <i class="bi bi-telephone" style="color: #ff6b6b;"></i>
-                    Contact Information
-                </h2>
+            <div class="modern-card" data-aos="fade-up" data-aos-delay="600">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-telephone"></i>
+                    </div>
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">
+                        Contact Information
+                    </h2>
+                </div>
                 
                 <div class="row g-3 g-md-4">
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Contact Person *</label>
                         <input type="text" name="contact_person" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="Name">
                     </div>
                     
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Phone Number *</label>
                         <input type="tel" name="contact_phone" required pattern="[0-9]{10}"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="10-digit number">
                     </div>
                     
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Email *</label>
                         <input type="email" name="contact_email" required
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);"
+                               class="form-control modern-input"
                                placeholder="email@example.com">
                     </div>
                 </div>
             </div>
 
             <!-- Section 5: Settings & Submit -->
-            <div class="glass-card p-4 p-md-5 mb-4" data-aos="fade-up" data-aos-delay="700">
-                <h2 class="fs-4 fs-md-3 fw-bold text-white mb-4 d-flex align-items-center gap-3">
-                    <i class="bi bi-gear" style="color: #ff6b6b;"></i>
-                    Request Settings
-                </h2>
+            <div class="modern-card" data-aos="fade-up" data-aos-delay="700">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <h2 class="fs-4 fs-md-3 fw-bold text-white mb-0">
+                        Request Settings
+                    </h2>
+                </div>
                 
                 <div class="row g-3 g-md-4 mb-4">
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Max Donors</label>
                         <input type="number" name="max_donors" value="5" min="1" max="20"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                         <p class="text-muted small mt-1">Maximum donors that can respond</p>
                     </div>
                     
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-medium" style="color: var(--text-secondary);">Auto-expire (hours)</label>
                         <input type="number" name="auto_expire_hours" value="6" min="1" max="72"
-                               class="form-control bg-transparent text-white border-secondary"
-                               style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                               class="form-control modern-input">
                         <p class="text-muted small mt-1">Request expires after this time</p>
                     </div>
                     
@@ -378,8 +554,7 @@
                 <div class="mb-4">
                     <label class="form-label small fw-medium" style="color: var(--text-secondary);">Medical Certificate (Optional)</label>
                     <input type="file" name="medical_certificate" accept=".pdf,.jpg,.jpeg,.png"
-                           class="form-control bg-transparent text-white border-secondary"
-                           style="background: rgba(255, 255, 255, 0.1) !important; border-color: rgba(255, 255, 255, 0.2);">
+                           class="form-control modern-input">
                     <p class="text-muted small mt-1">PDF, JPG, or PNG (max 5MB)</p>
                 </div>
                 
@@ -417,12 +592,12 @@
                 <!-- Submit Button -->
                 <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pt-4 border-top" style="border-color: rgba(255, 255, 255, 0.1) !important;">
                     <button type="button" onclick="window.history.back()"
-                            class="btn btn-outline-light px-4 py-2">
+                            class="btn btn-modern" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
                         Cancel
                     </button>
                     
                     <button type="submit" id="submit-btn"
-                            class="btn btn-gradient px-4 py-2">
+                            class="btn btn-modern btn-primary-modern">
                         <span>Create Request</span>
                         <i class="bi bi-arrow-right ms-2"></i>
                     </button>
@@ -447,6 +622,7 @@ let userLocation = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     setupFormValidation();
+    setupStepProgress();
     
     // Initialize AOS
     if (typeof AOS !== 'undefined') {
@@ -457,6 +633,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Step progress indicator
+function setupStepProgress() {
+    const form = document.getElementById('unified-request-form');
+    const cards = form.querySelectorAll('.modern-card');
+    const stepItems = document.querySelectorAll('.step-item');
+    
+    // Update steps based on scroll/visibility
+    function updateSteps() {
+        cards.forEach((card, index) => {
+            const rect = card.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight / 2;
+            
+            if (isVisible) {
+                // Mark current and previous steps as active/completed
+                stepItems.forEach((step, stepIndex) => {
+                    if (stepIndex < index) {
+                        step.classList.add('completed');
+                        step.classList.remove('active');
+                    } else if (stepIndex === index) {
+                        step.classList.add('active');
+                        step.classList.remove('completed');
+                    } else {
+                        step.classList.remove('active', 'completed');
+                    }
+                });
+            }
+        });
+    }
+    
+    // Initial update
+    updateSteps();
+    
+    // Update on scroll
+    window.addEventListener('scroll', updateSteps);
+}
 
 // Urgency level selection
 function selectUrgency(level) {
