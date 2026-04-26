@@ -11,6 +11,7 @@ urlpatterns = [
     path('register/donor/', views.register_donor_view, name='register-donor'),
     path('login/', views.login_view, name='login-page'),
     path('login/', views.login_view, name='login'),  # Alias for template compatibility
+    path('login-enhanced/', views.login_view, name='login-enhanced'),
     path('logout/', views.logout_view, name='logout'),
     
     # OTP Login endpoints

@@ -721,6 +721,10 @@ def login_view(request):
             has_captcha = False
             CaptchaForm = None
 
+    # Determine which template to use based on URL path
+    use_enhanced = 'login-enhanced' in request.path
+    template_name = 'accounts/login_enhanced.html' if use_enhanced else 'accounts/login.html'
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -728,7 +732,7 @@ def login_view(request):
         if not username or not password:
             messages.error(request, 'Please enter both username/email and password.')
             captcha_form = CaptchaForm() if CaptchaForm else None
-            return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+            return render(request, template_name, {'captcha_form': captcha_form})
 
         # CAPTCHA validation (only if captcha is available)
         if has_captcha:
@@ -738,7 +742,7 @@ def login_view(request):
             if not captcha_response or not captcha_key:
                 messages.error(request, 'Please complete the security verification.')
                 captcha_form = CaptchaForm() if CaptchaForm else None
-                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+                return render(request, template_name, {'captcha_form': captcha_form})
 
             # Validate CAPTCHA
             from captcha.models import CaptchaStore
@@ -747,7 +751,7 @@ def login_view(request):
             except CaptchaStore.DoesNotExist:
                 errors = {'captcha': ['Invalid CAPTCHA. Please try again.']}
                 captcha_form = CaptchaForm() if CaptchaForm else None
-                return render(request, 'accounts/login.html', {'captcha_form': captcha_form, 'errors': errors})
+                return render(request, template_name, {'captcha_form': captcha_form, 'errors': errors})
             except Exception as captcha_db_error:
                 logger.warning(f'CAPTCHA database error in login: {str(captcha_db_error)}')
                 # Continue without captcha if table doesn't exist
@@ -770,7 +774,7 @@ def login_view(request):
                 logger.error(f'Login error: {str(e)}', exc_info=True)
                 messages.error(request, 'An error occurred during login. Please try again.')
                 captcha_form = CaptchaForm() if CaptchaForm else None
-                return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+                return render(request, template_name, {'captcha_form': captcha_form})
 
         if user is not None:
             if user.is_active:
@@ -786,7 +790,7 @@ def login_view(request):
 
     # Create captcha form if enabled
     captcha_form = CaptchaForm() if CaptchaForm else None
-    return render(request, 'accounts/login.html', {'captcha_form': captcha_form})
+    return render(request, template_name, {'captcha_form': captcha_form})
 
 
 def logout_view(request):
