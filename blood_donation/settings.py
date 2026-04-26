@@ -13,6 +13,7 @@ import logging
 import warnings
 from pathlib import Path
 from decouple import config
+from django.db.backends.signals import connection_created
 
 # Suppress common deprecation warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning)
@@ -25,6 +26,11 @@ logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+LOCAL_SQLITE_PATH_VALUE = config('LOCAL_SQLITE_PATH', default='').strip()
+if LOCAL_SQLITE_PATH_VALUE:
+    LOCAL_SQLITE_PATH = Path(LOCAL_SQLITE_PATH_VALUE).expanduser()
+else:
+    LOCAL_SQLITE_PATH = Path(os.environ.get('LOCALAPPDATA', str(BASE_DIR))) / 'BloodLife' / 'db_local.sqlite3'
 
 # Check if we're running on Render (multiple detection methods)
 IS_RENDER = any([
@@ -33,6 +39,9 @@ IS_RENDER = any([
     'RENDER_SERVICE_NAME' in os.environ,
     os.environ.get('DYNO'),  # Also detect Heroku-like environments
 ])
+
+if not IS_RENDER:
+    LOCAL_SQLITE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -260,7 +269,10 @@ if IS_RENDER:
             DATABASES = {
                 'default': {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': BASE_DIR / 'db.sqlite3',
+                    'NAME': LOCAL_SQLITE_PATH,
+                    'OPTIONS': {
+                        'timeout': 20,
+                    },
                 }
             }
 
@@ -269,10 +281,25 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': LOCAL_SQLITE_PATH,
+            'OPTIONS': {
+                'timeout': 20,
+            },
         }
     }
     logger.info("⚠️ Using SQLite (Add SUPABASE_HOST and SUPABASE_PASSWORD to .env to use Supabase)")
+
+
+def configure_sqlite_connection(sender, connection, **kwargs):
+    if connection.vendor != 'sqlite':
+        return
+
+    with connection.cursor() as cursor:
+        cursor.execute('PRAGMA journal_mode=MEMORY;')
+        cursor.execute('PRAGMA synchronous=NORMAL;')
+
+
+connection_created.connect(configure_sqlite_connection)
 
 # Cache configuration
 if IS_RENDER:

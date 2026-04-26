@@ -1157,8 +1157,10 @@ def otp_login_verify(request):
     success, message = otp_services.verify_otp_cache(user.id, otp)
 
     if success:
-        # Log user in
-        login(request, user)
+        # Log user in with explicit backend (required when multiple backends configured)
+        from django.contrib.auth import get_backends
+        backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, user, backend=backend)
         # Clear OTP state
         otp_services.clear_reset_state(user.id)
         return JsonResponse({

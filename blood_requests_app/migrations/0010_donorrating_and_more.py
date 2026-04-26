@@ -2,12 +2,14 @@
 # Safe migration that handles missing indexes gracefully
 
 from django.db import migrations, models
-from django.db import connection
 
 
 def safe_rename_index(apps, schema_editor, old_name, new_name, table_name):
     """Safely rename an index, skipping if old index doesn't exist"""
-    with connection.cursor() as cursor:
+    if schema_editor.connection.vendor != 'postgresql':
+        return
+
+    with schema_editor.connection.cursor() as cursor:
         # Check if old index exists
         cursor.execute("""
             SELECT indexname 

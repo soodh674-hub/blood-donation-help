@@ -5,6 +5,65 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def _run_postgres_sql(schema_editor, sql):
+    if schema_editor.connection.vendor != 'postgresql':
+        return
+
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute(sql)
+
+
+def drop_legacy_user_index(apps, schema_editor):
+    _run_postgres_sql(
+        schema_editor,
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM pg_indexes
+                WHERE indexname = 'accounts_us_user_id_abc123_idx'
+            ) THEN
+                DROP INDEX accounts_us_user_id_abc123_idx;
+            END IF;
+        END $$;
+        """,
+    )
+
+
+def rename_privacy_index_forward(apps, schema_editor):
+    _run_postgres_sql(
+        schema_editor,
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM pg_indexes
+                WHERE indexname = 'accounts_pa_user_id_8d9f3a_idx'
+            ) THEN
+                ALTER INDEX accounts_pa_user_id_8d9f3a_idx RENAME TO accounts_pa_user_id_92b775_idx;
+            END IF;
+        END $$;
+        """,
+    )
+
+
+def rename_privacy_index_reverse(apps, schema_editor):
+    _run_postgres_sql(
+        schema_editor,
+        """
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM pg_indexes
+                WHERE indexname = 'accounts_pa_user_id_92b775_idx'
+            ) THEN
+                ALTER INDEX accounts_pa_user_id_92b775_idx RENAME TO accounts_pa_user_id_8d9f3a_idx;
+            END IF;
+        END $$;
+        """,
+    )
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -40,22 +99,7 @@ class Migration(migrations.Migration):
             name='useractivitylog',
             options={'ordering': ['-timestamp'], 'verbose_name': 'Activity Log', 'verbose_name_plural': 'Activity Logs'},
         ),
-        migrations.RunSQL(
-            sql="""
-            DO $$
-            BEGIN
-                IF EXISTS (
-                    SELECT 1 FROM pg_indexes 
-                    WHERE indexname = 'accounts_us_user_id_abc123_idx'
-                ) THEN
-                    DROP INDEX accounts_us_user_id_abc123_idx;
-                END IF;
-            END $$;
-            """,
-            reverse_sql="""
-            -- Cannot reverse DROP INDEX safely
-            """,
-        ),
+        migrations.RunPython(drop_legacy_user_index, migrations.RunPython.noop),
         migrations.RenameField(
             model_name='donorprofile',
             old_name='preferred_locations',
@@ -91,30 +135,7 @@ class Migration(migrations.Migration):
             old_name='show_phone',
             new_name='show_phone_number',
         ),
-        migrations.RunSQL(
-            sql="""
-            DO $$
-            BEGIN
-                IF EXISTS (
-                    SELECT 1 FROM pg_indexes 
-                    WHERE indexname = 'accounts_pa_user_id_8d9f3a_idx'
-                ) THEN
-                    ALTER INDEX accounts_pa_user_id_8d9f3a_idx RENAME TO accounts_pa_user_id_92b775_idx;
-                END IF;
-            END $$;
-            """,
-            reverse_sql="""
-            DO $$
-            BEGIN
-                IF EXISTS (
-                    SELECT 1 FROM pg_indexes 
-                    WHERE indexname = 'accounts_pa_user_id_92b775_idx'
-                ) THEN
-                    ALTER INDEX accounts_pa_user_id_92b775_idx RENAME TO accounts_pa_user_id_8d9f3a_idx;
-                END IF;
-            END $$;
-            """,
-        ),
+        migrations.RunPython(rename_privacy_index_forward, rename_privacy_index_reverse),
         migrations.RemoveField(
             model_name='donorprofile',
             name='availability_schedule',

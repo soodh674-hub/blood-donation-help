@@ -5,6 +5,7 @@ import logging
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from .models import BloodRequest, DonorRating
 from .models_chat import ChatMessage
@@ -376,10 +377,52 @@ class ChatbotView(APIView):
     """AI-powered chatbot for blood donation queries"""
     permission_classes = [permissions.AllowAny]
 
+    def _save_conversation(self, session_id, user, message, response_data):
+        from .models_chat import ChatbotConversation
+
+        conversation_defaults = {
+            'user': user if user.is_authenticated else None,
+            'user_message': message,
+            'bot_response': response_data['response'],
+            'confidence': response_data.get('confidence', 'medium'),
+            'suggestions': response_data.get('suggestions', []),
+            'user_context': response_data.get('context', {}),
+        }
+
+        try:
+            with transaction.atomic():
+                conversation = (
+                    ChatbotConversation.objects.select_for_update()
+                    .filter(session_id=session_id)
+                    .first()
+                )
+
+                if conversation:
+                    for field, value in conversation_defaults.items():
+                        setattr(conversation, field, value)
+                    conversation.save(update_fields=list(conversation_defaults.keys()))
+                    return conversation, False
+
+                conversation = ChatbotConversation.objects.create(
+                    session_id=session_id,
+                    **conversation_defaults,
+                )
+                return conversation, True
+        except IntegrityError:
+            conversation = ChatbotConversation.objects.filter(session_id=session_id).first()
+            if not conversation:
+                raise
+
+            for field, value in conversation_defaults.items():
+                setattr(conversation, field, value)
+            conversation.save(update_fields=list(conversation_defaults.keys()))
+            return conversation, False
+
     def post(self, request):
         """Get chatbot response to user query"""
         import time
         start_time = time.time()
+        conversation = None
         
         try:
             from .chatbot_service import get_chatbot_response
@@ -395,7 +438,11 @@ class ChatbotView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             # Log the incoming message for debugging
-            logger.info(f'🤖 Chatbot received message: "{message[:50]}..."' if len(message) > 50 else f'🤖 Chatbot received message: "{message}"')
+            logger.info(
+                f'Chatbot received message: "{message[:50]}..."'
+                if len(message) > 50
+                else f'Chatbot received message: "{message}"'
+            )
 
             # Build user context
             user_context = {
@@ -412,24 +459,23 @@ class ChatbotView(APIView):
             
             # Log response time
             response_time = time.time() - start_time
-            logger.info(f'✅ Chatbot response generated in {response_time:.2f}s (confidence: {response_data.get("confidence", "unknown")})')
+            logger.info(
+                f'Chatbot response generated in {response_time:.2f}s '
+                f'(confidence: {response_data.get("confidence", "unknown")})'
+            )
 
             # Try to save conversation to database (optional, don't fail if model doesn't exist)
             try:
-                from .models_chat import ChatbotConversation
-                # Use update_or_create to handle both new and existing sessions
-                conversation, created = ChatbotConversation.objects.update_or_create(
+                conversation, created = self._save_conversation(
                     session_id=session_id,
-                    defaults={
-                        'user': request.user if request.user.is_authenticated else None,
-                        'user_message': message,
-                        'bot_response': response_data['response'],
-                        'confidence': response_data.get('confidence', 'medium'),
-                        'suggestions': response_data.get('suggestions', []),
-                        'user_context': response_data.get('context', {})
-                    }
+                    user=request.user,
+                    message=message,
+                    response_data=response_data,
                 )
-                logger.info(f"✅ Chatbot conversation saved to database (session_id: {session_id}, created: {created})")
+                logger.info(
+                    f"Chatbot conversation saved to database "
+                    f"(session_id: {session_id}, created: {created})"
+                )
             except Exception as e:
                 # Log but don't fail if there are any database issues
                 logger.warning(f'Could not save chatbot conversation to database: {e}')
@@ -452,7 +498,7 @@ class ChatbotView(APIView):
             return Response(response_dict)
         except Exception as e:
             response_time = time.time() - start_time
-            logger.error(f'❌ Chatbot error after {response_time:.2f}s: {e}', exc_info=True)
+            logger.error(f'Chatbot error after {response_time:.2f}s: {e}', exc_info=True)
             
             # Return a friendly fallback response instead of error
             from .chatbot_service import get_chatbot_response

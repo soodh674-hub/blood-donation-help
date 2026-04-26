@@ -57,14 +57,11 @@ class DonorSearchView(generics.ListAPIView):
                 # Optimized with select_related and prefetch_related to reduce database queries
                 try:
                     donors = User.objects.filter(
+                        user_type='donor',
                         blood_group=blood_group,
                         is_available=True,
                         is_active=True
-                    ).only(
-                        'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                        'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
-                        'latitude', 'longitude', 'last_donation_date'
-                    )
+                    ).select_related('donor_profile')
                 except Exception as e:
                     logger.error(f'Error querying donors: {str(e)}')
                     donors = User.objects.none()
@@ -125,13 +122,11 @@ class DonorSearchView(generics.ListAPIView):
                 logger.error(f'Error in BloodMatcher: {str(e)}', exc_info=True)
                 # Fall back to simple search without location matching
                 donors = User.objects.filter(
+                    user_type='donor',
                     blood_group=blood_group,
                     is_available=True,
                     is_active=True
-                ).only(
-                    'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                    'phone_number', 'city', 'pincode', 'is_available', 'is_verified'
-                )
+                ).select_related('donor_profile')
                 matches = [{"donor": donor, "score": 100, "details": {"note": "Location matching unavailable"}} for donor in donors[:50]]
 
             # Apply additional filters
@@ -224,12 +219,7 @@ def donor_profile(request, user_id):
             return render(request, 'donors/donor_profile.html', context)
 
         donor = get_object_or_404(
-            User.objects.select_related('donor_profile').only(
-                'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-                'phone_number', 'city', 'pincode', 'is_available', 'is_verified',
-                'date_joined',
-                'donor_profile__profile_photo'
-            ),
+            User.objects.select_related('donor_profile'),
             id=user_id, user_type='donor', is_active=True
         )
 
@@ -303,12 +293,7 @@ def recommended_donors(request):
             is_active=True,
             is_available=True,
             blood_group__in=compatible_blood_groups
-        ).exclude(id=request.user.id).select_related('donor_profile').only(
-            'id', 'username', 'first_name', 'last_name', 'email', 'blood_group',
-            'phone_number', 'city', 'is_available', 'is_verified',
-            'latitude', 'longitude', 'last_donation_date',
-            'donor_profile__profile_photo'
-        )
+        ).exclude(id=request.user.id).select_related('donor_profile')
 
         # Calculate recommendation scores
         scored_donors = []
