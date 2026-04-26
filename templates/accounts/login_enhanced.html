@@ -283,6 +283,95 @@
                     </button>
                 </div>
             </div>
+
+            <!-- OTP Login Option -->
+            <div class="mt-4">
+                <div class="position-relative">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1" style="border-top: 1px solid #e6bdb8; opacity: 0.2;"></div>
+                        <span class="px-3 small text-uppercase" style="color: #5c403c; letter-spacing: 0.05em;">Or login with</span>
+                        <div class="flex-grow-1" style="border-top: 1px solid #e6bdb8; opacity: 0.2;"></div>
+                    </div>
+                </div>
+
+                <!-- OTP Login Button -->
+                <div class="mt-3">
+                    <button type="button" id="otp-login-btn" onclick="showOTPLogin()"
+                           class="btn w-100 d-flex align-items-center justify-content-center" style="background: #f0f3ff; border: 1px solid #e7eeff; color: #111c2d; padding: 0.625rem;">
+                        <i class="bi bi-envelope me-2" style="font-size: 1.25rem;"></i>
+                        <span>OTP via Email</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- OTP Login Form (Hidden by default) -->
+            <div id="otp-login-form" class="mt-4" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0" style="color: #111c2d;">OTP Login</h5>
+                    <button type="button" onclick="hideOTPLogin()" class="btn btn-sm" style="background: #f0f3ff; border: 1px solid #e7eeff; color: #5c403c;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Step 1: Request OTP -->
+                <div id="otp-step-1">
+                    <div class="mb-3">
+                        <label for="otp-email" class="form-label-custom d-block mb-2">Email Address</label>
+                        <input id="otp-email"
+                               name="otp-email"
+                               type="email"
+                               required
+                               placeholder="Enter your email"
+                               class="form-control form-control-custom w-100">
+                    </div>
+
+                    <!-- CAPTCHA for OTP Request -->
+                    {% if captcha_form %}
+                    <div class="mb-3">
+                        <label class="form-label-custom d-block mb-2">Security Verification</label>
+                        <div style="background: #f0f3ff; border: 1px solid #e7eeff; border-radius: 0.5rem; padding: 1rem;">
+                            {{ captcha_form }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <button type="button" onclick="requestOTP()" id="request-otp-btn"
+                            class="btn btn-primary-custom w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-send"></i>
+                        <span>Send OTP</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Verify OTP -->
+                <div id="otp-step-2" style="display: none;">
+                    <div class="mb-3">
+                        <label for="otp-code" class="form-label-custom d-block mb-2">Enter OTP</label>
+                        <input id="otp-code"
+                               name="otp-code"
+                               type="text"
+                               required
+                               maxlength="6"
+                               pattern="[0-9]{6}"
+                               placeholder="Enter 6-digit OTP"
+                               class="form-control form-control-custom w-100" style="letter-spacing: 0.5em;">
+                        <p class="small mt-2" style="color: #5c403c; opacity: 0.7;">
+                            OTP sent to <span id="otp-email-display"></span>
+                        </p>
+                    </div>
+
+                    <button type="button" onclick="verifyOTP()" id="verify-otp-btn"
+                            class="btn btn-primary-custom w-100 d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Verify & Login</span>
+                    </button>
+
+                    <button type="button" onclick="resendOTP()" id="resend-otp-btn"
+                            class="btn btn-social w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Resend OTP</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Secondary Register Action -->
@@ -315,7 +404,7 @@
 function togglePassword(inputId, button) {
     const input = document.getElementById(inputId);
     const eyeIcon = button.querySelector('i');
-    
+
     if (input.type === 'password') {
         input.type = 'text';
         eyeIcon.classList.remove('bi-eye');
@@ -327,6 +416,170 @@ function togglePassword(inputId, button) {
         eyeIcon.classList.add('bi-eye');
         button.style.color = '#5c403c';
     }
+}
+
+// OTP Login Functions
+function showOTPLogin() {
+    document.getElementById('otp-login-form').style.display = 'block';
+    document.getElementById('otp-login-btn').style.display = 'none';
+}
+
+function hideOTPLogin() {
+    document.getElementById('otp-login-form').style.display = 'none';
+    document.getElementById('otp-login-btn').style.display = 'flex';
+    document.getElementById('otp-step-1').style.display = 'block';
+    document.getElementById('otp-step-2').style.display = 'none';
+}
+
+function requestOTP() {
+    const email = document.getElementById('otp-email').value;
+    const captchaResponse = document.querySelector('input[name="captcha_0"]')?.value || '';
+    const captchaKey = document.querySelector('input[name="captcha_1"]')?.value || '';
+
+    console.log('Requesting OTP for email:', email);
+
+    if (!email) {
+        alert('Please enter your email address');
+        return;
+    }
+
+    const btn = document.getElementById('request-otp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    fetch('/accounts/otp-login-request/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: new URLSearchParams({
+            'email': email,
+            'captcha_0': captchaResponse,
+            'captcha_1': captchaKey,
+            'csrfmiddlewaretoken': csrfToken
+        })
+    })
+    .then(response => {
+        console.log('OTP request response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('OTP request response data:', data);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Send OTP';
+
+        if (data.success) {
+            document.getElementById('otp-step-1').style.display = 'none';
+            document.getElementById('otp-step-2').style.display = 'block';
+            document.getElementById('otp-email-display').textContent = email;
+            alert('OTP sent successfully! Please check your email.');
+        } else {
+            alert(data.message || 'Failed to send OTP. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('OTP request error:', error);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Send OTP';
+        alert('An error occurred. Please try again.');
+    });
+}
+
+function verifyOTP() {
+    const email = document.getElementById('otp-email').value;
+    const otp = document.getElementById('otp-code').value;
+
+    console.log('Verifying OTP for email:', email, 'OTP:', otp);
+
+    if (!otp || otp.length !== 6) {
+        alert('Please enter a valid 6-digit OTP');
+        return;
+    }
+
+    const btn = document.getElementById('verify-otp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Verifying...';
+
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    fetch('/accounts/otp-login-verify/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: new URLSearchParams({
+            'email': email,
+            'otp': otp,
+            'csrfmiddlewaretoken': csrfToken
+        })
+    })
+    .then(response => {
+        console.log('OTP verify response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('OTP verify response data:', data);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Verify & Login';
+
+        if (data.success) {
+            alert('Login successful! Redirecting to dashboard...');
+            window.location.href = data.redirect || '/accounts/dashboard/';
+        } else {
+            alert(data.message || 'Invalid OTP. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('OTP verify error:', error);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Verify & Login';
+        alert('An error occurred. Please try again.');
+    });
+}
+
+function resendOTP() {
+    const email = document.getElementById('otp-email').value;
+
+    const btn = document.getElementById('resend-otp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sending...';
+
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    fetch('/accounts/otp-login-request/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: new URLSearchParams({
+            'email': email,
+            'csrfmiddlewaretoken': csrfToken
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Resend OTP';
+
+        if (data.success) {
+            alert('OTP resent successfully');
+        } else {
+            alert(data.message || 'Failed to resend OTP. Please try again.');
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-arrow-clockwise me-2"></i>Resend OTP';
+        alert('An error occurred. Please try again.');
+    });
 }
 </script>
 
