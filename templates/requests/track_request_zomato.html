@@ -494,9 +494,13 @@
                                     {{ match.donor.trust_score|floatformat:1 }}
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between">
-                                    <span class="badge bg-{{ 'success' if match.score >= 80 else 'warning' if match.score >= 60 else 'secondary' }}">
-                                        {{ match.score|floatformat:0 }}% Match
-                                    </span>
+                                    {% if match.score >= 80 %}
+                                    <span class="badge bg-success">{{ match.score|floatformat:0 }}% Match</span>
+                                    {% elif match.score >= 60 %}
+                                    <span class="badge bg-warning">{{ match.score|floatformat:0 }}% Match</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ match.score|floatformat:0 }}% Match</span>
+                                    {% endif %}
                                     <small class="text-muted">
                                         <i class="bi bi-clock me-1"></i>
                                         ~{{ match.distance|floatformat:0|add:15 }} min ETA
