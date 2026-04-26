@@ -122,6 +122,11 @@ urlpatterns = [
     path("admin/camps/<int:camp_id>/edit/", views.admin_edit_camp, name='admin-edit-camp'),
     path("admin/camps/<int:camp_id>/delete/", views.admin_delete_camp, name='admin-delete-camp'),
     
+    # User-facing campaigns
+    path("campaigns/", views.campaign_list, name='campaign-list'),
+    path("campaigns/create/", views.campaign_create, name='campaign-create'),
+    path("campaigns/<int:campaign_id>/join/", views.campaign_join, name='campaign-join'),
+    
     # Verification API endpoint
     path("<int:request_id>/verify/", views.verify_request_api, name='verify-request-api'),
     

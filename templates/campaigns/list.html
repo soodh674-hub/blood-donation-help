@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blood Donation Campaigns - BloodLife{% endblock %}
+
+{% block extra_css %}
+<style>
+    .campaigns-hero {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        color: white;
+    }
+    
+    .campaign-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid #dc2626;
+    }
+    
+    .campaign-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .campaign-card.ongoing {
+        border-left-color: #10b981;
+    }
+    
+    .campaign-card.upcoming {
+        border-left-color: #f59e0b;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.375rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-badge.ongoing {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-badge.upcoming {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-badge.completed {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #dc2626, #ef4444);
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="campaigns-hero">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="bi bi-calendar-event me-2"></i>
+                Blood Donation Campaigns
+            </h1>
+            <p class="lead">Join blood donation campaigns near you and save lives</p>
+            {% if user.is_authenticated and (user.is_staff or user.user_type == 'hospital') %}
+            <a href="{% url 'campaign-create' %}" class="btn btn-light btn-lg mt-3">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Campaign
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filter Tabs -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <button class="btn btn-outline-primary active" data-filter="all">All</button>
+        <button class="btn btn-outline-primary" data-filter="ongoing">Ongoing</button>
+        <button class="btn btn-outline-primary" data-filter="upcoming">Upcoming</button>
+    </div>
+    
+    <!-- Campaigns List -->
+    {% if campaigns %}
+        {% for campaign in campaigns %}
+        <div class="campaign-card {{ campaign.status }}" data-status="{{ campaign.status }}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <h4 class="fw-bold mb-0">{{ campaign.name }}</h4>
+                        <span class="status-badge {{ campaign.status }}">
+                            {{ campaign.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ campaign.venue }}, {{ campaign.city }}, {{ campaign.state }}
+                    </p>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ campaign.start_date|date:"M d, Y H:i" }} - {{ campaign.end_date|date:"M d, Y H:i" }}
+                    </p>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-person me-1"></i>
+                        Organizer: {{ campaign.organizer.get_full_name|default:campaign.organizer.username }}
+                    </p>
+                    
+                    <!-- Progress -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Collection Progress</small>
+                            <small class="fw-bold">{{ campaign.completion_percentage|floatformat:0 }}%</small>
+                        </div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" data-progress="{{ campaign.completion_percentage }}"></div>
+                        </div>
+                        <small class="text-muted">{{ campaign.collected_units }} / {{ campaign.target_units }} units collected</small>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    {% if campaign.status == 'ongoing' or campaign.status == 'upcoming' %}
+                    <a href="{% url 'campaign-join' campaign.id %}" class="btn btn-primary">
+                        <i class="bi bi-hand-thumbs-up me-2"></i>
+                        Join Campaign
+                    </a>
+                    {% endif %}
+                    <a href="tel:{{ campaign.contact_number }}" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-telephone me-1"></i>
+                        Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem; color: #d1d5db;"></i>
+            <h4 class="fw-bold mt-3 mb-2">No Active Campaigns</h4>
+            <p class="text-muted mb-4">Check back later for upcoming blood donation campaigns.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const campaignCards = document.querySelectorAll('.campaign-card');
+    const progressBars = document.querySelectorAll('.progress-fill');
+    
+    // Set progress bar widths
+    progressBars.forEach(bar => {
+        const progress = bar.dataset.progress || 0;
+        bar.style.width = progress + '%';
+    });
+    
+    // Filter functionality
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Filter cards
+            campaignCards.forEach(card => {
+                if (filter === 'all' || card.dataset.status === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1460,6 +1460,78 @@ def admin_camps_page(request):
 
 
 @login_required
+def campaign_list(request):
+    """
+    User-facing page to browse blood donation campaigns
+    """
+    from django.utils import timezone
+    
+    # Show active and upcoming campaigns
+    campaigns = BloodDonationCamp.objects.filter(
+        status__in=['ongoing', 'upcoming']
+    ).order_by('-start_date')
+    
+    context = {
+        'campaigns': campaigns,
+    }
+    
+    return render(request, 'campaigns/list.html', context)
+
+
+@login_required
+def campaign_create(request):
+    """
+    Hospital/admin page to create a new blood donation campaign
+    """
+    if not (request.user.is_staff or request.user.user_type == 'hospital'):
+        messages.error(request, 'You do not have permission to create campaigns.')
+        return redirect('/campaigns/')
+    
+    if request.method == 'POST':
+        try:
+            camp = BloodDonationCamp.objects.create(
+                name=request.POST.get('name'),
+                description=request.POST.get('description', ''),
+                venue=request.POST.get('venue'),
+                address=request.POST.get('address'),
+                city=request.POST.get('city'),
+                state=request.POST.get('state'),
+                start_date=request.POST.get('start_date'),
+                end_date=request.POST.get('end_date'),
+                target_units=request.POST.get('target_units', 100),
+                contact_number=request.POST.get('contact_number'),
+                contact_email=request.POST.get('contact_email'),
+                organizer=request.user,
+                status='upcoming'
+            )
+            messages.success(request, f'Campaign "{camp.name}" created successfully!')
+            return redirect('/campaigns/')
+        except Exception as e:
+            messages.error(request, f'Error creating campaign: {str(e)}')
+    
+    return render(request, 'campaigns/create.html')
+
+
+@login_required
+def campaign_join(request, campaign_id):
+    """
+    User page to join a blood donation campaign
+    """
+    from django.shortcuts import get_object_or_404
+    
+    campaign = get_object_or_404(BloodDonationCamp, id=campaign_id)
+    
+    if campaign.status not in ['ongoing', 'upcoming']:
+        messages.error(request, 'This campaign is not accepting registrations.')
+        return redirect('/campaigns/')
+    
+    # For now, just show a success message
+    # In a full implementation, you'd create a CampaignParticipant model
+    messages.success(request, f'You have registered for "{campaign.name}". Contact: {campaign.contact_number}')
+    return redirect('/campaigns/')
+
+
+@login_required
 def admin_create_camp(request):
     """
     Admin page to create a new blood donation camp
