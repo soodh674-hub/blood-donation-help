@@ -139,14 +139,22 @@
                             <td><span class="badge bg-danger">{{ request.patient_blood_group }}</span></td>
                             <td>{{ request.hospital_name }}</td>
                             <td>
-                                <span class="badge bg-{{ 'success' if request.status == 'fulfilled' else 'warning' if request.status == 'pending' else 'primary' }}">
-                                    {{ request.get_status_display }}
-                                </span>
+                                {% if request.status == 'fulfilled' %}
+                                <span class="badge bg-success">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'pending' %}
+                                <span class="badge bg-warning">{{ request.get_status_display }}</span>
+                                {% else %}
+                                <span class="badge bg-primary">{{ request.get_status_display }}</span>
+                                {% endif %}
                             </td>
                             <td>
-                                <span class="badge bg-{{ 'danger' if request.priority == 'emergency' else 'warning' if request.priority == 'urgent' else 'secondary' }}">
-                                    {{ request.get_priority_display }}
-                                </span>
+                                {% if request.priority == 'emergency' %}
+                                <span class="badge bg-danger">{{ request.get_priority_display }}</span>
+                                {% elif request.priority == 'urgent' %}
+                                <span class="badge bg-warning">{{ request.get_priority_display }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ request.get_priority_display }}</span>
+                                {% endif %}
                             </td>
                             <td>
                                 <a href="{% url 'requests:track-request-zomato' request.id %}" class="btn btn-sm btn-outline-primary">
