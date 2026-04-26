@@ -1,0 +1,261 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Blood Donation Camps - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .camps-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .camp-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-left: 5px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .camp-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transform: translateX(4px);
+    }
+    
+    .camp-card.ongoing {
+        border-left-color: #10b981;
+    }
+    
+    .camp-card.upcoming {
+        border-left-color: #f59e0b;
+    }
+    
+    .camp-card.completed {
+        border-left-color: #6b7280;
+    }
+    
+    .camp-card.cancelled {
+        border-left-color: #ef4444;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.375rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-badge.ongoing {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-badge.upcoming {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-badge.completed {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    
+    .status-badge.cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .progress-bar-custom {
+        height: 8px;
+        border-radius: 4px;
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s ease;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .action-btn.primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .action-btn.danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    
+    .action-btn.outline {
+        background: white;
+        border: 1px solid #d1d5db;
+        color: #374151;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="camps-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="fw-bold mb-2">
+                    <i class="bi bi-calendar-event me-2"></i>
+                    Blood Donation Camps
+                </h1>
+                <p class="mb-0 opacity-75">Manage blood donation camps and track collection progress</p>
+            </div>
+            <a href="{% url 'admin-create-camp' %}" class="btn btn-light fw-semibold">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create New Camp
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_camps }}</div>
+            <div class="stat-label">Total Camps</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ active_camps }}</div>
+            <div class="stat-label">Active Camps</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ upcoming_camps }}</div>
+            <div class="stat-label">Upcoming Camps</div>
+        </div>
+    </div>
+    
+    <!-- Camps List -->
+    {% if camps %}
+        {% for camp in camps %}
+        <div class="camp-card {{ camp.status }}">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <h4 class="fw-bold mb-0">{{ camp.name }}</h4>
+                        <span class="status-badge {{ camp.status }}">
+                            {{ camp.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        {{ camp.venue }}, {{ camp.city }}, {{ camp.state }}
+                    </p>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ camp.start_date|date:"M d, Y H:i" }} - {{ camp.end_date|date:"M d, Y H:i" }}
+                    </p>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-person me-1"></i>
+                        Organizer: {{ camp.organizer.username }}
+                    </p>
+                    
+                    <!-- Progress -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Collection Progress</small>
+                            <small class="fw-bold">{{ camp.completion_percentage|floatformat:0 }}%</small>
+                        </div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" style="width: {{ camp.completion_percentage }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ camp.collected_units }} / {{ camp.target_units }} units collected</small>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="d-flex gap-2 justify-content-md-end flex-wrap">
+                        <a href="{% url 'admin-edit-camp' camp.id %}" class="action-btn primary">
+                            <i class="bi bi-pencil me-1"></i>
+                            Edit
+                        </a>
+                        <a href="{% url 'admin-delete-camp' camp.id %}" class="action-btn danger">
+                            <i class="bi bi-trash me-1"></i>
+                            Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 4rem; color: #d1d5db;"></i>
+            <h4 class="fw-bold mt-3 mb-2">No Donation Camps Yet</h4>
+            <p class="text-muted mb-4">Create your first blood donation camp to get started.</p>
+            <a href="{% url 'admin-create-camp' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Camp
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

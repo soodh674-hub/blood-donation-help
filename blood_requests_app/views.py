@@ -13,7 +13,7 @@ import logging
 import math
 from accounts.decorators import check_request_eligibility, check_donation_eligibility
 
-from .models import BloodRequest
+from .models import BloodRequest, BloodDonationCamp
 from .serializers import (
     BloodRequestSerializer,
     BloodRequestCreateSerializer,
@@ -1528,6 +1528,114 @@ def verify_requests_page(request):
     }
     
     return render(request, 'admin/verify_requests.html', context)
+
+
+@login_required
+def admin_camps_page(request):
+    """
+    Admin page to manage blood donation camps
+    """
+    if not request.user.is_staff:
+        return redirect('/accounts/login/?next=/admin/camps/')
+
+    camps = BloodDonationCamp.objects.all().order_by('-start_date')
+
+    context = {
+        'camps': camps,
+        'total_camps': camps.count(),
+        'active_camps': camps.filter(status='ongoing').count(),
+        'upcoming_camps': camps.filter(status='upcoming').count(),
+    }
+
+    return render(request, 'admin/camps.html', context)
+
+
+@login_required
+def admin_create_camp(request):
+    """
+    Admin page to create a new blood donation camp
+    """
+    if not request.user.is_staff:
+        return redirect('/accounts/login/?next=/admin/camps/create/')
+
+    if request.method == 'POST':
+        try:
+            camp = BloodDonationCamp.objects.create(
+                name=request.POST.get('name'),
+                description=request.POST.get('description', ''),
+                venue=request.POST.get('venue'),
+                address=request.POST.get('address'),
+                city=request.POST.get('city'),
+                state=request.POST.get('state'),
+                start_date=request.POST.get('start_date'),
+                end_date=request.POST.get('end_date'),
+                status=request.POST.get('status', 'upcoming'),
+                target_units=int(request.POST.get('target_units', 100)),
+                organizer=request.user,
+                contact_number=request.POST.get('contact_number'),
+                contact_email=request.POST.get('contact_email'),
+            )
+            messages.success(request, f'Blood donation camp "{camp.name}" created successfully!')
+            return redirect('admin-camps-page')
+        except Exception as e:
+            messages.error(request, f'Error creating camp: {str(e)}')
+
+    return render(request, 'admin/create_camp.html')
+
+
+@login_required
+def admin_edit_camp(request, camp_id):
+    """
+    Admin page to edit an existing blood donation camp
+    """
+    if not request.user.is_staff:
+        return redirect('/accounts/login/?next=/admin/camps/')
+
+    camp = get_object_or_404(BloodDonationCamp, id=camp_id)
+
+    if request.method == 'POST':
+        try:
+            camp.name = request.POST.get('name', camp.name)
+            camp.description = request.POST.get('description', camp.description)
+            camp.venue = request.POST.get('venue', camp.venue)
+            camp.address = request.POST.get('address', camp.address)
+            camp.city = request.POST.get('city', camp.city)
+            camp.state = request.POST.get('state', camp.state)
+            camp.start_date = request.POST.get('start_date', camp.start_date)
+            camp.end_date = request.POST.get('end_date', camp.end_date)
+            camp.status = request.POST.get('status', camp.status)
+            camp.target_units = int(request.POST.get('target_units', camp.target_units))
+            camp.collected_units = int(request.POST.get('collected_units', camp.collected_units))
+            camp.contact_number = request.POST.get('contact_number', camp.contact_number)
+            camp.contact_email = request.POST.get('contact_email', camp.contact_email)
+            camp.save()
+            messages.success(request, f'Blood donation camp "{camp.name}" updated successfully!')
+            return redirect('admin-camps-page')
+        except Exception as e:
+            messages.error(request, f'Error updating camp: {str(e)}')
+
+    context = {'camp': camp}
+    return render(request, 'admin/edit_camp.html', context)
+
+
+@login_required
+def admin_delete_camp(request, camp_id):
+    """
+    Admin page to delete a blood donation camp
+    """
+    if not request.user.is_staff:
+        return redirect('/accounts/login/?next=/admin/camps/')
+
+    camp = get_object_or_404(BloodDonationCamp, id=camp_id)
+
+    if request.method == 'POST':
+        camp_name = camp.name
+        camp.delete()
+        messages.success(request, f'Blood donation camp "{camp_name}" deleted successfully!')
+        return redirect('admin-camps-page')
+
+    context = {'camp': camp}
+    return render(request, 'admin/delete_camp.html', context)
 
 
 @api_view(['POST'])

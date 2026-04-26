@@ -116,6 +116,12 @@ urlpatterns = [
     # Verification page
     path("admin/verify/", views.verify_requests_page, name='verify-requests-page'),
     
+    # Admin camp management
+    path("admin/camps/", views.admin_camps_page, name='admin-camps-page'),
+    path("admin/camps/create/", views.admin_create_camp, name='admin-create-camp'),
+    path("admin/camps/<int:camp_id>/edit/", views.admin_edit_camp, name='admin-edit-camp'),
+    path("admin/camps/<int:camp_id>/delete/", views.admin_delete_camp, name='admin-delete-camp'),
+    
     # Verification API endpoint
     path("<int:request_id>/verify/", views.verify_request_api, name='verify-request-api'),
     

@@ -1,0 +1,169 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Blood Donation Camp - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-label-custom {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control-custom:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="fw-bold mb-2">
+            <i class="bi bi-plus-circle me-2"></i>
+            Create Blood Donation Camp
+        </h1>
+        <p class="mb-0 opacity-75">Fill in the details to create a new blood donation camp</p>
+    </div>
+    
+    <!-- Form -->
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Camp Name *</label>
+                    <input type="text" name="name" class="form-control form-control-custom" required placeholder="Enter camp name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Venue *</label>
+                    <input type="text" name="venue" class="form-control form-control-custom" required placeholder="Enter venue name">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label-custom">Description</label>
+                <textarea name="description" class="form-control form-control-custom" rows="3" placeholder="Enter camp description"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label-custom">Address *</label>
+                <textarea name="address" class="form-control form-control-custom" rows="2" required placeholder="Enter full address"></textarea>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">City *</label>
+                    <input type="text" name="city" id="city" class="form-control form-control-custom" required placeholder="Enter city">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">State *</label>
+                    <input type="text" name="state" id="state" class="form-control form-control-custom" required placeholder="Enter state">
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <button type="button" onclick="autoDetectLocation({cityField: 'city', stateField: 'state'})" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-geo-alt me-1"></i> Auto-Detect Location
+                </button>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Start Date & Time *</label>
+                    <input type="datetime-local" name="start_date" class="form-control form-control-custom" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">End Date & Time *</label>
+                    <input type="datetime-local" name="end_date" class="form-control form-control-custom" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Target Units *</label>
+                    <input type="number" name="target_units" class="form-control form-control-custom" required value="100" min="1">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Status</label>
+                    <select name="status" class="form-control form-control-custom">
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Contact Number *</label>
+                    <input type="tel" name="contact_number" class="form-control form-control-custom" required placeholder="Enter contact number">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-custom">Contact Email *</label>
+                    <input type="email" name="contact_email" class="form-control form-control-custom" required placeholder="Enter contact email">
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Create Camp
+                </button>
+                <a href="{% url 'admin-camps-page' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

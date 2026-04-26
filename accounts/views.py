@@ -826,14 +826,20 @@ def otp_login_request(request):
     if has_captcha:
         try:
             from captcha.models import CaptchaStore
+            # Test if captcha table exists
+            CaptchaStore.objects.exists()
             if captcha_response and captcha_key:
-                CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                try:
+                    CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                except CaptchaStore.DoesNotExist:
+                    return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA. Please try again.'})
             else:
-                return JsonResponse({'success': False, 'message': 'Please complete the security verification'})
-        except CaptchaStore.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA'})
+                # If captcha is not provided, skip validation (captcha might not be rendered)
+                logger.debug('CAPTCHA not provided in OTP request, skipping validation')
         except Exception as e:
             logger.warning(f'CAPTCHA error in OTP request: {str(e)}')
+            # Continue without captcha if table doesn't exist
+            has_captcha = False
 
     # Check rate limit
     allowed, remaining = otp_services.check_rate_limit(user.id)

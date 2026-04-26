@@ -6,6 +6,54 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+class BloodDonationCamp(models.Model):
+    """Blood donation camp management for admin"""
+    
+    CAMP_STATUS_CHOICES = [
+        ('upcoming', 'Upcoming'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    name = models.CharField(max_length=200, unique=True)
+    description = models.TextField(blank=True)
+    venue = models.CharField(max_length=300)
+    address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=CAMP_STATUS_CHOICES, default='upcoming')
+    target_units = models.IntegerField(default=100)
+    collected_units = models.IntegerField(default=0)
+    organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organized_camps')
+    contact_number = models.CharField(max_length=15)
+    contact_email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = 'Blood Donation Camp'
+        verbose_name_plural = 'Blood Donation Camps'
+    
+    def __str__(self):
+        return f"{self.name} - {self.start_date.strftime('%Y-%m-%d')}"
+    
+    @property
+    def is_active(self):
+        now = timezone.now()
+        return self.start_date <= now <= self.end_date and self.status == 'ongoing'
+    
+    @property
+    def completion_percentage(self):
+        if self.target_units > 0:
+            return min(100, (self.collected_units / self.target_units) * 100)
+        return 0
+
+
 class BloodRequest(models.Model):
     """Enhanced Blood request with real-time tracking support"""
     
