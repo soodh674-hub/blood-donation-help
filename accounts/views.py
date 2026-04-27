@@ -986,8 +986,10 @@ def otp_register_request(request):
     # Generate OTP
     otp = otp_services.generate_otp()
 
-    # Store OTP in cache (use email as key)
-    if not otp_services.store_otp(hash(email), otp):
+    # Store OTP in cache (use consistent email hash as key)
+    import hashlib
+    email_hash = hashlib.sha256(email.encode()).hexdigest()
+    if not otp_services.store_otp(email_hash, otp):
         return JsonResponse({'success': False, 'message': 'Failed to generate OTP. Please try again'})
 
     # Send OTP via email
@@ -996,11 +998,11 @@ def otp_register_request(request):
 
     if success:
         # Set rate limit
-        otp_services.set_rate_limit(email)
+        otp_services.set_rate_limit(email_hash)
         return JsonResponse({'success': True, 'message': 'OTP sent successfully'})
     else:
         # Clear OTP if email failed
-        otp_services.clear_reset_state(hash(email))
+        otp_services.clear_reset_state(email_hash)
         return JsonResponse({'success': False, 'message': message})
 
 
@@ -1050,8 +1052,10 @@ def register_with_otp(request):
         if not email or not otp:
             return JsonResponse({'success': False, 'message': 'Email and OTP are required'})
         
-        # Verify OTP
-        success, message = otp_services.verify_otp_cache(hash(email), otp)
+        # Verify OTP - use consistent email hash
+        import hashlib
+        email_hash = hashlib.sha256(email.encode()).hexdigest()
+        success, message = otp_services.verify_otp_cache(email_hash, otp)
         if not success:
             return JsonResponse({'success': False, 'message': message})
         
@@ -1150,8 +1154,10 @@ def register_with_otp(request):
             from .services import send_verification_email
             send_verification_email(user, verification_token)
             
-            # Clear OTP
-            otp_services.clear_reset_state(hash(email))
+            # Clear OTP - use consistent key based on email
+            import hashlib
+            email_hash = hashlib.sha256(email.encode()).hexdigest()
+            otp_services.clear_reset_state(email_hash)
             
             return JsonResponse({
                 'success': True,
@@ -1160,7 +1166,7 @@ def register_with_otp(request):
             
         except Exception as e:
             logger.error(f'Registration error: {str(e)}', exc_info=True)
-            return JsonResponse({'success': False, 'message': 'Registration failed. Please try again.'})
+            return JsonResponse({'success': False, 'message': f'Registration failed: {str(e)}'})
 
 
 @require_POST
