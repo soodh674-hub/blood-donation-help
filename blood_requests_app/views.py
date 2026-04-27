@@ -240,7 +240,8 @@ def create_request_unified_page(request):
                 priority = blood_request.priority
                 
                 # ALL requests go through verification first (privacy & security)
-                blood_request.status = 'pending_verification'
+                # Set status to 'pending' (not 'pending_verification' which doesn't exist)
+                blood_request.status = 'pending'
                 blood_request.verification_status = 'pending'
                 blood_request.save()
                 logger.info(f'Stage 2: Request {blood_request.id} requires verification before broadcasting')
