@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Accepted Requests - BloodLife{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="min-height: 100vh; background: linear-gradient(135deg, #0b1c2c 0%, #1a2332 50%, #0b1c2c 100%);">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="text-white fw-bold mb-1">
+                            <i class="bi bi-heart-pulse me-2" style="color: #ef4444;"></i>
+                            My Accepted Requests
+                        </h2>
+                        <p class="text-muted mb-0">Blood requests you've accepted as a donor</p>
+                    </div>
+                    <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-outline-light">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                    <div class="card-body text-center">
+                        <h3 class="text-white fw-bold mb-1">{{ total_accepted }}</h3>
+                        <p class="text-muted mb-0 small">Total Accepted</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0" style="background: rgba(59, 130, 246, 0.1);">
+                    <div class="card-body text-center">
+                        <h3 class="fw-bold mb-1" style="color: #3b82f6;">{{ active_count }}</h3>
+                        <p class="text-muted mb-0 small">Active</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0" style="background: rgba(245, 158, 11, 0.1);">
+                    <div class="card-body text-center">
+                        <h3 class="fw-bold mb-1" style="color: #f59e0b;">{{ pending_count }}</h3>
+                        <p class="text-muted mb-0 small">Pending</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0" style="background: rgba(16, 185, 129, 0.1);">
+                    <div class="card-body text-center">
+                        <h3 class="fw-bold mb-1" style="color: #10b981;">{{ completed_count }}</h3>
+                        <p class="text-muted mb-0 small">Completed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests List -->
+        <div class="row">
+            <div class="col-12">
+                {% if accepted_requests %}
+                    {% for item in accepted_requests %}
+                    <div class="card mb-3 border-0" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="badge bg-danger fs-6">{{ item.request.patient_blood_group }}</span>
+                                        <span class="badge 
+                                            {% if item.request.status == 'active' or item.request.status == 'partially_fulfilled' %}bg-primary
+                                            {% elif item.request.status == 'fulfilled' %}bg-success
+                                            {% elif item.request.status == 'pending' or item.request.status == 'approved' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ item.request.get_status_display }}
+                                        </span>
+                                        <span class="badge bg-info">{{ item.request.priority|title }}</span>
+                                    </div>
+                                    <h5 class="text-white fw-semibold mb-1">{{ item.request.hospital_name }}</h5>
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ item.request.city }}, {{ item.request.state }}
+                                    </p>
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-person me-1"></i>Patient: {{ item.request.patient_name }} | 
+                                        <i class="bi bi-droplet me-1"></i>{{ item.request.required_units }} units needed |
+                                        <i class="bi bi-clock me-1"></i>Accepted {{ item.responded_at|timesince }} ago
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <a href="{% url 'requests:track-request' item.request.id %}" class="btn btn-sm btn-danger mb-2 w-100">
+                                        <i class="bi bi-eye me-1"></i>View Details
+                                    </a>
+                                    {% if item.request.contact_phone %}
+                                    <a href="tel:{{ item.request.contact_phone }}" class="btn btn-sm btn-success w-100">
+                                        <i class="bi bi-telephone me-1"></i>Contact
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted mb-3 d-block"></i>
+                        <h4 class="text-white mb-2">No Accepted Requests Yet</h4>
+                        <p class="text-muted mb-4">You haven't accepted any blood requests yet.</p>
+                        <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-danger">
+                            <i class="bi bi-search me-2"></i>Find Requests to Accept
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

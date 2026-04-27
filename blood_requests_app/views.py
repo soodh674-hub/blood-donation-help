@@ -853,6 +853,52 @@ def my_requests_page(request):
     return redirect('/requests/track/')
 
 
+def donor_accepted_requests(request):
+    """
+    Page showing all blood requests the donor has accepted
+    Similar to 'My Requests' but for donors instead of requesters
+    """
+    from django.shortcuts import redirect
+    
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login/?next=/requests/my-accepted/')
+    
+    from .models import RequestResponse
+    from django.db.models import Prefetch
+    
+    # Get all requests this donor has accepted/responded to
+    accepted_responses = RequestResponse.objects.filter(
+        donor=request.user
+    ).select_related('request').order_by('-responded_at')
+    
+    # Extract the actual blood requests
+    accepted_requests = []
+    for response in accepted_responses:
+        req = response.request
+        accepted_requests.append({
+            'request': req,
+            'response_status': response.status,
+            'responded_at': response.responded_at,
+            'message': response.message if hasattr(response, 'message') else None
+        })
+    
+    # Count by status
+    total_accepted = len(accepted_requests)
+    active_count = sum(1 for item in accepted_requests if item['request'].status in ['active', 'partially_fulfilled'])
+    completed_count = sum(1 for item in accepted_requests if item['request'].status == 'fulfilled')
+    pending_count = sum(1 for item in accepted_requests if item['request'].status in ['pending', 'approved'])
+    
+    context = {
+        'accepted_requests': accepted_requests,
+        'total_accepted': total_accepted,
+        'active_count': active_count,
+        'completed_count': completed_count,
+        'pending_count': pending_count,
+    }
+    
+    return render(request, 'requests/donor_accepted_requests.html', context)
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def live_blood_requests(request):
@@ -1068,7 +1114,9 @@ def get_live_requests(request):
         logger.info(f'Current time: {now}')
 
         requests = BloodRequest.objects.filter(
-            status__in=['active', 'approved', 'pending', 'partially_fulfilled', 'fulfilled', 'cancelled']
+            status__in=['active', 'approved', 'pending', 'partially_fulfilled']
+        ).exclude(
+            status__in=['cancelled', 'expired', 'fulfilled']
         ).order_by('-priority', '-created_at')[:20]  # Limit to 20
         
         logger.info(f'Found {requests.count()} live requests to display')
