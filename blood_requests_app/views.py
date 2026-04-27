@@ -2187,7 +2187,7 @@ def start_chat_with_donor(request, donor_id):
     donor = get_object_or_404(User, id=donor_id, is_active=True)
     
     # Redirect to the existing chat conversation view
-    return redirect('chat-conversation', user_id=donor_id)
+    return redirect('requests:chat-conversation', user_id=donor_id)
 
 
 @login_required
