@@ -2628,22 +2628,29 @@ def manage_all_requests(request):
 def analytics_dashboard(request):
     """Analytics dashboard view for blood requests"""
     from .analytics import RequestAnalytics
+    import logging
+    logger = logging.getLogger(__name__)
     
-    # Get time filter from request
-    days = int(request.GET.get('days', 30))
-    
-    # Only staff users can see global analytics, others see their own
-    if request.user.is_staff:
-        stats = RequestAnalytics.get_dashboard_stats(days=days)
-    else:
-        stats = RequestAnalytics.get_dashboard_stats(user=request.user, days=days)
-    
-    context = {
-        'stats': stats,
-        'days': days,
-    }
-    
-    return render(request, 'requests/analytics_dashboard.html', context)
+    try:
+        # Get time filter from request
+        days = int(request.GET.get('days', 30))
+        
+        # Only staff users can see global analytics, others see their own
+        if request.user.is_staff:
+            stats = RequestAnalytics.get_dashboard_stats(days=days)
+        else:
+            stats = RequestAnalytics.get_dashboard_stats(user=request.user, days=days)
+        
+        context = {
+            'stats': stats,
+            'days': days,
+        }
+        
+        return render(request, 'requests/analytics_dashboard.html', context)
+    except Exception as e:
+        logger.error(f'Analytics dashboard error: {str(e)}', exc_info=True)
+        messages.error(request, 'Error loading analytics. Please try again later.')
+        return redirect('/accounts/dashboard/')
 
 
 @login_required
@@ -2722,3 +2729,168 @@ def submit_donor_rating(request):
             'success': False,
             'error': 'Failed to submit rating'
         }, status=500)
+
+
+@login_required
+def admin_donors_page(request):
+    """Admin page to manage and view all donors"""
+    from django.contrib.auth.decorators import user_passes_test
+    from accounts.models import User
+    from django.db.models import Q
+    
+    # Check if user is staff
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('/accounts/dashboard/')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    blood_group = request.GET.get('blood_group', '')
+    city = request.GET.get('city', '')
+    is_verified = request.GET.get('is_verified', '')
+    
+    # Base queryset - only donors
+    donors = User.objects.filter(user_type='donor')
+    
+    # Apply filters
+    if search_query:
+        donors = donors.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(phone_number__icontains=search_query)
+        )
+    
+    if blood_group:
+        donors = donors.filter(blood_group=blood_group)
+    
+    if city:
+        donors = donors.filter(city__icontains=city)
+    
+    if is_verified:
+        donors = donors.filter(is_verified=is_verified == 'true')
+    
+    # Order by most recent
+    donors = donors.order_by('-date_joined')
+    
+    # Get unique blood groups and cities for filters
+    blood_groups = User.objects.filter(user_type='donor').values_list('blood_group', flat=True).distinct().order_by('blood_group')
+    cities = User.objects.filter(user_type='donor').values_list('city', flat=True).distinct().order_by('city')
+    
+    context = {
+        'donors': donors[:100],  # Limit to 100 for performance
+        'total_donors': donors.count(),
+        'blood_groups': blood_groups,
+        'cities': cities,
+        'search_query': search_query,
+        'selected_blood_group': blood_group,
+        'selected_city': city,
+        'selected_verified': is_verified,
+    }
+    
+    return render(request, 'admin/donors.html', context)
+
+
+@login_required
+def admin_users_page(request):
+    """Admin page to manage all users"""
+    from accounts.models import User
+    from django.db.models import Q
+    
+    # Check if user is staff
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('/accounts/dashboard/')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    user_type = request.GET.get('user_type', '')
+    is_verified = request.GET.get('is_verified', '')
+    
+    # Base queryset
+    users = User.objects.all()
+    
+    # Apply filters
+    if search_query:
+        users = users.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    
+    if user_type:
+        users = users.filter(user_type=user_type)
+    
+    if is_verified:
+        users = users.filter(is_verified=is_verified == 'true')
+    
+    # Order by most recent
+    users = users.order_by('-date_joined')
+    
+    context = {
+        'users': users[:100],  # Limit to 100 for performance
+        'total_users': users.count(),
+        'user_types': ['donor', 'hospital', 'admin', 'volunteer'],
+        'search_query': search_query,
+        'selected_user_type': user_type,
+        'selected_verified': is_verified,
+    }
+    
+    return render(request, 'admin/users.html', context)
+
+
+@login_required
+def admin_analytics_page(request):
+    """Admin analytics dashboard with comprehensive statistics"""
+    from .analytics import RequestAnalytics
+    from accounts.models import User
+    from django.db.models import Count, Q, Avg
+    from django.utils import timezone
+    from datetime import timedelta
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Check if user is staff
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('/accounts/dashboard/')
+    
+    try:
+        # Get time filter
+        days = int(request.GET.get('days', 30))
+        
+        # Get comprehensive analytics
+        stats = RequestAnalytics.get_dashboard_stats(days=days)
+        
+        # Additional user statistics
+        total_users = User.objects.count()
+        new_users_period = User.objects.filter(
+            date_joined__gte=timezone.now() - timedelta(days=days)
+        ).count()
+        
+        users_by_type = User.objects.values('user_type').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        users_by_blood_group = User.objects.filter(
+            user_type='donor'
+        ).values('blood_group').annotate(
+            count=Count('id')
+        ).order_by('blood_group')
+        
+        context = {
+            'stats': stats,
+            'days': days,
+            'total_users': total_users,
+            'new_users_period': new_users_period,
+            'users_by_type': users_by_type,
+            'users_by_blood_group': users_by_blood_group,
+        }
+        
+        return render(request, 'admin/analytics.html', context)
+    except Exception as e:
+        logger.error(f'Admin analytics error: {str(e)}', exc_info=True)
+        messages.error(request, 'Error loading analytics. Please try again later.')
+        return redirect('/accounts/dashboard/')

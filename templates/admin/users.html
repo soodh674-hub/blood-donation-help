@@ -1,0 +1,154 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Manage Users - BloodLife Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-white mb-0">
+                    <i class="bi bi-person-gear me-2"></i>
+                    Manage Users
+                </h2>
+                <span class="badge bg-primary fs-6">{{ total_users }} Total Users</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <form method="GET" action="{% url 'requests:admin-users-page' %}">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-5">
+                            <label class="form-label text-white-50">Search</label>
+                            <input type="text" name="search" class="form-control" 
+                                   value="{{ search_query }}" 
+                                   placeholder="Search by name, email, username...">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label text-white-50">User Type</label>
+                            <select name="user_type" class="form-select">
+                                <option value="">All</option>
+                                {% for ut in user_types %}
+                                <option value="{{ ut }}" {% if selected_user_type == ut %}selected{% endif %}>{{ ut|title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <label class="form-label text-white-50">Verified</label>
+                            <select name="is_verified" class="form-select">
+                                <option value="">All</option>
+                                <option value="true" {% if selected_verified == 'true' %}selected{% endif %}>Yes</option>
+                                <option value="false" {% if selected_verified == 'false' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i>Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover text-white">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Blood Group</th>
+                                <th>Email</th>
+                                <th>Location</th>
+                                <th>Verified</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user.profile_photo %}
+                                        <img src="{{ user.profile_photo.url }}" class="rounded-circle me-2" width="40" height="40" alt="{{ user.username }}">
+                                        {% else %}
+                                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                            <span class="text-white fw-bold">{{ user.username|first|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                                            <small class="text-white-50">@{{ user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if user.user_type == 'donor' %}
+                                    <span class="badge bg-success">Donor</span>
+                                    {% elif user.user_type == 'hospital' %}
+                                    <span class="badge bg-info">Hospital</span>
+                                    {% elif user.user_type == 'admin' %}
+                                    <span class="badge bg-danger">Admin</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ user.user_type|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.blood_group %}
+                                    <span class="badge bg-danger">{{ user.blood_group }}</span>
+                                    {% else %}
+                                    <span class="text-white-50">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.city %}
+                                    {{ user.city }}, {{ user.state|default:"" }}
+                                    {% else %}
+                                    <span class="text-white-50">Not set</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_verified %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Verified</span>
+                                    {% else %}
+                                    <span class="badge bg-warning"><i class="bi bi-clock me-1"></i>Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ user.date_joined|date:"M d, Y" }}
+                                </td>
+                                <td>
+                                    <a href="/admin/accounts/user/{{ user.id }}/change/" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-white-50 py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No users found matching your criteria
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

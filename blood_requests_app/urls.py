@@ -147,6 +147,11 @@ urlpatterns = [
     # Analytics dashboard
     path("analytics/", views.analytics_dashboard, name='analytics-dashboard'),
     
+    # Admin management pages
+    path("admin/donors/", views.admin_donors_page, name='admin-donors-page'),
+    path("admin/users/", views.admin_users_page, name='admin-users-page'),
+    path("admin/analytics/", views.admin_analytics_page, name='admin-analytics-page'),
+    
     # Donor rating system
     path("rate-donor/", views.submit_donor_rating, name='submit-donor-rating'),
     

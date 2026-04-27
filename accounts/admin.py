@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import messages
 from django.db import transaction
+from django.db.utils import ProgrammingError
 from .models import User, UserReport, DonorRating, FavoriteDonor, Follow, PasswordResetOTP, LoginOTP, UserActivityLog
 import logging
 
@@ -51,6 +52,18 @@ class UserAdmin(BaseUserAdmin):
                 # Now delete the user
                 obj.delete()
                 messages.success(request, f'User "{obj.username}" was deleted successfully.')
+        except ProgrammingError as e:
+            # Handle missing database columns (migration not applied)
+            error_msg = str(e)
+            if 'verified_by_id' in error_msg or 'does not exist' in error_msg:
+                logger.warning(f'Database migration not applied: {error_msg}')
+                messages.error(
+                    request, 
+                    'Database migration required. Please run: python manage.py migrate'
+                )
+            else:
+                logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
+                messages.error(request, f'Error deleting user: {str(e)}')
         except Exception as e:
             logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
             messages.error(request, f'Error deleting user: {str(e)}. Some related data may not exist in the database.')
@@ -65,10 +78,33 @@ class UserAdmin(BaseUserAdmin):
                         self._delete_related_objects(obj)
                         # Delete the user
                         obj.delete()
+                    except ProgrammingError as e:
+                        # Handle missing database columns
+                        error_msg = str(e)
+                        if 'verified_by_id' in error_msg or 'does not exist' in error_msg:
+                            logger.warning(f'Database migration not applied: {error_msg}')
+                            messages.warning(
+                                request, 
+                                f'Could not delete user "{obj.username}": Database migration required. Run: python manage.py migrate'
+                            )
+                        else:
+                            logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
+                            messages.warning(request, f'Could not delete user "{obj.username}": {str(e)}')
                     except Exception as e:
                         logger.error(f'Error deleting user {obj.username}: {str(e)}', exc_info=True)
                         messages.warning(request, f'Could not delete user "{obj.username}": {str(e)}')
                 messages.success(request, 'Bulk delete completed with some warnings.')
+        except ProgrammingError as e:
+            error_msg = str(e)
+            if 'verified_by_id' in error_msg or 'does not exist' in error_msg:
+                logger.warning(f'Database migration not applied in bulk delete: {error_msg}')
+                messages.error(
+                    request, 
+                    'Database migration required. Please run: python manage.py migrate'
+                )
+            else:
+                logger.error(f'Error in bulk delete: {str(e)}', exc_info=True)
+                messages.error(request, f'Error in bulk delete: {str(e)}')
         except Exception as e:
             logger.error(f'Error in bulk delete: {str(e)}', exc_info=True)
             messages.error(request, f'Error in bulk delete: {str(e)}')

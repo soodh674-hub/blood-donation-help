@@ -15,6 +15,9 @@ services:
     branch: main
     buildCommand: "./render_build.sh"
     startCommand: "gunicorn blood_donation.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 120"
+    autoDeploy: yes
+    healthCheckPath: /health/
+    releaseCommand: "python manage.py migrate --noinput"
     envVars:
       - key: DATABASE_URL
         fromDatabase:

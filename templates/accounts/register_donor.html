@@ -740,7 +740,9 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        console.log('Form submission started...');
+        // Clear previous errors
+        const previousErrors = form.querySelectorAll('.validation-error');
+        previousErrors.forEach(el => el.remove());
         
         // Final validation
         let isValid = true;
@@ -752,9 +754,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 isValid = false;
                 field.style.borderColor = '#ef4444';
                 emptyFields.push(field.name || field.id);
-                console.log('Empty field:', field.name || field.id);
+                
+                // Add visual error indicator
+                const errorIcon = document.createElement('span');
+                errorIcon.className = 'validation-error';
+                errorIcon.innerHTML = ' <i class="bi bi-exclamation-circle" style="color: #ef4444; font-size: 0.8rem;"></i>';
+                field.parentNode.appendChild(errorIcon);
             } else {
-                field.style.borderColor = '';
+                field.style.borderColor = '#10b981';
             }
         });
 
@@ -763,19 +770,50 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
             passwordInput.style.borderColor = '#ef4444';
             confirmPasswordInput.style.borderColor = '#ef4444';
-            alert('Passwords do not match!');
-            console.log('Password mismatch');
+            
+            // Show password mismatch error
+            const passwordError = document.createElement('div');
+            passwordError.className = 'validation-error';
+            passwordError.style.color = '#ef4444';
+            passwordError.style.fontSize = '0.875rem';
+            passwordError.style.marginTop = '0.5rem';
+            passwordError.innerHTML = '<i class="bi bi-exclamation-circle me-1"></i>Passwords do not match!';
+            confirmPasswordInput.parentNode.appendChild(passwordError);
             return;
         }
 
         if (!isValid) {
-            console.log('Validation failed. Empty fields:', emptyFields);
-            alert('Please fill in all required fields: ' + emptyFields.join(', '));
+            // Scroll to first error
+            const firstError = form.querySelector('[style*="border-color: rgb(239, 68, 68)"]');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+            
+            // Show user-friendly message
+            const fieldLabels = emptyFields.map(field => {
+                const labelMap = {
+                    'username': 'Username',
+                    'email': 'Email',
+                    'password': 'Password',
+                    'confirm_password': 'Confirm Password',
+                    'first_name': 'First Name',
+                    'last_name': 'Last Name',
+                    'phone_number': 'Phone Number',
+                    'blood_group': 'Blood Group',
+                    'date_of_birth': 'Date of Birth',
+                    'city': 'City',
+                    'state': 'State',
+                    'consent_given': 'Consent Checkbox',
+                    'data_retention_consent': 'Data Retention Consent'
+                };
+                return labelMap[field] || field;
+            });
+            
+            alert('⚠️ Please complete the following required fields:\n\n• ' + fieldLabels.join('\n• '));
             return;
         }
 
-        console.log('Validation passed, submitting form...');
-        
         // Show loading state
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Registering...';
         submitBtn.disabled = true;
@@ -783,9 +821,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Submit form via traditional POST (more reliable than AJAX)
         form.action = '/accounts/register/donor/';
         form.method = 'post';
-        
-        console.log('Form action:', form.action);
-        console.log('Submitting form now...');
         
         // Use a small timeout to ensure the button state updates
         setTimeout(function() {

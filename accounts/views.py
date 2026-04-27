@@ -2265,9 +2265,8 @@ def my_donation_history(request):
     return render(request, 'accounts/donation_history.html', context)
 
 
-@login_required
 def hospital_partners(request):
-    """View verified hospital partners"""
+    """View verified hospital partners - publicly accessible"""
     import logging
     logger = logging.getLogger(__name__)
     
