@@ -744,12 +744,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const previousErrors = form.querySelectorAll('.validation-error');
         previousErrors.forEach(el => el.remove());
         
+        // Reset all field borders
+        const allFields = form.querySelectorAll('input, select, textarea');
+        allFields.forEach(field => {
+            field.style.borderColor = '';
+        });
+        
         // Final validation
         let isValid = true;
         let emptyFields = [];
         const allRequired = form.querySelectorAll('[required]');
         
         allRequired.forEach(field => {
+            // Skip hidden fields
+            if (field.type === 'hidden') return;
+            
             if (!field.value || !field.value.trim()) {
                 isValid = false;
                 field.style.borderColor = '#ef4444';

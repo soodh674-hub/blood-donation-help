@@ -4,6 +4,7 @@
 {% block title %}Track Request #{{ blood_request.id }} - BloodLife{% endblock %}
 
 {% block extra_css %}
+{% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:20.5937 center_lng=blood_request.longitude|default:78.9629 %}
 <meta name="csrf-token" content="{% csrf_token %}">
 <style>
     :root {
@@ -340,8 +341,8 @@
             <!-- Map -->
             <div class="info-card">
                 <h5><i class="bi bi-map me-2"></i>Location</h5>
-                <div class="map-container">
-                    <div id="map" data-lat="{{ blood_request.latitude|default:20.5937 }}" data-lng="{{ blood_request.longitude|default:78.9629 }}"></div>
+                <div class="map-container" style="height: 400px;">
+                    {% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:20.5937 center_lng=blood_request.longitude|default:78.9629 zoom=13 %}
                 </div>
             </div>
         </div>
@@ -426,51 +427,29 @@
 
 {% block extra_js %}
 <script>
-// Initialize Leaflet map
+// Initialize OpenLayers map
 document.addEventListener('DOMContentLoaded', function() {
-    const mapElement = document.getElementById('map');
-    const lat = parseFloat(mapElement.dataset.lat);
-    const lng = parseFloat(mapElement.dataset.lng);
+    const lat = {{ blood_request.latitude|default:20.5937 }};
+    const lng = {{ blood_request.longitude|default:78.9629 }};
 
-    if (typeof L !== 'undefined' && lat && lng) {
-        const map = L.map('map', {
+    if (lat && lng) {
+        const map = initBloodLifeMap('request-map', {
             center: [lat, lng],
-            zoom: 13,
-            zoomControl: true,
-            scrollWheelZoom: true,
-            doubleClickZoom: true,
-            dragging: true,
-            keyboard: true
+            zoom: 13
         });
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        // Add location control for auto-detect
-        L.control.locate({
-            position: 'topleft',
-            flyTo: true,
-            keepCurrentZoomLevel: true,
-            showUserLocation: true,
-            locateOptions: {
-                enableHighAccuracy: true,
-                maxZoom: 16
-            }
-        }).addTo(map);
-        
-        // Add marker for hospital location
-        const marker = L.marker([lat, lng]).addTo(map);
-        const hospitalName = "{{ blood_request.hospital_name|escapejs }}";
-        const hospitalAddress = "{{ blood_request.hospital_address|escapejs }}";
-        const city = "{{ blood_request.city|escapejs }}";
-        const state = "{{ blood_request.state|escapejs }}";
-        
-        marker.bindPopup(
-            `<strong>${hospitalName}</strong><br>${hospitalAddress}<br>${city}, ${state}`
-        ).openPopup();
+        // Add hospital marker
+        map.addMarker(lat, lng, {
+            type: 'hospital',
+            popupContent: `
+                <b>{{ blood_request.hospital_name }}</b><br>
+                {{ blood_request.address }}<br>
+                Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}
+            `,
+            title: '{{ blood_request.hospital_name }}'
+        });
     }
-
+    
     // Set progress bar width
     const fulfilled = parseInt('{{ blood_request.fulfilled_units|default:0 }}') || 0;
     const required = parseInt('{{ blood_request.required_units|default:1 }}') || 1;
