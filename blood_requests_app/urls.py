@@ -146,6 +146,9 @@ urlpatterns = [
     # Analytics dashboard
     path("analytics/", views.analytics_dashboard, name='analytics-dashboard'),
     
+    # Donor rating system
+    path("rate-donor/", views.submit_donor_rating, name='submit-donor-rating'),
+    
     # Chat conversation with specific user
     path("chat/<int:user_id>/", views.chat_conversation, name='chat-conversation'),
     

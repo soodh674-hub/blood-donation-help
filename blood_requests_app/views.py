@@ -2584,3 +2584,81 @@ def analytics_dashboard(request):
     }
     
     return render(request, 'requests/analytics_dashboard.html', context)
+
+
+@login_required
+@require_POST
+def submit_donor_rating(request):
+    """Submit a rating for a donor after donation completion"""
+    from django.http import JsonResponse
+    from .models import DonorRating
+    
+    try:
+        donor_id = request.POST.get('donor_id')
+        blood_request_id = request.POST.get('blood_request_id')
+        rating = int(request.POST.get('rating'))
+        comment = request.POST.get('comment', '')
+        
+        # Validate rating
+        if rating < 1 or rating > 5:
+            return JsonResponse({
+                'success': False,
+                'error': 'Rating must be between 1 and 5'
+            }, status=400)
+        
+        # Get donor and request
+        donor = User.objects.get(id=donor_id)
+        blood_request = BloodRequest.objects.get(id=blood_request_id)
+        
+        # Check if rating already exists
+        existing_rating = DonorRating.objects.filter(
+            donor=donor,
+            rater=request.user,
+            blood_request=blood_request
+        ).first()
+        
+        if existing_rating:
+            # Update existing rating
+            existing_rating.rating = rating
+            existing_rating.comment = comment
+            existing_rating.save()
+            created = False
+        else:
+            # Create new rating
+            DonorRating.objects.create(
+                donor=donor,
+                rater=request.user,
+                blood_request=blood_request,
+                rating=rating,
+                comment=comment
+            )
+            created = True
+        
+        # Calculate donor's average rating
+        avg_rating = DonorRating.objects.filter(donor=donor).aggregate(
+            avg_rating=Avg('rating')
+        )['avg_rating'] or 0
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Rating submitted successfully',
+            'average_rating': round(avg_rating, 1),
+            'created': created
+        })
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Donor not found'
+        }, status=404)
+    except BloodRequest.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Blood request not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f'Error submitting rating: {str(e)}')
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to submit rating'
+        }, status=500)
