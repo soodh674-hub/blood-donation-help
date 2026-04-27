@@ -1983,7 +1983,7 @@ def accept_request_view(request, request_id):
     
     # Update request status if first donor
     if blood_request.fulfilled_units == 0:
-        blood_request.status = 'matched'
+        blood_request.status = 'partially_fulfilled'  # Changed from 'matched' (doesn't exist in STATUS_CHOICES)
         blood_request.save()
     
     # Notify requester that a donor accepted
