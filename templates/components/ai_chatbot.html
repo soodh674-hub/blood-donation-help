@@ -427,29 +427,37 @@ function aiChatbot() {
     }
 }
 
-/* Fix overlapping issues on desktop */
+/* Fix positioning on big screens */
 #ai-chatbot {
     z-index: 1050 !important;
+    bottom: 24px !important;
+    left: 24px !important;
 }
 
-/* Ensure chatbot window doesn't overlap with navbar */
+/* Ensure chatbot window appears above toggle button */
 #ai-chatbot .position-absolute {
     z-index: 1060 !important;
 }
 
-/* Add proper spacing from bottom on desktop */
-@media (min-width: 768px) {
+/* Responsive spacing for different screen sizes */
+@media (min-width: 768px) and (max-width: 1023px) {
     #ai-chatbot {
         bottom: 20px !important;
         left: 20px !important;
     }
 }
 
-/* Prevent overlap with other fixed elements */
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (max-width: 1439px) {
     #ai-chatbot {
-        bottom: 30px !important;
-        left: 30px !important;
+        bottom: 24px !important;
+        left: 24px !important;
+    }
+}
+
+@media (min-width: 1440px) {
+    #ai-chatbot {
+        bottom: 32px !important;
+        left: 32px !important;
     }
 }
 </style>
