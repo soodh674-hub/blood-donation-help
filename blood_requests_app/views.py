@@ -585,8 +585,10 @@ def manage_request(request, request_id):
     """
     Manage individual blood request (cancel, update, etc.)
     """
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    
     if not request.user.is_authenticated:
-        from django.shortcuts import redirect
         return redirect('/accounts/login/?next=/requests/manage/{}/'.format(request_id))
 
     from .models import BloodRequest
@@ -594,7 +596,6 @@ def manage_request(request, request_id):
     try:
         blood_request = BloodRequest.objects.get(id=request_id, requester=request.user)
     except BloodRequest.DoesNotExist:
-        from django.contrib import messages
         messages.error(request, 'Request not found or you do not have permission to manage it.')
         return redirect('/requests/track/')
 
@@ -606,10 +607,8 @@ def manage_request(request, request_id):
             if blood_request.status in ['pending', 'active']:
                 blood_request.status = 'cancelled'
                 blood_request.save()
-                from django.contrib import messages
                 messages.success(request, 'Request cancelled successfully.')
             else:
-                from django.contrib import messages
                 messages.error(request, 'Cannot cancel a request that is already completed or cancelled.')
 
         elif action == 'update_urgency':
@@ -618,10 +617,8 @@ def manage_request(request, request_id):
             if new_priority in ['low', 'normal', 'high', 'emergency']:
                 blood_request.priority = new_priority
                 blood_request.save()
-                from django.contrib import messages
                 messages.success(request, 'Request priority updated successfully.')
             else:
-                from django.contrib import messages
                 messages.error(request, 'Invalid priority level.')
 
         elif action == 'update_required_by':
@@ -632,10 +629,8 @@ def manage_request(request, request_id):
                 try:
                     blood_request.required_by = datetime.strptime(new_date, '%Y-%m-%d').date()
                     blood_request.save()
-                    from django.contrib import messages
                     messages.success(request, 'Required date updated successfully.')
                 except ValueError:
-                    from django.contrib import messages
                     messages.error(request, 'Invalid date format.')
         
         elif action == 'complete':
@@ -644,12 +639,10 @@ def manage_request(request, request_id):
                 blood_request.status = 'fulfilled'
                 blood_request.fulfilled_units = blood_request.required_units
                 blood_request.save()
-                from django.contrib import messages
                 messages.success(request, 'Request marked as complete! Blood donation fulfilled.')
                 
                 # TODO: Send notifications to all donors who accepted
             else:
-                from django.contrib import messages
                 messages.error(request, 'Cannot complete a request that is already fulfilled or cancelled.')
 
         return redirect('requests:track-request-dashboard')
