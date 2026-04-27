@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from django.core.cache import cache
+from django.http import HttpResponseServerError
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -9,6 +11,7 @@ import logging
 from accounts.models import User
 from accounts.serializers import UserPublicSerializer
 from donors.models import DonorHistory
+from blood_requests_app.models import BloodRequest
 from .matching import BloodMatcher
 
 # Setup logging
