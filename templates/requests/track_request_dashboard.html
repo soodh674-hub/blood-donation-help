@@ -748,20 +748,27 @@ function populateAllRequestsList(requests) {
     
     let html = '';
     requests.forEach(req => {
-        const timeAgo = getTimeAgo(req.created_at);
+        // Handle both direct request objects and wrapped objects with 'request' key
+        const requestObj = req.request || req;
+        
+        const timeAgo = req.time_ago || getTimeAgo(requestObj.created_at);
         const distance = req.distance ? `${req.distance.toFixed(1)} km` : 'N/A';
+        
+        // Use correct field names from BloodRequest model
+        const bloodGroup = requestObj.patient_blood_group || requestObj.blood_group || 'N/A';
+        const hospital = requestObj.hospital_name || requestObj.hospital || 'Unknown Hospital';
         
         html += `
             <div class="p-3 mb-2 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <span class="badge bg-danger bg-opacity-25 text-danger">${req.blood_group}</span>
-                            <span class="text-white small fw-semibold">${req.hospital}</span>
+                            <span class="badge bg-danger bg-opacity-25 text-danger">${bloodGroup}</span>
+                            <span class="text-white small fw-semibold">${hospital}</span>
                         </div>
                         <p class="text-muted small mb-0">${distance} • ${timeAgo}</p>
                     </div>
-                    <button class="btn btn-sm btn-danger" onclick="selectRequest(${req.id})">View</button>
+                    <button class="btn btn-sm btn-danger" onclick="selectRequest(${requestObj.id})">View</button>
                 </div>
             </div>
         `;
