@@ -2,8 +2,9 @@
     AI Chatbot Assistant Component
     Provides intelligent assistance for blood donation queries
     Includes predefined responses + can be extended with AI API
+    Only visible on desktop/tablet devices (>= 768px)
 -->
-<div id="ai-chatbot" class="position-fixed bottom-0 start-0 m-3 m-sm-4 z-50" x-data="aiChatbot()">
+<div id="ai-chatbot" class="position-fixed bottom-0 start-0 m-3 m-sm-4 z-50 d-none d-md-block" x-data="aiChatbot()">
     <!-- Chatbot Toggle Button -->
     <button @click="toggleChatbot()" 
             class="btn btn-gradient rounded-circle d-flex align-items-center justify-content-center shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-purple-500/50 position-relative" 
@@ -423,6 +424,32 @@ function aiChatbot() {
     50% {
         transform: translateY(0);
         animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+}
+
+/* Fix overlapping issues on desktop */
+#ai-chatbot {
+    z-index: 1050 !important;
+}
+
+/* Ensure chatbot window doesn't overlap with navbar */
+#ai-chatbot .position-absolute {
+    z-index: 1060 !important;
+}
+
+/* Add proper spacing from bottom on desktop */
+@media (min-width: 768px) {
+    #ai-chatbot {
+        bottom: 20px !important;
+        left: 20px !important;
+    }
+}
+
+/* Prevent overlap with other fixed elements */
+@media (min-width: 1024px) {
+    #ai-chatbot {
+        bottom: 30px !important;
+        left: 30px !important;
     }
 }
 </style>
