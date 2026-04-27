@@ -450,6 +450,19 @@ function verifyRegistrationOTP() {
     
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     
+    // Disable required attributes on hidden fields to avoid validation errors
+    const allRequiredFields = document.querySelectorAll('[required]');
+    const hiddenFields = [];
+    
+    allRequiredFields.forEach(field => {
+        // Check if field is in a hidden step
+        const parentStep = field.closest('#step-1, #step-2, #step-3, #step-otp');
+        if (parentStep && parentStep.style.display === 'none') {
+            hiddenFields.push(field);
+            field.removeAttribute('required');
+        }
+    });
+    
     // Collect all form data
     const formData = new FormData(document.getElementById('registration-form'));
     formData.append('otp', otp);
@@ -464,6 +477,11 @@ function verifyRegistrationOTP() {
     })
     .then(response => response.json())
     .then(data => {
+        // Restore required attributes
+        hiddenFields.forEach(field => {
+            field.setAttribute('required', 'required');
+        });
+        
         btn.disabled = false;
         btn.innerHTML = 'Verify & Register <i class="bi bi-check-circle ms-2"></i>';
         
@@ -475,6 +493,11 @@ function verifyRegistrationOTP() {
         }
     })
     .catch(error => {
+        // Restore required attributes
+        hiddenFields.forEach(field => {
+            field.setAttribute('required', 'required');
+        });
+        
         btn.disabled = false;
         btn.innerHTML = 'Verify & Register <i class="bi bi-check-circle ms-2"></i>';
         alert('An error occurred. Please try again.');
