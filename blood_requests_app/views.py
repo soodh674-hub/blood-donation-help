@@ -336,11 +336,12 @@ def create_request_unified_page(request):
     return render(request, 'requests/create_request_unified.html', context)
 
 
-def track_request_dashboard(request):
+def track_request_dashboard(request, request_id=None):
     """
     Enhanced unified tracking dashboard for blood requests
     Shows user's own requests with stats and live requests from other donors
     Zomato-style UI with live map, donor tracking, and real-time updates
+    If request_id is provided, shows details for that specific request
     """
     if not request.user.is_authenticated:
         from django.shortcuts import redirect
@@ -394,19 +395,46 @@ def track_request_dashboard(request):
             'user_location': {
                 'lat': user_lat,
                 'lng': user_lng
-            }
+            },
+            'blood_request': None  # Will be set if request_id is provided
         }
+        
+        # If request_id is provided, get that specific request
+        if request_id:
+            try:
+                from django.shortcuts import get_object_or_404
+                blood_request = get_object_or_404(BloodRequest, id=request_id)
+                context['blood_request'] = blood_request
+                
+                # Get responses for this request
+                user_response = None
+                if request.user.is_authenticated:
+                    user_response = RequestResponse.objects.filter(
+                        request=blood_request,
+                        donor=request.user
+                    ).first()
+                
+                all_responses = RequestResponse.objects.filter(
+                    request=blood_request
+                ).select_related('donor').order_by('-responded_at')
+                
+                context['user_response'] = user_response
+                context['all_responses'] = all_responses
+            except Exception as e:
+                logger.warning(f'Request {request_id} not found: {str(e)}')
 
-        return render(request, 'requests/track_request_dashboard_zomato.html', context)
+        return render(request, 'requests/track_request_dashboard.html', context)
 
     except Exception as e:
         # Fallback to basic dashboard
-        return render(request, 'requests/track_request_dashboard_zomato.html', {
+        logger.error(f'Error in track_request_dashboard: {str(e)}', exc_info=True)
+        return render(request, 'requests/track_request_dashboard.html', {
             'my_requests': [],
             'active_requests': [],
             'completed_requests': [],
             'cancelled_requests': [],
-            'live_requests': []
+            'live_requests': [],
+            'blood_request': None
         })
 
 

@@ -30,9 +30,9 @@ def home_view(request):
     from blood_requests_app.models import BloodRequest
     from django.utils import timezone
     
-    # Get active blood requests for the live feed - prioritize by recency and priority
+    # Get active blood requests for the live feed - exclude deleted, cancelled, fulfilled, expired
     blood_requests = BloodRequest.objects.filter(
-        status__in=['active', 'approved', 'pending']
+        status__in=['active', 'approved', 'pending', 'partially_fulfilled']
     ).order_by(
         '-created_at'
     )[:20]

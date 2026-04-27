@@ -28,12 +28,11 @@ urlpatterns = [
     # API Endpoints
     path("api/", include(('blood_requests_app.api_urls', 'blood_requests_api'), namespace='blood_requests_api')),
     
-    # Frontend pages - UNIFIED REQUEST CREATION (NEW)
+    # Frontend pages - ORIGINAL TRACK BLOOD REQUEST DASHBOARD (RESTORED)
     path("", views.create_request_unified_page, name="blood-request-create-page"),
     path("create/", views.create_request_unified_page, name="blood-request-create-unified"),
+    path("track/<int:request_id>/", views.track_request_dashboard, name="track-request"),
     path("track/", views.track_request_dashboard, name="track-request-dashboard"),
-    path("track-enhanced/", enhanced_views.enhanced_dashboard_view, name="track-request-enhanced"),
-    path("track-zomato/<int:request_id>/", views.track_request_zomato, name="track-request-zomato"),
     path("manage/<int:request_id>/", views.manage_request, name="manage-request"),
     path("my-requests/", views.my_requests_page, name="my-blood-requests"),
     
@@ -101,9 +100,6 @@ urlpatterns = [
     
     # Donor GPS Location Sharing
     path('donor/<int:response_id>/share-location/', views.donor_gps_sender, name='donor-gps-sender'),
-    
-    # Zomato-style tracking
-    path('track-zomato/<int:request_id>/', views.track_request_zomato, name='track-request-zomato'),
     
     # Donor location and availability
     path("donor/location/", views_api.UpdateDonorLocationView.as_view(), name='donor-location'),
