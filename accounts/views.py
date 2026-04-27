@@ -1024,7 +1024,7 @@ def register_with_otp(request):
         return render(request, 'accounts/register.html', {'captcha_form': captcha_form})
     
     elif request.method == 'POST':
-        # Validate CAPTCHA first - Made lenient to avoid blocking users
+        # Validate CAPTCHA first
         captcha_form = None
         if 'captcha' in settings.INSTALLED_APPS:
             try:
@@ -1035,15 +1035,13 @@ def register_with_otp(request):
                 captcha_form = CaptchaForm(request.POST or None)
                 
                 if captcha_form and not captcha_form.is_valid():
-                    logger.warning('CAPTCHA validation failed during registration, but allowing to proceed')
-                    # Log the specific errors for debugging
-                    logger.debug(f'CAPTCHA errors: {captcha_form.errors}')
-                    # Don't block registration, just log the warning
+                    logger.warning(f'CAPTCHA validation failed during registration: {captcha_form.errors}')
+                    return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA. Please try again.'})
                 else:
                     logger.info('CAPTCHA validation successful during registration')
             except Exception as e:
-                logger.warning(f'CAPTCHA form error: {str(e)}')
-                # Continue without captcha validation
+                logger.error(f'CAPTCHA form error: {str(e)}')
+                return JsonResponse({'success': False, 'message': 'CAPTCHA validation error. Please try again.'})
         
         # Verify OTP and complete registration
         email = request.POST.get('email')
