@@ -252,7 +252,7 @@ def donor_profile(request, user_id):
 
         # Get donation history for timeline - optimized with only()
         donation_history = DonorHistory.objects.filter(donor=donor).order_by('-donation_date').only(
-            'donation_date', 'location', 'notes'
+            'donation_date', 'hospital', 'city', 'notes', 'donation_type', 'is_successful'
         )[:10]
 
         # Calculate days since last donation
