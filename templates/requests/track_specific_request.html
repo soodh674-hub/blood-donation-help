@@ -4,7 +4,7 @@
 {% block title %}Track Request #{{ blood_request.id }} - BloodLife{% endblock %}
 
 {% block extra_css %}
-{% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:20.5937 center_lng=blood_request.longitude|default:78.9629 %}
+{% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:'20.5937' center_lng=blood_request.longitude|default:'78.9629' %}
 <meta name="csrf-token" content="{% csrf_token %}">
 <style>
     :root {
@@ -342,7 +342,7 @@
             <div class="info-card">
                 <h5><i class="bi bi-map me-2"></i>Location</h5>
                 <div class="map-container" style="height: 400px;">
-                    {% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:20.5937 center_lng=blood_request.longitude|default:78.9629 zoom=13 %}
+                    {% include 'components/openlayers_map.html' with map_id='request-map' center_lat=blood_request.latitude|default:'20.5937' center_lng=blood_request.longitude|default:'78.9629' zoom=13 %}
                 </div>
             </div>
         </div>
@@ -429,8 +429,8 @@
 <script>
 // Initialize OpenLayers map
 document.addEventListener('DOMContentLoaded', function() {
-    const lat = {{ blood_request.latitude|default:20.5937 }};
-    const lng = {{ blood_request.longitude|default:78.9629 }};
+    const lat = parseFloat('{{ blood_request.latitude|default:"20.5937" }}') || 20.5937;
+    const lng = parseFloat('{{ blood_request.longitude|default:"78.9629" }}') || 78.9629;
 
     if (lat && lng) {
         const map = initBloodLifeMap('request-map', {
