@@ -477,7 +477,7 @@ def delete_request_permanently(request, request_id):
                     'error': 'You can only delete your own requests'
                 }, status=403)
             messages.error(request, 'You can only delete your own requests')
-            return redirect('requests:my-requests')
+            return redirect('requests:my-blood-requests')
         
         # Check if request is in a state that can be deleted
         if blood_request.status in ['active', 'fulfilled']:
@@ -487,7 +487,7 @@ def delete_request_permanently(request, request_id):
                     'error': 'Cannot delete request that is active or fulfilled'
                 }, status=400)
             messages.error(request, 'Cannot delete request that is active or fulfilled')
-            return redirect('requests:my-requests')
+            return redirect('requests:my-blood-requests')
         
         # Delete the request
         request_id_str = str(blood_request.id)
@@ -501,7 +501,7 @@ def delete_request_permanently(request, request_id):
             })
         
         messages.success(request, 'Request deleted permanently')
-        return redirect('requests:my-requests')
+        return redirect('requests:my-blood-requests')
         
     except BloodRequest.DoesNotExist:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -510,7 +510,7 @@ def delete_request_permanently(request, request_id):
                 'error': 'Request not found'
             }, status=404)
         messages.error(request, 'Request not found')
-        return redirect('requests:my-requests')
+        return redirect('requests:my-blood-requests')
     except Exception as e:
         logger.error(f'Error deleting request: {str(e)}', exc_info=True)
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -519,7 +519,7 @@ def delete_request_permanently(request, request_id):
                 'error': 'An error occurred while deleting the request'
             }, status=500)
         messages.error(request, 'An error occurred while deleting the request')
-        return redirect('requests:my-requests')
+        return redirect('requests:my-blood-requests')
 
 
 def manage_request(request, request_id):
