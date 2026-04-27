@@ -179,7 +179,7 @@
         {% endif %}
 
         <!-- Cancel Request -->
-        {% if request.status in 'pending' or request.status == 'active' %}
+        {% if request.status == 'pending' or request.status == 'active' %}
         <div class="info-section mt-4">
             <h5 class="text-danger fw-bold mb-3">Danger Zone</h5>
             <p class="text-secondary mb-3">Cancel this blood request. This action cannot be undone.</p>
