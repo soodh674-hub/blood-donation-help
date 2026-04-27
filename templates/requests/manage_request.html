@@ -156,6 +156,28 @@
             </div>
         </div>
 
+        <!-- Complete Request -->
+        {% if request.status != 'fulfilled' and request.status != 'cancelled' %}
+        <div class="info-section mt-4">
+            <h5 class="text-success fw-bold mb-3">Complete Request</h5>
+            <p class="text-secondary mb-3">Mark this request as completed/fulfilled when blood has been successfully donated.</p>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="complete">
+                <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure this request has been fulfilled?')">
+                    <i class="bi bi-check-circle me-2"></i>Mark as Complete
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="info-section mt-4">
+            <p class="text-secondary mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                This request is already {{ request.get_status_display }}.
+            </p>
+        </div>
+        {% endif %}
+
         <!-- Cancel Request -->
         {% if request.status in 'pending' or request.status == 'active' %}
         <div class="info-section mt-4">

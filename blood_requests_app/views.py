@@ -606,8 +606,22 @@ def manage_request(request, request_id):
                 except ValueError:
                     from django.contrib import messages
                     messages.error(request, 'Invalid date format.')
+        
+        elif action == 'complete':
+            # Mark request as fulfilled/complete
+            if blood_request.status not in ['fulfilled', 'cancelled']:
+                blood_request.status = 'fulfilled'
+                blood_request.fulfilled_units = blood_request.required_units
+                blood_request.save()
+                from django.contrib import messages
+                messages.success(request, 'Request marked as complete! Blood donation fulfilled.')
+                
+                # TODO: Send notifications to all donors who accepted
+            else:
+                from django.contrib import messages
+                messages.error(request, 'Cannot complete a request that is already fulfilled or cancelled.')
 
-        return redirect('/requests/track/')
+        return redirect('requests:track-request-dashboard')
 
     context = {
         'request': blood_request,

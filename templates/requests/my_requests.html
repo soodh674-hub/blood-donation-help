@@ -3,153 +3,126 @@
 
 {% block title %}My Blood Requests - BloodLife{% endblock %}
 
-{% block extra_css %}
-<style>
-    .stats-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        transition: all 0.3s ease;
-    }
-    .stats-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-2px);
-    }
-    .filter-btn {
-        transition: all 0.2s ease;
-    }
-    .filter-btn.active {
-        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-        color: white !important;
-    }
-    .request-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        transition: all 0.3s ease;
-    }
-    .request-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container py-5" data-aos="fade-in" data-aos-duration="800">
-    <!-- Header -->
-    <div class="mb-5" data-aos="fade-down" data-aos-delay="100">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="display-5 fw-bold text-white mb-2">My Blood Requests</h1>
-                <p class="text-secondary">Track and manage your blood donation requests</p>
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-red-900/10 to-gray-900 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8 animate-on-scroll">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold text-white mb-2">My Blood Requests</h1>
+                    <p class="text-gray-400">Track and manage your blood donation requests</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{% url 'requests:track-request-dashboard' %}" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white/20">
+                        <i class="bi bi-graph-up me-1"></i>Track Dashboard
+                    </a>
+                    <a href="{% url 'requests:blood-request-create-unified' %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                        <i class="bi bi-plus-circle me-1"></i>Create Request
+                    </a>
+                </div>
             </div>
-            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light">
-                ← Back to Profile
-            </a>
         </div>
-    </div>
 
-    <!-- Stats Cards -->
-    <div class="row g-4 mb-5">
-        <div class="col-12 col-md-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="stats-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-on-scroll">
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-secondary small mb-1">Total Requests</p>
-                        <p class="display-6 fw-bold text-white" id="total-count">0</p>
+                        <p class="text-gray-400 text-sm">Total Requests</p>
+                        <p class="text-3xl font-bold text-white mt-1" id="total-count">0</p>
                     </div>
-                    <div class="bg-primary bg-opacity-10 rounded p-2">
-                        <i class="bi bi-journal-text text-primary fs-4"></i>
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Active</p>
+                        <p class="text-3xl font-bold text-green-400 mt-1" id="active-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Pending</p>
+                        <p class="text-3xl font-bold text-yellow-400 mt-1" id="pending-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Fulfilled</p>
+                        <p class="text-3xl font-bold text-purple-400 mt-1" id="fulfilled-count">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="stats-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-secondary small mb-1">Active</p>
-                        <p class="display-6 fw-bold text-success" id="active-count">0</p>
-                    </div>
-                    <div class="bg-success bg-opacity-10 rounded p-2">
-                        <i class="bi bi-check-circle text-success fs-4"></i>
-                    </div>
-                </div>
+        <!-- Filter Tabs -->
+        <div class="bg-white/5 backdrop-blur-lg rounded-xl p-4 mb-6 border border-white/10 animate-on-scroll">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterRequests('all')" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-red-500 text-white" data-filter="all">
+                    All Requests
+                </button>
+                <button onclick="filterRequests('active')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="active">
+                    Active
+                </button>
+                <button onclick="filterRequests('pending')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="pending">
+                    Pending
+                </button>
+                <button onclick="filterRequests('fulfilled')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="fulfilled">
+                    Fulfilled
+                </button>
+                <button onclick="filterRequests('cancelled')" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-white/10 text-gray-300 hover:bg-white/20" data-filter="cancelled">
+                    Cancelled
+                </button>
             </div>
         </div>
 
-        <div class="col-12 col-md-3" data-aos="fade-up" data-aos-delay="400">
-            <div class="stats-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-secondary small mb-1">Pending</p>
-                        <p class="display-6 fw-bold text-warning" id="pending-count">0</p>
-                    </div>
-                    <div class="bg-warning bg-opacity-10 rounded p-2">
-                        <i class="bi bi-clock text-warning fs-4"></i>
-                    </div>
-                </div>
-            </div>
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+            <p class="text-gray-400 mt-4">Loading your requests...</p>
         </div>
 
-        <div class="col-12 col-md-3" data-aos="fade-up" data-aos-delay="500">
-            <div class="stats-card p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-secondary small mb-1">Fulfilled</p>
-                        <p class="display-6 fw-bold text-info" id="fulfilled-count">0</p>
-                    </div>
-                    <div class="bg-info bg-opacity-10 rounded p-2">
-                        <i class="bi bi-check2 text-info fs-4"></i>
-                    </div>
-                </div>
-            </div>
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16 bg-white/5 backdrop-blur-lg rounded-xl border border-white/10">
+            <svg class="w-24 h-24 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-white mb-2">No Blood Requests Found</h3>
+            <p class="text-gray-400">You haven't created any blood requests yet.</p>
         </div>
-    </div>
 
-    <!-- Filter Tabs -->
-    <div class="stats-card p-3 mb-4" data-aos="fade-in" data-aos-delay="600">
-        <div class="d-flex flex-wrap gap-2">
-            <button onclick="filterRequests('all')" class="filter-btn active btn btn-sm btn-danger" data-filter="all">
-                All Requests
-            </button>
-            <button onclick="filterRequests('active')" class="filter-btn btn btn-sm btn-outline-light" data-filter="active">
-                Active
-            </button>
-            <button onclick="filterRequests('pending')" class="filter-btn btn btn-sm btn-outline-light" data-filter="pending">
-                Pending
-            </button>
-            <button onclick="filterRequests('fulfilled')" class="filter-btn btn btn-sm btn-outline-light" data-filter="fulfilled">
-                Fulfilled
-            </button>
-            <button onclick="filterRequests('cancelled')" class="filter-btn btn btn-sm btn-outline-light" data-filter="cancelled">
-                Cancelled
-            </button>
+        <!-- Requests List -->
+        <div id="requests-list" class="space-y-4 hidden">
+            <!-- Request cards will be dynamically inserted here -->
         </div>
-    </div>
-
-    <!-- Loading State -->
-    <div id="loading-state" class="text-center py-5">
-        <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="text-secondary mt-3">Loading your requests...</p>
-    </div>
-
-    <!-- Empty State -->
-    <div id="empty-state" class="hidden text-center py-5 stats-card">
-        <i class="bi bi-journal-x display-1 text-secondary mb-3"></i>
-        <h3 class="h4 text-white mb-2">No Blood Requests Found</h3>
-        <p class="text-secondary">You haven't created any blood requests yet.</p>
-    </div>
-
-    <!-- Requests List -->
-    <div id="requests-list" class="d-none">
-        <!-- Request cards will be dynamically inserted here -->
     </div>
 </div>
 
@@ -197,18 +170,20 @@ async function loadUserRequests() {
         updateStats();
         renderRequests();
         
-        loadingState.classList.add('d-none');
+        loadingState.classList.add('hidden');
         
         if (allRequests.length === 0) {
-            emptyState.classList.remove('d-none');
+            emptyState.classList.remove('hidden');
         } else {
-            requestsList.classList.remove('d-none');
+            requestsList.classList.remove('hidden');
         }
     } catch (error) {
         console.error('Error loading requests:', error);
         loadingState.innerHTML = `
-            <div class="text-danger">
-                <i class="bi bi-exclamation-triangle display-6 mb-2"></i>
+            <div class="text-red-400">
+                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
                 <p>Failed to load requests. Please refresh the page.</p>
             </div>
         `;
@@ -233,11 +208,11 @@ function filterRequests(filter) {
     // Update button styles
     document.querySelectorAll('.filter-btn').forEach(btn => {
         if (btn.dataset.filter === filter) {
-            btn.classList.remove('btn-outline-light');
-            btn.classList.add('btn-danger');
+            btn.classList.remove('bg-white/10', 'text-gray-300');
+            btn.classList.add('bg-red-500', 'text-white');
         } else {
-            btn.classList.remove('btn-danger');
-            btn.classList.add('btn-outline-light');
+            btn.classList.remove('bg-red-500', 'text-white');
+            btn.classList.add('bg-white/10', 'text-gray-300');
         }
     });
     
@@ -259,8 +234,8 @@ function renderRequests() {
 
     if (filteredRequests.length === 0) {
         requestsList.innerHTML = `
-            <div class="text-center py-5 stats-card">
-                <p class="text-secondary">No ${currentFilter} requests found</p>
+            <div class="text-center py-12 bg-white/5 rounded-xl border border-white/10">
+                <p class="text-gray-400">No ${currentFilter} requests found</p>
             </div>
         `;
         return;
@@ -271,23 +246,23 @@ function renderRequests() {
 
 function createRequestCard(request) {
     const statusColors = {
-        'pending': 'text-warning bg-warning bg-opacity-10',
-        'active': 'text-success bg-success bg-opacity-10',
-        'approved': 'text-success bg-success bg-opacity-10',
-        'fulfilled': 'text-info bg-info bg-opacity-10',
-        'completed': 'text-info bg-info bg-opacity-10',
-        'cancelled': 'text-danger bg-danger bg-opacity-10',
-        'rejected': 'text-secondary bg-secondary bg-opacity-10'
+        'pending': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+        'active': 'bg-green-500/20 text-green-400 border-green-500/30',
+        'approved': 'bg-green-500/20 text-green-400 border-green-500/30',
+        'fulfilled': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        'completed': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+        'cancelled': 'bg-red-500/20 text-red-400 border-red-500/30',
+        'rejected': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
     };
 
     const priorityColors = {
-        'emergency': 'text-white bg-danger',
-        'urgent': 'text-white bg-warning',
-        'normal': 'text-white bg-primary'
+        'emergency': 'bg-red-600 text-white',
+        'urgent': 'bg-orange-500 text-white',
+        'normal': 'bg-blue-500 text-white'
     };
 
-    const statusClass = statusColors[request.status] || 'text-secondary bg-secondary bg-opacity-10';
-    const priorityClass = priorityColors[request.priority] || 'text-white bg-primary';
+    const statusClass = statusColors[request.status] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    const priorityClass = priorityColors[request.priority] || 'bg-blue-500 text-white';
 
     const createdDate = new Date(request.created_at).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -305,83 +280,86 @@ function createRequestCard(request) {
 
     return `
         <div onclick="window.location.href='/requests/track/${request.id}/'" 
-             class="request-card p-4 mb-3 cursor-pointer" data-aos="fade-up" data-aos-duration="600">
-            <div class="row">
+             class="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-200 animate-on-scroll cursor-pointer group">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <!-- Left Section: Patient Info -->
-                <div class="col-lg-8">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="flex-1">
+                    <div class="flex items-start justify-between mb-4">
                         <div>
-                            <h5 class="text-white mb-1">${request.patient_name}</h5>
-                            <p class="text-secondary small">Request #${request.id} • Click to view details →</p>
+                            <h3 class="text-xl font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">${request.patient_name}</h3>
+                            <p class="text-gray-400 text-sm">Request #${request.id} • Click to view details →</p>
                         </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge rounded-pill ${statusClass}">
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium border ${statusClass}">
                                 ${request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                             </span>
-                            <span class="badge rounded-pill ${priorityClass}">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${priorityClass}">
                                 ${request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
                             </span>
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-6 col-md-3">
-                            <p class="text-secondary small mb-1">Blood Group</p>
-                            <p class="text-danger fw-bold">${request.patient_blood_group}</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Blood Group</p>
+                            <p class="text-red-400 font-semibold text-lg">${request.patient_blood_group}</p>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <p class="text-secondary small mb-1">Units Needed</p>
-                            <p class="text-white fw-bold">${request.required_units}</p>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Units Needed</p>
+                            <p class="text-white font-semibold">${request.required_units}</p>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <p class="text-secondary small mb-1">Patient Age</p>
-                            <p class="text-white fw-bold">${request.patient_age} years</p>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Patient Age</p>
+                            <p class="text-white font-semibold">${request.patient_age} years</p>
                         </div>
-                        <div class="col-6 col-md-3">
-                            <p class="text-secondary small mb-1">Required By</p>
-                            <p class="text-white small">${requiredByDate}</p>
+                        <div>
+                            <p class="text-gray-500 text-xs mb-1">Required By</p>
+                            <p class="text-white font-semibold text-sm">${requiredByDate}</p>
                         </div>
                     </div>
 
-                    <div class="mb-2">
-                        <div class="d-flex gap-2">
-                            <i class="bi bi-building text-secondary"></i>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
                             <div>
-                                <p class="text-secondary small mb-0">Hospital</p>
-                                <p class="text-white small mb-0">${request.hospital_name || 'Not specified'}</p>
+                                <p class="text-gray-500 text-xs">Hospital</p>
+                                <p class="text-white text-sm">${request.hospital_name || 'Not specified'}</p>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <div class="d-flex gap-2">
-                            <i class="bi bi-geo-alt text-secondary"></i>
+                        
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
                             <div>
-                                <p class="text-secondary small mb-0">Location</p>
-                                <p class="text-white small mb-0">${request.city || 'Not specified'}, ${request.state || ''}</p>
+                                <p class="text-gray-500 text-xs">Location</p>
+                                <p class="text-white text-sm">${request.city || 'Not specified'}, ${request.state || ''}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Section: Contact & Timeline -->
-                <div class="col-lg-4">
-                    <div class="bg-white bg-opacity-5 rounded p-3 mb-3">
-                        <p class="text-secondary small mb-2">Contact Person</p>
-                        <p class="text-white fw-medium mb-0">${request.contact_person || 'Not provided'}</p>
-                        <p class="text-secondary small mb-0">${request.contact_phone || 'No phone'}</p>
-                        ${request.contact_email ? `<p class="text-secondary small mb-0">${request.contact_email}</p>` : ''}
+                <div class="lg:w-80 space-y-4">
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Contact Person</p>
+                        <p class="text-white font-medium">${request.contact_person || 'Not provided'}</p>
+                        <p class="text-gray-400 text-sm">${request.contact_phone || 'No phone'}</p>
+                        ${request.contact_email ? `<p class="text-gray-400 text-sm">${request.contact_email}</p>` : ''}
                     </div>
 
-                    <div class="bg-white bg-opacity-5 rounded p-3 mb-3">
-                        <p class="text-secondary small mb-2">Created On</p>
-                        <p class="text-white small mb-0">${createdDate}</p>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Created On</p>
+                        <p class="text-white text-sm">${createdDate}</p>
                     </div>
 
                     ${request.reason ? `
-                    <div class="bg-white bg-opacity-5 rounded p-3">
-                        <p class="text-secondary small mb-2">Reason</p>
-                        <p class="text-white small mb-0">${request.reason}</p>
+                    <div class="bg-white/5 rounded-lg p-4">
+                        <p class="text-gray-500 text-xs mb-2">Reason</p>
+                        <p class="text-white text-sm">${request.reason}</p>
                     </div>
                     ` : ''}
                 </div>
@@ -398,16 +376,5 @@ function getCSRFToken() {
         ?.split('=')[1];
     return cookieValue || '';
 }
-
-// Initialize AOS
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true
-        });
-    }
-});
 </script>
 {% endblock %}
