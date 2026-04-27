@@ -34,8 +34,8 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-90 translate-y-4"
-         class="position-absolute bottom-100 start-0 mb-2 w-100" 
-         style="max-width: 384px; background: #111827; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;"
+         class="position-absolute bottom-100 start-0 mb-2 chatbot-window"
+         style="background: #111827; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;"
          @click.away="isOpen = false"
          data-aos="fade-up"
          data-aos-duration="600">
@@ -439,11 +439,21 @@ function aiChatbot() {
     z-index: 1060 !important;
 }
 
-/* Responsive spacing for different screen sizes */
+/* Chatbot window responsive width */
+.chatbot-window {
+    width: 380px !important;
+    max-width: 90vw !important;
+}
+
+/* Responsive spacing and sizing for different screen sizes */
 @media (min-width: 768px) and (max-width: 1023px) {
     #ai-chatbot {
         bottom: 20px !important;
         left: 20px !important;
+    }
+    .chatbot-window {
+        width: 400px !important;
+        max-width: 85vw !important;
     }
 }
 
@@ -452,12 +462,28 @@ function aiChatbot() {
         bottom: 24px !important;
         left: 24px !important;
     }
+    .chatbot-window {
+        width: 450px !important;
+        max-width: 80vw !important;
+    }
 }
 
 @media (min-width: 1440px) {
     #ai-chatbot {
         bottom: 32px !important;
         left: 32px !important;
+    }
+    .chatbot-window {
+        width: 500px !important;
+        max-width: 75vw !important;
+    }
+}
+
+/* Extra large screens */
+@media (min-width: 1920px) {
+    .chatbot-window {
+        width: 550px !important;
+        max-width: 70vw !important;
     }
 }
 </style>
