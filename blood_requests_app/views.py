@@ -585,9 +585,6 @@ def manage_request(request, request_id):
     """
     Manage individual blood request (cancel, update, etc.)
     """
-    from django.shortcuts import redirect
-    from django.contrib import messages
-    
     if not request.user.is_authenticated:
         return redirect('/accounts/login/?next=/requests/manage/{}/'.format(request_id))
 
