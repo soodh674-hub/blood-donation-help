@@ -448,7 +448,7 @@
                 <!-- Map Picker (Hidden by default) -->
                 <div id="map-picker-container" class="mb-3 d-none">
                     <div class="map-container-wrapper">
-                        <div id="location-picker-map"></div>
+                        {% include 'components/openlayers_map.html' with map_id='location-picker-map' center_lat=20.5937 center_lng=78.9629 zoom=5 %}
                     </div>
                     <div class="d-flex gap-2 mt-2">
                         <button type="button" class="btn btn-outline-light btn-sm" onclick="useCurrentLocation()">
@@ -983,72 +983,60 @@ function initMapPicker() {
         return;
     }
     
-    mapPicker = L.map('location-picker-map', {
+    // Initialize OpenLayers map
+    mapPicker = initBloodLifeMap('location-picker-map', {
         center: [defaultLat, defaultLng],
-        zoom: 5,
-        zoomControl: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        dragging: true,
-        keyboard: true
+        zoom: 5
     });
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(mapPicker);
-    
-    // Add location control for auto-detect
-    const locateControl = L.control.locate({
-        position: 'topleft',
-        flyTo: true,
-        keepCurrentZoomLevel: true,
-        showUserLocation: true,
-        locateOptions: {
-            enableHighAccuracy: true,
-            maxZoom: 16,
-            timeout: 10000,
-            maximumAge: 0
-        }
-    }).addTo(mapPicker);
-    
-    // Handle location events
-    mapPicker.on('locationfound', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
+    // Auto-detect location when map opens
+    mapPicker.getUserLocation().then(function(coords) {
+        const lat = coords.latitude;
+        const lng = coords.longitude;
         
-        if (mapMarker) {
-            mapMarker.setLatLng([lat, lng]);
-        } else {
-            mapMarker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(mapPicker);
-        }
+        // Add draggable marker
+        mapPicker.addMarker(lat, lng, {
+            type: 'user',
+            popupContent: 'Drag to set location',
+            title: 'Your Location',
+            draggable: true,
+            onDragEnd: function(newLat, newLng) {
+                updateCoordinates(newLat, newLng);
+                reverseGeocodeLocation(newLat, newLng);
+            }
+        });
         
         // Update coordinates
         updateCoordinates(lat, lng);
         
         // Show success message
         showLocationMessage('Location detected successfully!', 'success');
-    });
-    
-    mapPicker.on('locationerror', function(e) {
-        console.error('Location error:', e.message);
-        showLocationMessage('Unable to detect location. Please enable location permissions.', 'error');
+    }).catch(function(error) {
+        console.error('Location error:', error);
+        showLocationMessage('Unable to detect location. Please click on the map.', 'error');
     });
     
     // Click handler
-    mapPicker.on('click', async function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
+    mapPicker.map.on('singleclick', async function(e) {
+        const coordinate = e.coordinate;
+        const lngLat = ol.proj.toLonLat(coordinate);
+        const lat = lngLat[1];
+        const lng = lngLat[0];
         
-        // Add or update marker
-        if (mapMarker) {
-            mapMarker.setLatLng([lat, lng]);
-        } else {
-            mapMarker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(mapPicker);
-        }
+        // Clear existing markers
+        mapPicker.markerLayer.getSource().clear();
+        
+        // Add new marker
+        mapPicker.addMarker(lat, lng, {
+            type: 'user',
+            popupContent: 'Drag to set location',
+            title: 'Selected Location',
+            draggable: true,
+            onDragEnd: function(newLat, newLng) {
+                updateCoordinates(newLat, newLng);
+                reverseGeocodeLocation(newLat, newLng);
+            }
+        });
         
         // Update coordinates
         updateCoordinates(lat, lng);
@@ -1068,22 +1056,30 @@ function initMapPicker() {
                 document.getElementById('state').value = address.state || '';
                 document.getElementById('pincode').value = address.pincode || '';
                 
-                mapMarker.bindPopup(address.display_name).openPopup();
+                mapPicker.addMarker(lat, lng, {
+                    type: 'user',
+                    popupContent: address.display_name,
+                    title: 'Selected Location',
+                    draggable: true,
+                    onDragEnd: function(newLat, newLng) {
+                        updateCoordinates(newLat, newLng);
+                        reverseGeocodeLocation(newLat, newLng);
+                    }
+                });
             }
         } catch (error) {
             console.error('Error reverse geocoding:', error);
-            mapMarker.bindPopup(`Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`).openPopup();
+            mapPicker.addMarker(lat, lng, {
+                type: 'user',
+                popupContent: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`,
+                title: 'Selected Location',
+                draggable: true,
+                onDragEnd: function(newLat, newLng) {
+                    updateCoordinates(newLat, newLng);
+                    reverseGeocodeLocation(newLat, newLng);
+                }
+            });
         }
-    });
-    
-    // Add dragend event to update coordinates when marker is dragged
-    mapMarker.on('dragend', function(e) {
-        const lat = e.target.getLatLng().lat;
-        const lng = e.target.getLatLng().lng;
-        updateCoordinates(lat, lng);
-        
-        // Reverse geocode after drag
-        reverseGeocodeLocation(lat, lng);
     });
 }
 
@@ -1101,9 +1097,18 @@ async function reverseGeocodeLocation(lat, lng) {
             document.getElementById('state').value = address.state || '';
             document.getElementById('pincode').value = address.pincode || '';
             
-            if (mapMarker) {
-                mapMarker.bindPopup(address.display_name).openPopup();
-            }
+            // Update marker popup
+            mapPicker.markerLayer.getSource().clear();
+            mapPicker.addMarker(lat, lng, {
+                type: 'user',
+                popupContent: address.display_name,
+                title: 'Selected Location',
+                draggable: true,
+                onDragEnd: function(newLat, newLng) {
+                    updateCoordinates(newLat, newLng);
+                    reverseGeocodeLocation(newLat, newLng);
+                }
+            });
         }
     } catch (error) {
         console.error('Error reverse geocoding:', error);
