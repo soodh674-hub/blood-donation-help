@@ -207,16 +207,36 @@ class BloodRequestWorkflow:
             )
             blood_request.save()
         
-        # Notify requester that donor accepted
+        # Notify requester that donor accepted with precise location
         try:
             from notifications.models import Notification
+            
+            # Get donor's location if available
+            location_info = ""
+            if donor.latitude and donor.longitude:
+                location_info = f" Donor is located at ({donor.latitude}, {donor.longitude})."
+            
+            notification_message = (
+                f'{donor.get_full_name() or donor.username} has accepted your blood request for {blood_request.patient_name}. '
+                f'Blood Group: {donor.blood_group or "Not specified"}.'
+                f'{location_info}'
+                f' You can now coordinate the donation and track their location in real-time on the map.'
+            )
+            
             Notification.objects.create(
                 user=blood_request.requester,
                 notification_type='donor_response',
-                title=f'✅ Donor Accepted Your Request',
-                message=f'{donor.get_full_name() or donor.username} has accepted your blood request for {blood_request.patient_name}. You can now coordinate the donation.',
+                title=f'✅ Donor Accepted Your Request - {blood_request.patient_blood_group}',
+                message=notification_message,
                 related_request=blood_request,
-                priority='high'
+                priority='high',
+                extra_data={
+                    'donor_id': donor.id,
+                    'donor_name': donor.get_full_name() or donor.username,
+                    'donor_blood_group': donor.blood_group,
+                    'donor_latitude': str(donor.latitude) if donor.latitude else None,
+                    'donor_longitude': str(donor.longitude) if donor.longitude else None,
+                }
             )
         except Exception as e:
             logger.error(f"Failed to notify requester: {str(e)}")

@@ -34,6 +34,7 @@ urlpatterns = [
     path("track/<int:request_id>/", views.track_request_dashboard, name="track-request"),
     path("track/", views.track_request_dashboard, name="track-request-dashboard"),
     path("manage/<int:request_id>/", views.manage_request, name="manage-request"),
+    path("manage/bulk-delete/", views.bulk_delete_requests, name="bulk-delete-requests"),
     path("my-requests/", views.my_requests_page, name="my-blood-requests"),
     
     # OLD create request page (kept for backward compatibility)

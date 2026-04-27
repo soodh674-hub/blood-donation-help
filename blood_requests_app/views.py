@@ -218,44 +218,39 @@ def create_request_unified_page(request):
                 blood_request = serializer.save(requester=request.user)
                 logger.info(f'Blood request created by user: {request.user.id}')
 
-                # Stage 2: Multi-stage verification process
+                # Stage 2: Multi-stage verification process - ALL requests must be verified
                 priority = blood_request.priority
                 
+                # ALL requests go through verification first (privacy & security)
+                blood_request.status = 'pending_verification'
+                blood_request.verification_status = 'pending'
+                blood_request.save()
+                logger.info(f'Stage 2: Request {blood_request.id} requires verification before broadcasting')
+                
+                # Notify admins for verification
+                try:
+                    from django.contrib.auth import get_user_model
+                    User = get_user_model()
+                    admin_users = User.objects.filter(is_staff=True)
+                    
+                    from notifications.models import Notification
+                    for admin in admin_users:
+                        Notification.objects.create(
+                            user=admin,
+                            request=blood_request,
+                            notification_type='admin_verification_required',
+                            title=f'Verification Required: {priority.upper()} Blood Request',
+                            message=f'New {priority} priority blood request requires your approval. Patient: {blood_request.patient_name}, Blood Group: {blood_request.patient_blood_group}, Hospital: {blood_request.hospital_name}. Once approved, it will be sent to compatible {blood_request.patient_blood_group} donors only.'
+                        )
+                    logger.info(f'Notified {admin_users.count()} admins for verification')
+                except Exception as admin_error:
+                    logger.error(f'Failed to notify admins: {str(admin_error)}')
+                
+                from django.contrib import messages
                 if priority in ['emergency', 'high']:
-                    # High priority requests require admin approval
-                    blood_request.status = 'pending_verification'
-                    blood_request.save()
-                    logger.info(f'Stage 2: High/emergency request {blood_request.id} requires admin approval')
-                    
-                    # Notify admins for verification
-                    try:
-                        from django.contrib.auth import get_user_model
-                        User = get_user_model()
-                        admin_users = User.objects.filter(is_staff=True)
-                        
-                        from notifications.models import Notification
-                        for admin in admin_users:
-                            Notification.objects.create(
-                                user=admin,
-                                request=blood_request,
-                                notification_type='admin_verification_required',
-                                title=f'Verification Required: {priority.upper()} Blood Request',
-                                message=f'New {priority} priority blood request requires your approval. Patient: {blood_request.patient_name}, Hospital: {blood_request.hospital_name}'
-                            )
-                        logger.info(f'Notified {admin_users.count()} admins for verification')
-                    except Exception as admin_error:
-                        logger.error(f'Failed to notify admins: {str(admin_error)}')
-                    
-                    from django.contrib import messages
-                    messages.success(request, 'Blood request created successfully! It will be reviewed by admin within 30 minutes due to high priority.')
+                    messages.success(request, 'Blood request created successfully! It will be reviewed by admin within 30 minutes due to high priority. Once approved, it will be sent to compatible donors.')
                 else:
-                    # Normal/low priority requests go through automatic verification
-                    blood_request.status = 'pending'
-                    blood_request.save()
-                    logger.info(f'Stage 2: Normal priority request {blood_request.id} marked as pending')
-                    
-                    from django.contrib import messages
-                    messages.success(request, 'Blood request created successfully! It will be activated shortly.')
+                    messages.success(request, 'Blood request created successfully! It will be verified and activated shortly. Once approved, it will be sent to compatible donors.')
 
                 # Stage 3: Medical certificate verification (if provided)
                 medical_certificate = request.FILES.get('medical_certificate')
@@ -263,23 +258,9 @@ def create_request_unified_page(request):
                     logger.info(f'Stage 3: Medical certificate uploaded for request {blood_request.id}')
                     # Certificate will be reviewed during admin verification
 
-                # Stage 4: Send notifications (only for approved/pending requests)
-                if blood_request.status in ['pending', 'active']:
-                    try:
-                        from notifications.services import BloodRequestNotificationService
-                        notification_service = BloodRequestNotificationService()
-
-                        if blood_request.priority == 'emergency':
-                            notifications_sent = notification_service.send_emergency_notification(blood_request)
-                        else:
-                            notifications_sent = notification_service.send_blood_request_notification(
-                                blood_request,
-                                limit=50
-                            )
-
-                        logger.info(f'Stage 4: Sent {notifications_sent} notifications for request {blood_request.id}')
-                    except Exception as notif_error:
-                        logger.error(f'Failed to send notifications: {str(notif_error)}', exc_info=True)
+                # Stage 4: Notifications will be sent AFTER admin verification approves the request
+                # No immediate notification - wait for verification approval
+                logger.info(f'Stage 4: Request {blood_request.id} waiting for verification approval before broadcasting to donors')
                 
                 # Redirect to success
                 from django.shortcuts import redirect
@@ -631,14 +612,39 @@ def manage_request(request, request_id):
                     messages.error(request, 'Invalid date format.')
         
         elif action == 'complete':
-            # Mark request as fulfilled/complete
+            # Mark request as fulfilled and delete from database
             if blood_request.status not in ['fulfilled', 'cancelled']:
-                blood_request.status = 'fulfilled'
-                blood_request.fulfilled_units = blood_request.required_units
-                blood_request.save()
-                messages.success(request, 'Request marked as complete! Blood donation fulfilled.')
+                # Send final notifications to all participating donors
+                try:
+                    from notifications.models import Notification
+                    from .models import RequestResponse
+                    
+                    participating_donors = RequestResponse.objects.filter(
+                        request=blood_request,
+                        status__in=['donated', 'en_route', 'arrived']
+                    ).select_related('donor')
+                    
+                    for response in participating_donors:
+                        Notification.objects.create(
+                            user=response.donor,
+                            notification_type='request_completed',
+                            title='✅ Blood Request Completed',
+                            message=f'The blood request for {blood_request.patient_name} has been completed. Thank you for your contribution!',
+                            related_request=blood_request,
+                            priority='medium'
+                        )
+                except Exception as notif_error:
+                    logger.error(f'Failed to send completion notifications: {str(notif_error)}')
                 
-                # TODO: Send notifications to all donors who accepted
+                # Delete the request from database
+                request_id_to_log = blood_request.id
+                blood_request.delete()
+                
+                messages.success(request, 'Request marked as complete and removed from the system. All participating donors have been notified.')
+                logger.info(f'Request #{request_id_to_log} completed and deleted by user {request.user.id}')
+                
+                # Redirect to track request dashboard
+                return redirect('requests:track-request-dashboard')
             else:
                 messages.error(request, 'Cannot complete a request that is already fulfilled or cancelled.')
 
@@ -648,6 +654,70 @@ def manage_request(request, request_id):
         'request': blood_request,
     }
     return render(request, 'requests/manage_request.html', context)
+
+
+@login_required
+def bulk_delete_requests(request):
+    """
+    Delete multiple blood requests at once
+    Only allows deletion of user's own requests
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        import json
+        data = json.loads(request.body)
+        request_ids = data.get('request_ids', [])
+        
+        if not request_ids:
+            return JsonResponse({'error': 'No request IDs provided'}, status=400)
+        
+        # Only delete user's own requests
+        user_requests = BloodRequest.objects.filter(
+            id__in=request_ids,
+            requester=request.user
+        )
+        
+        deleted_count = user_requests.count()
+        
+        # Send notifications to participating donors before deletion
+        try:
+            from notifications.models import Notification
+            from .models import RequestResponse
+            
+            for blood_request in user_requests:
+                participating_donors = RequestResponse.objects.filter(
+                    request=blood_request,
+                    status__in=['donated', 'en_route', 'arrived']
+                ).select_related('donor')
+                
+                for response in participating_donors:
+                    Notification.objects.create(
+                        user=response.donor,
+                        notification_type='request_deleted',
+                        title='🗑️ Blood Request Removed',
+                        message=f'The blood request for {blood_request.patient_name} has been removed from the system.',
+                        related_request=blood_request,
+                        priority='low'
+                    )
+        except Exception as notif_error:
+            logger.error(f'Failed to send deletion notifications: {str(notif_error)}')
+        
+        # Delete all requests
+        user_requests.delete()
+        
+        logger.info(f'Bulk deleted {deleted_count} requests by user {request.user.id}')
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully deleted {deleted_count} request(s)',
+            'deleted_count': deleted_count
+        })
+        
+    except Exception as e:
+        logger.error(f'Error in bulk delete: {str(e)}', exc_info=True)
+        return JsonResponse({'error': 'Failed to delete requests'}, status=500)
 
 
 class BloodRequestCreateView(generics.CreateAPIView):

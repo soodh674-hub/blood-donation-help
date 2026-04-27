@@ -108,26 +108,40 @@ class BloodRequestNotificationService:
         """
         Get list of donors who can donate to a patient with given blood group
         Returns queryset of compatible users
+        
+        Blood Type Compatibility (DONOR -> PATIENT):
+        - B+ patient can receive from: B+, B-
+        - O- patient can receive from: O- only
+        - AB+ patient can receive from: ALL types (universal recipient)
+        - O+ patient can receive from: O+, O-
         """
         if not patient_blood_group or patient_blood_group not in cls.BLOOD_COMPATIBILITY:
+            logger.warning(f'Invalid patient blood group: {patient_blood_group}')
             return User.objects.none()
         
         # Get compatible blood groups (reverse lookup)
+        # The BLOOD_COMPATIBILITY dict shows: DONOR -> [can donate to these]
+        # We need reverse: PATIENT <- [can receive from these donors]
         compatible_groups = []
         for donor_group, compatible_recipients in cls.BLOOD_COMPATIBILITY.items():
             if patient_blood_group in compatible_recipients:
                 compatible_groups.append(donor_group)
         
-        logger.info(f'Compatible blood groups for {patient_blood_group}: {compatible_groups}')
+        logger.info(f'Patient blood group: {patient_blood_group}')
+        logger.info(f'Compatible DONOR blood groups (can donate to {patient_blood_group}): {compatible_groups}')
+        logger.info(f'Example: B+ request will notify donors with blood groups: {[g for g in compatible_groups if g in ["B+", "B-"]]}')
         
         # Find donors with compatible blood groups who are available
         compatible_donors = User.objects.filter(
             blood_group__in=compatible_groups,
             user_type='donor',
-            is_active=True
+            is_active=True,
+            is_verified=True  # Only verified donors
         ).exclude(
             Q(phone_number__isnull=True) | Q(phone_number='')
         )
+        
+        logger.info(f'Found {compatible_donors.count()} compatible donors for {patient_blood_group}')
         
         return compatible_donors
     

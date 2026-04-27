@@ -1,0 +1,400 @@
+{% load static %}
+<!-- 
+    OpenLayers Map Component for BloodLife
+    Replaces Leaflet with OpenLayers for better performance and features
+    Usage: Include this component and pass map_id, center_lat, center_lng, markers
+-->
+
+<!-- OpenLayers CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css">
+
+<style>
+    .openlayers-map-container {
+        width: 100%;
+        height: 400px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+    
+    .openlayers-map {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .map-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 12px;
+    }
+    
+    .marker-hospital {
+        background: #ef4444;
+        animation: pulse 2s infinite;
+    }
+    
+    .marker-donor {
+        background: #10b981;
+    }
+    
+    .marker-user {
+        background: #3b82f6;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+    }
+    
+    .ol-popup {
+        position: absolute;
+        background-color: white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #cccccc;
+        bottom: 12px;
+        left: -50px;
+        min-width: 200px;
+    }
+    
+    .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+    
+    .ol-popup:after {
+        border-top-color: white;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+    }
+    
+    .ol-popup:before {
+        border-top-color: #cccccc;
+        border-width: 11px;
+        left: 48px;
+        margin-left: -11px;
+    }
+    
+    .ol-popup-closer {
+        text-decoration: none;
+        position: absolute;
+        top: 2px;
+        right: 8px;
+        font-size: 20px;
+        color: #999;
+    }
+    
+    .ol-popup-closer:after {
+        content: "✖";
+    }
+    
+    .map-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .map-control-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.2s;
+    }
+    
+    .map-control-btn:hover {
+        background: #f3f4f6;
+        transform: scale(1.05);
+    }
+</style>
+
+<!-- Map Container -->
+<div id="{{ map_id|default:'map' }}-container" class="openlayers-map-container">
+    <div id="{{ map_id|default:'map' }}" class="openlayers-map"></div>
+    
+    <!-- Map Controls -->
+    <div class="map-controls">
+        <button class="map-control-btn" onclick="zoomIn('{{ map_id|default:'map' }}')" title="Zoom In">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+        <button class="map-control-btn" onclick="zoomOut('{{ map_id|default:'map' }}')" title="Zoom Out">
+            <i class="bi bi-dash-lg"></i>
+        </button>
+        <button class="map-control-btn" onclick="locateUser('{{ map_id|default:'map' }}')" title="My Location">
+            <i class="bi bi-geo"></i>
+        </button>
+    </div>
+    
+    <!-- Popup Container -->
+    <div id="{{ map_id|default:'map' }}-popup" class="ol-popup">
+        <a href="#" id="{{ map_id|default:'map' }}-popup-closer" class="ol-popup-closer"></a>
+        <div id="{{ map_id|default:'map' }}-popup-content"></div>
+    </div>
+</div>
+
+<!-- OpenLayers JS -->
+<script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
+
+<script>
+// OpenLayers Map Manager
+class BloodLifeMap {
+    constructor(mapId, options = {}) {
+        this.mapId = mapId;
+        this.map = null;
+        this.markerLayer = null;
+        this.userLocation = null;
+        this.markers = [];
+        
+        this.defaultCenter = options.center || [20.5937, 78.9629]; // India center
+        this.defaultZoom = options.zoom || 13;
+        
+        this.init();
+    }
+    
+    init() {
+        // Create marker layer
+        this.markerLayer = new ol.layer.Vector({
+            source: new ol.source.Vector(),
+            style: this.createMarkerStyle()
+        });
+        
+        // Initialize map
+        this.map = new ol.Map({
+            target: this.mapId,
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                }),
+                this.markerLayer
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([this.defaultCenter[1], this.defaultCenter[0]]),
+                zoom: this.defaultZoom
+            }),
+            controls: ol.control.defaults.defaults().extend([
+                new ol.control.ScaleLine(),
+                new ol.control.FullScreen()
+            ])
+        });
+        
+        // Setup popup
+        this.setupPopup();
+        
+        console.log(`✅ OpenLayers map initialized: ${this.mapId}`);
+    }
+    
+    setupPopup() {
+        const container = document.getElementById(`${this.mapId}-popup`);
+        const closer = document.getElementById(`${this.mapId}-popup-closer`);
+        
+        if (container && closer) {
+            const popup = new ol.Overlay({
+                element: container,
+                positioning: 'bottom-center',
+                stopEvent: false
+            });
+            
+            this.map.addOverlay(popup);
+            
+            closer.onclick = () => {
+                popup.setPosition(undefined);
+                closer.blur();
+                return false;
+            };
+            
+            // Show popup on click
+            this.map.on('click', (evt) => {
+                const feature = this.map.forEachFeatureAtPixel(evt.pixel, (feature) => feature);
+                if (feature) {
+                    const coordinates = feature.getGeometry().getCoordinates();
+                    popup.setPosition(coordinates);
+                    
+                    const content = feature.get('popupContent');
+                    if (content) {
+                        document.getElementById(`${this.mapId}-popup-content`).innerHTML = content;
+                    }
+                }
+            });
+        }
+    }
+    
+    createMarkerStyle() {
+        return function(feature) {
+            const type = feature.get('type') || 'default';
+            let color = '#3b82f6';
+            
+            if (type === 'hospital') color = '#ef4444';
+            else if (type === 'donor') color = '#10b981';
+            else if (type === 'user') color = '#3b82f6';
+            
+            return new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 10,
+                    fill: new ol.style.Fill({ color: color }),
+                    stroke: new ol.style.Stroke({
+                        color: '#fff',
+                        width: 3
+                    })
+                })
+            });
+        };
+    }
+    
+    addMarker(lat, lng, options = {}) {
+        const { type = 'default', popupContent = '', title = '' } = options;
+        
+        const marker = new ol.Feature({
+            geometry: new ol.Point(ol.proj.fromLonLat([lng, lat])),
+            type: type,
+            popupContent: popupContent,
+            title: title
+        });
+        
+        this.markerLayer.getSource().addFeature(marker);
+        this.markers.push(marker);
+        
+        console.log(`📍 Marker added: ${lat}, ${lng} (${type})`);
+        return marker;
+    }
+    
+    addUserLocation(lat, lng) {
+        this.userLocation = [lat, lng];
+        this.addMarker(lat, lng, {
+            type: 'user',
+            popupContent: `<strong>Your Location</strong><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`,
+            title: 'Your Location'
+        });
+    }
+    
+    addHospitalMarker(lat, lng, hospitalName, address = '') {
+        this.addMarker(lat, lng, {
+            type: 'hospital',
+            popupContent: `
+                <strong>${hospitalName}</strong><br>
+                ${address}<br>
+                <small>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</small>
+            `,
+            title: hospitalName
+        });
+    }
+    
+    addDonorMarker(lat, lng, donorName, status = '') {
+        this.addMarker(lat, lng, {
+            type: 'donor',
+            popupContent: `
+                <strong>${donorName}</strong><br>
+                Status: ${status || 'En route'}<br>
+                <small>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</small>
+            `,
+            title: donorName
+        });
+    }
+    
+    fitToMarkers() {
+        if (this.markers.length > 0) {
+            const source = this.markerLayer.getSource();
+            this.map.getView().fit(source.getExtent(), {
+                padding: [50, 50, 50, 50],
+                maxZoom: 16
+            });
+        }
+    }
+    
+    zoomIn() {
+        const view = this.map.getView();
+        view.animate({ zoom: view.getZoom() + 1, duration: 250 });
+    }
+    
+    zoomOut() {
+        const view = this.map.getView();
+        view.animate({ zoom: view.getZoom() - 1, duration: 250 });
+    }
+    
+    locateUser() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    this.addUserLocation(lat, lng);
+                    this.map.getView().animate({
+                        center: ol.proj.fromLonLat([lng, lat]),
+                        zoom: 15,
+                        duration: 500
+                    });
+                    
+                    console.log(`📍 User location: ${lat}, ${lng}`);
+                },
+                (error) => {
+                    console.error('Error getting user location:', error);
+                    alert('Unable to get your location. Please enable location access.');
+                },
+                { enableHighAccuracy: true }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser');
+        }
+    }
+}
+
+// Global map instances
+const bloodLifeMaps = {};
+
+// Initialize map function
+function initBloodLifeMap(mapId, options = {}) {
+    const map = new BloodLifeMap(mapId, options);
+    bloodLifeMaps[mapId] = map;
+    return map;
+}
+
+// Control functions
+function zoomIn(mapId) {
+    if (bloodLifeMaps[mapId]) {
+        bloodLifeMaps[mapId].zoomIn();
+    }
+}
+
+function zoomOut(mapId) {
+    if (bloodLifeMaps[mapId]) {
+        bloodLifeMaps[mapId].zoomOut();
+    }
+}
+
+function locateUser(mapId) {
+    if (bloodLifeMaps[mapId]) {
+        bloodLifeMaps[mapId].locateUser();
+    }
+}
+</script>

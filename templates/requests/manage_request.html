@@ -160,12 +160,12 @@
         {% if request.status != 'fulfilled' and request.status != 'cancelled' %}
         <div class="info-section mt-4">
             <h5 class="text-success fw-bold mb-3">Complete Request</h5>
-            <p class="text-secondary mb-3">Mark this request as completed/fulfilled when blood has been successfully donated.</p>
+            <p class="text-secondary mb-3">Mark this request as completed. This will notify all participating donors and permanently remove the request from the system.</p>
             <form method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="complete">
-                <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure this request has been fulfilled?')">
-                    <i class="bi bi-check-circle me-2"></i>Mark as Complete
+                <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure this request has been fulfilled? This will permanently delete it from the system.')">
+                    <i class="bi bi-check-circle me-2"></i>Complete & Remove Request
                 </button>
             </form>
         </div>
