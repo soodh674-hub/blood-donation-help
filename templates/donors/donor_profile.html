@@ -611,19 +611,13 @@ function getCookie(name) {
 
 function openChatWithDonor(button) {
     const donorId = button.getAttribute('data-donor-id');
-    // Open chat widget with donor
-    // This will trigger the existing chat widget to open with this donor
-    const chatWidget = document.getElementById('chat-widget');
-    if (chatWidget) {
-        // Store the donor ID in localStorage for the chat widget
-        localStorage.setItem('chat_with_donor', donorId);
-        // Trigger the chat widget to open
-        const openEvent = new CustomEvent('openChatWithDonor', { detail: { donorId } });
-        window.dispatchEvent(openEvent);
-    } else {
-        // Fallback: redirect to chat page if widget not available
-        window.location.href = `/requests/chat/${donorId}/`;
+    if (!donorId) {
+        alert('Error: Donor ID not found');
+        return;
     }
+    
+    // Direct redirect to chat conversation
+    window.location.href = `/requests/chat/start/${donorId}/`;
 }
 </script>
 {% endblock %}

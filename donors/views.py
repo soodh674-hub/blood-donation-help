@@ -241,8 +241,8 @@ def donor_profile(request, user_id):
         # Ensure donor_profile exists
         if not hasattr(donor, 'donor_profile'):
             from accounts.models import DonorProfile
-            donor_profile, created = DonorProfile.objects.get_or_create(user=donor)
-            donor.donor_profile = donor_profile
+            donor_profile_obj, created = DonorProfile.objects.get_or_create(user=donor)
+            donor.donor_profile = donor_profile_obj
 
         # Get donation history stats - optimized with count()
         total_donations = DonorHistory.objects.filter(donor=donor).count()
@@ -288,8 +288,11 @@ def donor_profile(request, user_id):
 
         return render(request, 'donors/donor_profile.html', context)
     except Exception as e:
-        logger.error(f'Error loading donor profile: {str(e)}', exc_info=True)
-        return render(request, 'donors/donor_profile.html', {'error': 'Profile not found'})
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error loading donor profile for user {user_id}: {str(e)}', exc_info=True)
+        from django.http import HttpResponseServerError
+        return HttpResponseServerError(f'Error loading profile: {str(e)}')
 
 
 @login_required
