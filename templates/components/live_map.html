@@ -1,7 +1,7 @@
 <!-- 
     Live Map Tracking Component
     Usage: {% include 'components/live_map.html' with request_id=request.id target_lat=28.6139 target_lng=77.2090 %}
-    Provides real-time location tracking using Leaflet.js with WebSocket updates
+    Provides real-time location tracking using OpenLayers with WebSocket updates
 -->
 <div id="tracking-map-container" 
      class="bg-gray-900 rounded-3 overflow-hidden border border-white/10 shadow-lg" 
@@ -28,7 +28,9 @@
     </div>
     
     <!-- Map Container -->
-    <div id="map" class="position-relative bg-gray-800" style="height: 384px; min-height: 300px;">
+    <div id="live-tracking-map" class="position-relative bg-gray-800" style="height: 384px; min-height: 300px;">
+        {% include 'components/openlayers_map.html' with map_id='live-tracking-map' center_lat=target_lat|default:20.5937 center_lng=target_lng|default:78.9629 zoom=13 %}
+        
         <!-- Loading State -->
         <div x-show="!mapLoaded" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-gray-800 z-10">
             <div class="text-center">
@@ -95,14 +97,6 @@
     </div>
 </div>
 
-<!-- Load Leaflet CSS & JS from CDN -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-      crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-        crossorigin=""></script>
-
 <script>
 // Initialize AOS
 document.addEventListener('DOMContentLoaded', function() {
@@ -144,47 +138,21 @@ function liveMapTracker(requestId, targetLat, targetLng) {
             // Wait for DOM to be ready
             setTimeout(() => {
                 try {
-                    // Initialize Leaflet map with full interactivity
-                    this.map = L.map('map', {
+                    // Initialize OpenLayers map
+                    this.map = initBloodLifeMap('live-tracking-map', {
                         center: [this.targetLat || 20.5937, this.targetLng || 78.9629],
-                        zoom: 13,
-                        zoomControl: true,
-                        scrollWheelZoom: true,
-                        doubleClickZoom: true,
-                        dragging: true,
-                        keyboard: true
+                        zoom: 13
                     });
-                    
-                    // Add OpenStreetMap tiles
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxZoom: 19
-                    }).addTo(this.map);
-                    
-                    // Add location control for auto-detect
-                    L.control.locate({
-                        position: 'topleft',
-                        flyTo: true,
-                        keepCurrentZoomLevel: true,
-                        showUserLocation: true,
-                        locateOptions: {
-                            enableHighAccuracy: true,
-                            maxZoom: 16
-                        }
-                    }).addTo(this.map);
                     
                     this.mapLoaded = true;
                     
                     // Add target marker (hospital/request location)
                     if (this.targetLat && this.targetLng) {
-                        this.targetMarker = L.marker([this.targetLat, this.targetLng], {
-                            icon: L.divIcon({
-                                className: 'custom-target-marker',
-                                html: '<div style="background-color: #ef4444; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); animation: pulse 2s infinite;"></div>',
-                                iconSize: [20, 20],
-                                iconAnchor: [10, 10]
-                            })
-                        }).addTo(this.map).bindPopup('<b>Destination</b><br>Hospital/Request Location');
+                        this.map.addMarker(this.targetLat, this.targetLng, {
+                            type: 'hospital',
+                            popupContent: '<b>Destination</b><br>Hospital/Request Location',
+                            title: 'Destination'
+                        });
                     }
                     
                     // Connect WebSocket for real-time donor updates
@@ -292,17 +260,19 @@ function liveMapTracker(requestId, targetLat, targetLng) {
             
             // Update or create user marker
             if (this.userMarker) {
-                this.userMarker.setLatLng([lat, lng]);
-                this.userMarker.setPopupContent(`<b>You are here</b><br>Accuracy: ${Math.round(accuracy)}m`);
+                // Update existing marker position
+                this.map.markerLayer.getSource().clear();
+                this.map.addMarker(lat, lng, {
+                    type: 'user',
+                    popupContent: `<b>You are here</b><br>Accuracy: ${Math.round(accuracy)}m`,
+                    title: 'Your Location'
+                });
             } else {
-                this.userMarker = L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        className: 'custom-user-marker',
-                        html: '<div style="background-color: #3b82f6; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);"></div>',
-                        iconSize: [18, 18],
-                        iconAnchor: [9, 9]
-                    })
-                }).addTo(this.map).bindPopup('<b>You are here</b><br>Accuracy: ' + Math.round(accuracy) + 'm');
+                this.map.addMarker(lat, lng, {
+                    type: 'user',
+                    popupContent: `<b>You are here</b><br>Accuracy: ${Math.round(accuracy)}m`,
+                    title: 'Your Location'
+                });
             }
             
             // Calculate distance and update route if target exists
@@ -315,21 +285,38 @@ function liveMapTracker(requestId, targetLat, targetLng) {
                     this.initialDistance = distance;
                 }
                 
-                // Update route line
+                // Update route line - clear and redraw
                 if (this.routeLine) {
-                    this.map.removeLayer(this.routeLine);
+                    this.map.routeLayer.getSource().clear();
                 }
-                this.routeLine = L.polyline([[lat, lng], [this.targetLat, this.targetLng]], {
-                    color: '#ef4444',
-                    weight: 4,
-                    opacity: 0.8,
-                    dashArray: '10, 10',
-                    lineCap: 'round'
-                }).addTo(this.map);
                 
-                // Fit bounds to show both markers
-                const bounds = L.latLngBounds([[lat, lng], [this.targetLat, this.targetLng]]);
-                this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                // Add route line
+                const routeFeature = new ol.Feature({
+                    geometry: new ol.geom.LineString([
+                        ol.proj.fromLonLat([lng, lat]),
+                        ol.proj.fromLonLat([this.targetLng, this.targetLat])
+                    ])
+                });
+                routeFeature.setStyle(new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#ef4444',
+                        width: 4,
+                        lineDash: [10, 10]
+                    })
+                }));
+                this.map.routeLayer.getSource().addFeature(routeFeature);
+                this.routeLine = routeFeature;
+                
+                // Fit view to show both markers
+                this.map.map.getView().fit(
+                    ol.proj.transformExtent([
+                        Math.min(lng, this.targetLng),
+                        Math.min(lat, this.targetLat),
+                        Math.max(lng, this.targetLng),
+                        Math.max(lat, this.targetLat)
+                    ], 'EPSG:4326', 'EPSG:3857'),
+                    { padding: [50, 50], maxZoom: 15 }
+                );
                 
                 // Calculate progress percentage
                 if (this.initialDistance > 0) {
@@ -343,20 +330,23 @@ function liveMapTracker(requestId, targetLat, targetLng) {
             let donorMarker = this.donorsOnMap.find(d => d.id === donorId);
             
             if (donorMarker) {
-                // Update existing marker
-                donorMarker.marker.setLatLng([lat, lng]);
+                // Update existing marker - clear and redraw
+                this.map.markerLayer.getSource().clear();
+                this.map.addMarker(lat, lng, {
+                    type: 'donor',
+                    popupContent: `<b>Donor ${donorId}</b><br>En route`,
+                    title: `Donor ${donorId}`
+                });
+                donorMarker.marker = true; // Mark as updated
             } else {
                 // Create new marker
-                const marker = L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        className: 'custom-donor-marker',
-                        html: '<div style="background-color: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"></div>',
-                        iconSize: [16, 16],
-                        iconAnchor: [8, 8]
-                    })
-                }).addTo(this.map).bindPopup(`<b>Donor ${donorId}</b><br>En route`);
+                this.map.addMarker(lat, lng, {
+                    type: 'donor',
+                    popupContent: `<b>Donor ${donorId}</b><br>En route`,
+                    title: `Donor ${donorId}`
+                });
                 
-                this.donorsOnMap.push({ id: donorId, marker: marker });
+                this.donorsOnMap.push({ id: donorId, marker: true });
             }
         },
         
@@ -421,24 +411,7 @@ function getCookie(name) {
 }
 
 /* Ensure map container has proper sizing */
-#map {
+#live-tracking-map {
     z-index: 1;
-}
-
-/* Leaflet popup styling */
-.leaflet-popup-content-wrapper {
-    background: rgba(31, 41, 55, 0.95);
-    color: white;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.leaflet-popup-tip {
-    background: rgba(31, 41, 55, 0.95);
-}
-
-.leaflet-popup-content {
-    margin: 12px;
-    font-size: 14px;
 }
 </style>
