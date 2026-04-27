@@ -418,8 +418,39 @@ def track_request_dashboard(request, request_id=None):
                     request=blood_request
                 ).select_related('donor').order_by('-responded_at')
                 
+                # Enrich donor details with distance, ETA, and status
+                donor_details = []
+                for response in all_responses:
+                    donor = response.donor
+                    distance_km = None
+                    eta_minutes = None
+                    
+                    # Calculate distance if both locations available
+                    if (hasattr(response, 'donor_latitude') and response.donor_latitude and 
+                        hasattr(blood_request, 'latitude') and blood_request.latitude):
+                        distance_km = calculate_distance(
+                            float(response.donor_latitude), float(response.donor_longitude or 0),
+                            float(blood_request.latitude), float(blood_request.longitude or 0)
+                        )
+                        # Estimate ETA (assuming 30 km/h average speed in city)
+                        eta_minutes = int((distance_km / 30) * 60) if distance_km else None
+                    
+                    donor_details.append({
+                        'response': response,
+                        'donor': donor,
+                        'name': donor.get_full_name() or donor.username,
+                        'blood_group': getattr(donor, 'blood_group', 'N/A'),
+                        'phone': getattr(donor, 'phone_number', 'N/A'),
+                        'distance_km': round(distance_km, 1) if distance_km else None,
+                        'eta_minutes': eta_minutes,
+                        'response_time': response.response_time_minutes if hasattr(response, 'response_time_minutes') else None,
+                        'status': response.get_status_display(),
+                        'status_class': response.status,
+                    })
+                
                 context['user_response'] = user_response
                 context['all_responses'] = all_responses
+                context['donor_details'] = donor_details
             except Exception as e:
                 logger.warning(f'Request {request_id} not found: {str(e)}')
 
