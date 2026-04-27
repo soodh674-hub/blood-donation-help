@@ -1376,6 +1376,58 @@
                 color: black;
             }
         }
+        
+        /* ===== CHAT ICON & BADGE RESPONSIVE FIX ===== */
+        .nav-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .badge-notification {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(15, 20, 25, 0.98);
+            font-weight: 700;
+        }
+        
+        /* Mobile optimizations for nav icons */
+        @media (max-width: 768px) {
+            .nav-icon {
+                padding: 8px;
+                margin: 0 4px;
+            }
+            
+            .nav-icon [class^="bi-"],
+            .nav-icon [class*=" bi-"] {
+                font-size: 1.25rem !important;
+            }
+            
+            .badge-notification {
+                width: 16px;
+                height: 16px;
+                font-size: 9px;
+                top: -3px;
+                right: -3px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2052,5 +2104,11 @@
     
     <!-- Chat Widget -->
     {% include 'partials/chat_widget.html' %}
+    
+    <!-- Alpine.js - Required for AI Chatbot and reactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- AI Chatbot Assistant -->
+    {% include 'components/ai_chatbot.html' %}
 </body>
 </html>

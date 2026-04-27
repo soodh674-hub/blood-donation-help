@@ -70,6 +70,37 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
+    /* Mobile responsive chat widget */
+    @media (max-width: 768px) {
+        .chat-widget-container {
+            bottom: 10px;
+            right: 10px;
+        }
+        
+        .chat-toggle-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+        
+        .chat-window {
+            width: calc(100vw - 20px) !important;
+            max-width: 380px !important;
+            height: calc(100vh - 150px) !important;
+            max-height: 600px !important;
+            bottom: 70px !important;
+            right: 0 !important;
+        }
+    }
+    
+    /* Tablet responsive */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .chat-window {
+            width: 350px !important;
+            height: 450px !important;
+        }
+    }
+    
     .chat-toggle-btn {
         width: 60px;
         height: 60px;
@@ -113,7 +144,9 @@
         bottom: 80px;
         right: 0;
         width: 380px;
+        max-width: calc(100vw - 40px);
         height: 500px;
+        max-height: calc(100vh - 150px);
         background: white;
         border-radius: 16px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);

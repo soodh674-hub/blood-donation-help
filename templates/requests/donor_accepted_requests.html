@@ -3,6 +3,59 @@
 
 {% block title %}My Accepted Requests - BloodLife{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #accepted-requests-map {
+        height: 500px;
+        width: 100%;
+        border-radius: 12px;
+        z-index: 1;
+    }
+    .map-container {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .custom-donor-marker {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: 3px solid white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+    }
+    .custom-requestor-marker {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border: 3px solid white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Mobile responsive map */
+    @media (max-width: 768px) {
+        #accepted-requests-map {
+            height: 300px;
+        }
+        
+        .map-container {
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4" style="min-height: 100vh; background: linear-gradient(135deg, #0b1c2c 0%, #1a2332 50%, #0b1c2c 100%);">
     <div class="container">
@@ -20,6 +73,29 @@
                     <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-outline-light">
                         <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="map-container">
+                    <h4 class="text-white fw-bold mb-3">
+                        <i class="bi bi-map me-2" style="color: #3b82f6;"></i>
+                        Live Location Map
+                    </h4>
+                    <div id="accepted-requests-map"></div>
+                    <div class="mt-3 d-flex gap-3 flex-wrap">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; border: 2px solid white;"></div>
+                            <span class="text-muted small">Donor (You)</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; border: 2px solid white;"></div>
+                            <span class="text-muted small">Hospital/Requestor</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,8 +167,8 @@
                                     </p>
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <a href="{% url 'requests:track-request' item.request.id %}" class="btn btn-sm btn-danger mb-2 w-100">
-                                        <i class="bi bi-eye me-1"></i>View Details
+                                    <a href="{% url 'requests:track-request' item.request.id %}" class="btn btn-sm btn-primary mb-2 w-100 view-on-map-btn" data-request-id="{{ item.request.id }}">
+                                        <i class="bi bi-geo-alt me-1"></i>View on Map
                                     </a>
                                     {% if item.request.contact_phone %}
                                     <a href="tel:{{ item.request.contact_phone }}" class="btn btn-sm btn-success w-100">
@@ -118,4 +194,29 @@
         </div>
     </div>
 </div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Map functionality -->
+<script id="accepted-requests-data" type="application/json">
+[
+{% for item in accepted_requests %}
+{
+    "id": {{ item.request.id }},
+    "hospital_name": "{{ item.request.hospital_name|escapejs }}",
+    "patient_name": "{{ item.request.patient_name|escapejs }}",
+    "blood_group": "{{ item.request.patient_blood_group }}",
+    "city": "{{ item.request.city|escapejs }}",
+    "state": "{{ item.request.state|escapejs }}",
+    "latitude": {{ item.request.latitude|default:'null' }},
+    "longitude": {{ item.request.longitude|default:'null' }},
+    "status": "{{ item.request.status }}",
+    "priority": "{{ item.request.priority }}",
+    "contact_phone": "{{ item.request.contact_phone|default:"" }}"
+}{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+<script src="{% static 'js/accepted-requests-map.js' %}"></script>
 {% endblock %}
