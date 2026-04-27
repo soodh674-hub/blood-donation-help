@@ -47,7 +47,7 @@
             </a>
 
             {% if user.is_authenticated %}
-            <!-- Search Bar -->
+            <!-- Search Bar (Authenticated Users) -->
             <div class="ms-2">
                 <div class="input-group" style="width: 180px;">
                     <input type="text" class="form-control" placeholder="Search..." id="navbarSearch" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: white; font-size: 0.75rem; padding: 0.25rem 0.5rem;">
@@ -56,9 +56,8 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Auth Links - Guest User -->
-            {% if not user.is_authenticated %}
+            {% else %}
+            <!-- Guest User Links -->
             <div class="d-flex align-items-center ms-3">
                 <a href="{% url 'accounts:login' %}" class="nav-link-custom">
                     Login
@@ -67,7 +66,9 @@
                     Get Started
                 </a>
             </div>
-            {% else %}
+            {% endif %}
+            
+            {% if user.is_authenticated %}
             <!-- Auth Links - Logged-in User -->
             <div class="d-flex align-items-center ms-3">
                 <!-- Emergency Button -->
