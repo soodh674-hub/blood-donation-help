@@ -1013,6 +1013,18 @@ def register_with_otp(request):
         return render(request, 'accounts/register.html', {'captcha_form': captcha_form})
     
     elif request.method == 'POST':
+        # Validate CAPTCHA first
+        captcha_form = None
+        if 'captcha' in settings.INSTALLED_APPS:
+            from captcha.fields import CaptchaField
+            from django import forms
+            class CaptchaForm(forms.Form):
+                captcha = CaptchaField()
+            captcha_form = CaptchaForm(request.POST or None)
+            
+            if captcha_form and not captcha_form.is_valid():
+                return JsonResponse({'success': False, 'message': 'Invalid captcha. Please try again.'})
+        
         # Verify OTP and complete registration
         email = request.POST.get('email')
         otp = request.POST.get('otp')
