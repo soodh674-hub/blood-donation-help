@@ -390,8 +390,90 @@ function goToStep3() {
 function requestRegistrationOTP() {
     const email = document.getElementById('reg-email').value;
     
+    // Validate all required fields from steps 1, 2, and 3 before sending OTP
+    const firstName = document.querySelector('[name="first_name"]').value;
+    const phone = document.querySelector('[name="phone_number"]').value;
+    const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const bloodGroup = document.getElementById('blood-group-input').value;
+    const dob = document.querySelector('[name="date_of_birth"]').value;
+    const city = document.querySelector('[name="city"]').value;
+    const state = document.querySelector('[name="state"]').value;
+    const consent = document.getElementById('consent').checked;
+    
+    // Check all fields
+    if (!firstName) {
+        alert('Please enter your full name');
+        goToStep1();
+        return;
+    }
+    
     if (!email) {
         alert('Please enter your email address');
+        goToStep1();
+        return;
+    }
+    
+    if (!phone || phone.length < 10) {
+        alert('Please enter a valid phone number (at least 10 digits)');
+        goToStep1();
+        return;
+    }
+    
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters');
+        goToStep1();
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        goToStep1();
+        return;
+    }
+    
+    if (!bloodGroup) {
+        alert('Please select your blood group');
+        goToStep2();
+        return;
+    }
+    
+    if (!dob) {
+        alert('Please enter your date of birth');
+        goToStep2();
+        return;
+    }
+    
+    // Check age (18+)
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    if (age < 18) {
+        alert('You must be at least 18 years old to register');
+        goToStep2();
+        return;
+    }
+    
+    if (!city) {
+        alert('Please enter your city');
+        goToStep2();
+        return;
+    }
+    
+    if (!state) {
+        alert('Please enter your state');
+        goToStep2();
+        return;
+    }
+    
+    if (!consent) {
+        alert('Please agree to the Terms of Service and Privacy Policy');
+        goToStep3();
         return;
     }
     
@@ -489,10 +571,24 @@ function verifyRegistrationOTP() {
             alert('Registration successful! Please check your email to verify your account.');
             window.location.href = '/accounts/login/';
         } else {
-            alert(data.message || 'Registration failed. Please try again.');
+            // Show detailed error message
+            let errorMessage = data.message || 'Registration failed. Please try again.';
+            
+            // If there are specific field errors, show them
+            if (data.errors) {
+                const errorDetails = [];
+                for (const [field, errors] of Object.entries(data.errors)) {
+                    errorDetails.push(...errors);
+                }
+                errorMessage += '\n\n' + errorDetails.join('\n');
+            }
+            
+            alert(errorMessage);
         }
     })
     .catch(error => {
+        console.error('Registration error:', error);
+        
         // Restore required attributes
         hiddenFields.forEach(field => {
             field.setAttribute('required', 'required');
