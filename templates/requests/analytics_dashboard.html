@@ -156,11 +156,11 @@
 </div>
 
 <script>
-// Prepare data from Django context
-const bloodGroupData = {{ stats.by_blood_group|safe }};
-const priorityData = {{ stats.by_priority|safe }};
-const trendData = {{ stats.trend_data|safe }};
-const donorStats = {{ stats.donor_stats|safe }};
+// Django template data - safely parse JSON from context
+const bloodGroupData = JSON.parse('{{ stats.by_blood_group|safe }}');
+const priorityData = JSON.parse('{{ stats.by_priority|safe }}');
+const trendData = JSON.parse('{{ stats.trend_data|safe }}');
+const donorStats = JSON.parse('{{ stats.donor_stats|safe }}');
 
 // Blood Group Chart (Pie)
 if (bloodGroupData && bloodGroupData.length > 0) {
