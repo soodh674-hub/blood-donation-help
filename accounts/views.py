@@ -959,7 +959,11 @@ def otp_register_request(request):
             from captcha.models import CaptchaStore
             if captcha_response and captcha_key:
                 try:
-                    CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                    # Check if captcha exists and matches
+                    captcha_entry = CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                    # Delete the captcha after successful validation to prevent reuse
+                    captcha_entry.delete()
+                    logger.info(f'CAPTCHA validation successful for email: {email}')
                 except CaptchaStore.DoesNotExist:
                     logger.warning(f'CAPTCHA validation failed for email: {email}')
                     # Don't block registration, just log the warning
@@ -1030,7 +1034,11 @@ def register_with_otp(request):
                 
                 if captcha_form and not captcha_form.is_valid():
                     logger.warning('CAPTCHA validation failed during registration, but allowing to proceed')
+                    # Log the specific errors for debugging
+                    logger.debug(f'CAPTCHA errors: {captcha_form.errors}')
                     # Don't block registration, just log the warning
+                else:
+                    logger.info('CAPTCHA validation successful during registration')
             except Exception as e:
                 logger.warning(f'CAPTCHA form error: {str(e)}')
                 # Continue without captcha validation
