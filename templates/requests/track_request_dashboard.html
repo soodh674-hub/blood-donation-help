@@ -394,6 +394,155 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Full Request Details Section -->
+                            <div id="full-request-details" class="mt-4 p-4 rounded-3" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                <h4 class="text-white fw-bold mb-3"><i class="bi bi-info-circle me-2"></i>Complete Request Details</h4>
+                                <div class="row g-3">
+                                    <!-- Patient Information -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-person me-2"></i>Patient Information</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Patient Name</small>
+                                                <span id="detail-patient-name" class="text-white fw-semibold">--</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Age</small>
+                                                <span id="detail-patient-age" class="text-white fw-semibold">--</span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Blood Group</small>
+                                                <span id="detail-blood-group" class="badge bg-danger">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Request Information -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-clipboard-check me-2"></i>Request Information</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Request ID</small>
+                                                <span id="detail-request-id" class="text-white fw-semibold font-monospace">--</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Units Required</small>
+                                                <span id="detail-units" class="text-white fw-semibold">--</span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Status</small>
+                                                <span id="detail-status" class="badge bg-info">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hospital Details -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-hospital me-2"></i>Hospital Details</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Hospital Name</small>
+                                                <span id="detail-hospital" class="text-white fw-semibold">--</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Address</small>
+                                                <span id="detail-address" class="text-white fw-semibold small">--</span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">City, State</small>
+                                                <span id="detail-city-state" class="text-white fw-semibold">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Contact Information -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-telephone me-2"></i>Contact Information</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Contact Person</small>
+                                                <span id="detail-contact-person" class="text-white fw-semibold">--</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Phone</small>
+                                                <a id="detail-phone" href="#" class="text-success fw-semibold text-decoration-none">--</a>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Email</small>
+                                                <a id="detail-email" href="#" class="text-success fw-semibold small text-decoration-none">--</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Timeline -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-clock me-2"></i>Timeline</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Created At</small>
+                                                <span id="detail-created" class="text-white fw-semibold small">--</span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Required By</small>
+                                                <span id="detail-required-by" class="text-white fw-semibold small">--</span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Expires At</small>
+                                                <span id="detail-expires" class="text-white fw-semibold small">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Progress -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-graph-up me-2"></i>Progress</h6>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Units Fulfilled</small>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span id="detail-fulfilled" class="text-white fw-bold fs-5">0</span>
+                                                    <span class="text-muted">/</span>
+                                                    <span id="detail-total-units" class="text-white fw-bold fs-5">0</span>
+                                                </div>
+                                            </div>
+                                            <div class="progress mt-2" style="height: 10px; background: rgba(255, 255, 255, 0.1);">
+                                                <div id="detail-progress-bar" class="progress-bar bg-success" style="width: 0%"></div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <small class="text-muted d-block">Priority</small>
+                                                <span id="detail-priority" class="badge bg-warning">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reason/Medical Details -->
+                                    <div class="col-12">
+                                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.03);">
+                                            <h6 class="text-danger fw-bold mb-2"><i class="bi bi-file-medical me-2"></i>Reason for Request</h6>
+                                            <p id="detail-reason" class="text-white small mb-0">--</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="col-12">
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <a id="action-manage" href="#" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-gear me-1"></i>Manage Request
+                                            </a>
+                                            <a id="action-chat" href="#" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-chat-dots me-1"></i>Open Chat
+                                            </a>
+                                            <button onclick="openNavigation()" class="btn btn-outline-info btn-sm">
+                                                <i class="bi bi-map me-1"></i>Get Directions
+                                            </button>
+                                            <button onclick="refreshLocations()" class="btn btn-outline-warning btn-sm">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Map -->
@@ -786,6 +935,121 @@ function displayLiveRequests(requests) {
     }).join('');
 }
 
+// Populate full request details
+function populateFullRequestDetails(request) {
+    console.log('🔵 Populating full request details:', request);
+    
+    // Show the details section
+    document.getElementById('track-request-details').classList.remove('d-none');
+    document.getElementById('track-empty-state').classList.add('d-none');
+    
+    // Patient Information
+    document.getElementById('detail-patient-name').textContent = request.patient_name || '--';
+    document.getElementById('detail-patient-age').textContent = request.patient_age || '--';
+    document.getElementById('detail-blood-group').textContent = request.patient_blood_group || request.blood_group || '--';
+    
+    // Request Information
+    document.getElementById('detail-request-id').textContent = `#${request.id}`;
+    document.getElementById('detail-units').textContent = `${request.required_units || request.units_needed || 0} units`;
+    
+    const statusBadge = document.getElementById('detail-status');
+    statusBadge.textContent = (request.status || 'pending').replace('_', ' ').toUpperCase();
+    statusBadge.className = 'badge ' + getStatusBadgeClass(request.status);
+    
+    // Hospital Details
+    document.getElementById('detail-hospital').textContent = request.hospital_name || '--';
+    document.getElementById('detail-address').textContent = request.exact_address || request.hospital_address || 'Not specified';
+    document.getElementById('detail-city-state').textContent = `${request.city || ''}, ${request.state || ''}`;
+    
+    // Contact Information
+    document.getElementById('detail-contact-person').textContent = request.contact_person || '--';
+    const phoneLink = document.getElementById('detail-phone');
+    phoneLink.textContent = request.contact_phone || '--';
+    phoneLink.href = request.contact_phone ? `tel:${request.contact_phone}` : '#';
+    
+    const emailLink = document.getElementById('detail-email');
+    emailLink.textContent = request.contact_email || '--';
+    emailLink.href = request.contact_email ? `mailto:${request.contact_email}` : '#';
+    
+    // Timeline
+    document.getElementById('detail-created').textContent = formatDate(request.created_at);
+    document.getElementById('detail-required-by').textContent = formatDate(request.required_by);
+    document.getElementById('detail-expires').textContent = formatDate(request.expires_at);
+    
+    // Progress
+    const fulfilled = request.fulfilled_units || 0;
+    const total = request.required_units || request.units_needed || 0;
+    document.getElementById('detail-fulfilled').textContent = fulfilled;
+    document.getElementById('detail-total-units').textContent = total;
+    
+    const progressBar = document.getElementById('detail-progress-bar');
+    const percentage = total > 0 ? (fulfilled / total) * 100 : 0;
+    progressBar.style.width = `${percentage}%`;
+    progressBar.textContent = `${Math.round(percentage)}%`;
+    
+    const priorityBadge = document.getElementById('detail-priority');
+    priorityBadge.textContent = (request.priority || 'normal').toUpperCase();
+    priorityBadge.className = 'badge ' + getPriorityBadgeClass(request.priority);
+    
+    // Reason
+    document.getElementById('detail-reason').textContent = request.reason || 'No reason provided';
+    
+    // Action Buttons
+    document.getElementById('action-manage').href = `/requests/manage/${request.id}/`;
+    document.getElementById('action-chat').href = request.requester_id ? `/requests/chat/${request.requester_id}/` : '#';
+    
+    // Update header info
+    document.getElementById('track-blood-group').textContent = request.patient_blood_group || request.blood_group || '--';
+    document.getElementById('track-hospital').textContent = request.hospital_name || '--';
+    document.getElementById('track-location').textContent = `📍 ${request.city || ''}, ${request.state || ''}`;
+    
+    const urgencyBadge = document.getElementById('track-urgency');
+    urgencyBadge.textContent = (request.priority || 'normal').toUpperCase();
+    urgencyBadge.className = 'badge ' + getPriorityBadgeClass(request.priority);
+    
+    console.log('✅ Full request details populated');
+}
+
+// Helper function to get status badge class
+function getStatusBadgeClass(status) {
+    const classes = {
+        'pending': 'bg-warning',
+        'pending_verification': 'bg-secondary',
+        'approved': 'bg-info',
+        'active': 'bg-primary',
+        'partially_fulfilled': 'bg-success',
+        'fulfilled': 'bg-success',
+        'cancelled': 'bg-danger',
+        'expired': 'bg-dark'
+    };
+    return classes[status] || 'bg-secondary';
+}
+
+// Helper function to get priority badge class
+function getPriorityBadgeClass(priority) {
+    const classes = {
+        'low': 'bg-success',
+        'normal': 'bg-info',
+        'high': 'bg-warning',
+        'urgent': 'bg-warning',
+        'emergency': 'bg-danger'
+    };
+    return classes[priority] || 'bg-secondary';
+}
+
+// Format date helper
+function formatDate(dateString) {
+    if (!dateString) return '--';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
 // Select a request to track
 async function selectRequest(requestId) {
     console.log('🔵 Selecting request:', requestId);
@@ -813,6 +1077,9 @@ async function selectRequest(requestId) {
                 updateStatusTimeline(request);
                 startCountdownTimer(request.required_by);
                 initializeChat(requestId);
+                
+                // Populate full request details
+                populateFullRequestDetails(request);
             } else {
                 console.error('🔴 Request not found in live requests data');
             }
