@@ -47,6 +47,39 @@ def add_field_if_not_exists(apps, schema_editor):
             print(f"  ⊘ Skipping {field_name} - already exists")
 
 
+def add_indexes_if_not_exists(apps, schema_editor):
+    """Add indexes only if they don't already exist"""
+    from django.db import connection
+    
+    with connection.cursor() as cursor:
+        # Check if indexes exist
+        cursor.execute("""
+            SELECT indexname 
+            FROM pg_indexes 
+            WHERE tablename = 'accounts_hospital';
+        """)
+        existing_indexes = {row[0] for row in cursor.fetchall()}
+    
+    # Add indexes using raw SQL
+    indexes_sql = [
+        ('accounts_ho_city_abc123_idx', 
+         'CREATE INDEX accounts_ho_city_abc123_idx ON accounts_hospital (city, verification_status)'),
+        ('accounts_ho_trust_s_def456_idx', 
+         'CREATE INDEX accounts_ho_trust_s_def456_idx ON accounts_hospital (trust_score)'),
+    ]
+    
+    for index_name, sql in indexes_sql:
+        if index_name not in existing_indexes:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+                print(f"  ✓ Created index: {index_name}")
+            except Exception as e:
+                print(f"  ⚠ Index {index_name} might already exist: {str(e)}")
+        else:
+            print(f"  ⊘ Skipping index {index_name} - already exists")
+
+
 def remove_is_active_if_exists(apps, schema_editor):
     """Remove is_active field only if it exists"""
     from django.db import connection
@@ -81,13 +114,6 @@ class Migration(migrations.Migration):
         # Remove old is_active field if it exists
         migrations.RunPython(remove_is_active_if_exists, migrations.RunPython.noop),
         
-        # Add indexes for better query performance (these are safe to run even if they exist)
-        migrations.AddIndex(
-            model_name='hospital',
-            index=models.Index(fields=['city', 'verification_status'], name='accounts_ho_city_abc123_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='hospital',
-            index=models.Index(fields=['trust_score'], name='accounts_ho_trust_s_def456_idx'),
-        ),
+        # Add indexes using raw SQL (avoids FieldDoesNotExist errors)
+        migrations.RunPython(add_indexes_if_not_exists, migrations.RunPython.noop),
     ]
