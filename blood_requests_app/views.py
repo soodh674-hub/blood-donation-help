@@ -82,12 +82,30 @@ def create_request_unified_page(request):
 
     # Handle POST request (form submission)
     if request.method == 'POST':
+        # Initialize context early for error rendering
+        context = {
+            'user_name': request.user.get_full_name() or request.user.username,
+            'user_phone': getattr(request.user, 'phone_number', '') or '',
+            'user_email': request.user.email,
+            'user_city': getattr(request.user, 'city', '') or '',
+            'user_state': getattr(request.user, 'state', '') or '',
+            'user_pincode': getattr(request.user, 'pincode', '') or '',
+            'user_latitude': getattr(request.user, 'latitude', 28.6139),
+            'user_longitude': getattr(request.user, 'longitude', 77.2090),
+            'blood_types': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+            'urgency_levels': [
+                {'value': 'low', 'label': 'Low Priority', 'color': 'green', 'description': 'Within 3-5 days'},
+                {'value': 'normal', 'label': 'Normal', 'color': 'blue', 'description': 'Within 24-48 hours'},
+                {'value': 'high', 'label': 'High Priority', 'color': 'orange', 'description': 'Within 12-24 hours'},
+                {'value': 'emergency', 'label': 'Emergency', 'color': 'red', 'description': 'Immediate - Critical'},
+            ],
+        }
+        
         try:
             logger.info('Processing blood request creation with multi-stage verification')
 
             # Stage 1: CAPTCHA Verification
             try:
-                from captcha.helpers import captcha_unserialize
                 from captcha.models import CaptchaStore
                 captcha_response = request.POST.get('captcha_1')
                 captcha_hashkey = request.POST.get('captcha_0')
@@ -134,8 +152,8 @@ def create_request_unified_page(request):
                         if response.status_code == 200:
                             geodata = response.json()
                             if geodata and len(geodata) > 0:
-                                latitude = float(geodata[0]['lat'])
-                                longitude = float(geodata[0]['lon'])
+                                latitude = round(float(geodata[0]['lat']), 6)
+                                longitude = round(float(geodata[0]['lon']), 6)
                                 logger.info(f'Geocoded {city}, {state} to {latitude}, {longitude}')
                             else:
                                 # Fallback to city coordinates
@@ -145,9 +163,9 @@ def create_request_unified_page(request):
                         logger.error(f'Geocoding error: {e}')
                         latitude, longitude = _get_city_coordinates(city)
             else:
-                # Convert to float if provided as strings
-                latitude = float(latitude)
-                longitude = float(longitude)
+                # Convert to float if provided as strings and round to 6 decimal places
+                latitude = round(float(latitude), 6)
+                longitude = round(float(longitude), 6)
                 logger.info(f'Using frontend-provided coordinates: {latitude}, {longitude}')
 
             data = {
