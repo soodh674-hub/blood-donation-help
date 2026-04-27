@@ -134,6 +134,7 @@
                         {% endif %}
                         {% if user.is_staff %}
                         <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:verify-requests-page' %}"><i class="bi bi-check-circle me-2" style="color: #10b981;"></i>Verify Requests</a></li>
+                        <li><a class="dropdown-item dropdown-item-custom" href="{% url 'requests:analytics-dashboard' %}"><i class="bi bi-graph-up me-2" style="color: #8b5cf6;"></i>Analytics</a></li>
                         {% endif %}
                         <li><hr class="dropdown-divider border-gray-700 my-1"></li>
                         

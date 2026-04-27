@@ -1,10 +1,13 @@
 """
 Blood Request Workflow Service
-Handles donor matching, notifications, and request lifecycle management
+Handles donor matching, notifications, auto-approval, and request lifecycle management
 """
 import logging
 from django.utils import timezone
 from django.db.models import Q
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
 from datetime import timedelta
 from .models import BloodRequest, RequestResponse
 
@@ -402,3 +405,256 @@ class BloodRequestWorkflow:
                 status='donated'
             ).count(),
         }
+
+
+# ============================================================================
+# NEW ENHANCED SERVICES (Auto-Approval, Notifications, Matching)
+# ============================================================================
+
+class DonorMatchingService:
+    """Enhanced donor matching with scoring and eligibility checks"""
+    
+    @classmethod
+    def find_matching_donors(cls, blood_request, radius_km=50, max_donors=20):
+        """Find compatible donors within radius with match scoring"""
+        from accounts.models import User
+        from .utils import calculate_distance
+        
+        # Get compatible blood groups from existing workflow
+        compatible_groups = BloodRequestWorkflow.get_compatible_blood_groups(
+            blood_request.patient_blood_group
+        )
+        
+        # Find available donors
+        donors = User.objects.filter(
+            blood_group__in=compatible_groups,
+            is_donor=True,
+            is_available=True,
+            latitude__isnull=False,
+            longitude__isnull=False,
+        ).exclude(
+            # Exclude donors who already responded
+            id__in=RequestResponse.objects.filter(
+                request=blood_request
+            ).values_list('donor_id', flat=True)
+        )
+        
+        matching_donors = []
+        for donor in donors:
+            # Calculate distance
+            distance = calculate_distance(
+                float(blood_request.latitude), float(blood_request.longitude),
+                float(donor.latitude), float(donor.longitude)
+            )
+            
+            # Skip if outside radius
+            if distance > radius_km:
+                continue
+            
+            # Check eligibility (90 days since last donation)
+            if not cls.is_donor_eligible(donor):
+                continue
+            
+            # Calculate match score
+            score = cls.calculate_match_score(donor, blood_request, distance)
+            
+            matching_donors.append({
+                'donor': donor,
+                'distance': distance,
+                'score': score,
+                'compatibility': 'compatible',
+            })
+        
+        # Sort by score and return top matches
+        matching_donors.sort(key=lambda x: x['score'], reverse=True)
+        return matching_donors[:max_donors]
+    
+    @classmethod
+    def is_donor_eligible(cls, donor):
+        """Check if donor is eligible to donate"""
+        # Must be at least 18
+        if hasattr(donor, 'age') and donor.age and donor.age < 18:
+            return False
+        
+        # Must not have donated in last 90 days
+        if hasattr(donor, 'last_donation_date') and donor.last_donation_date:
+            days_since_donation = (timezone.now() - donor.last_donation_date).days
+            if days_since_donation < 90:
+                return False
+        
+        return True
+    
+    @classmethod
+    def calculate_match_score(cls, donor, blood_request, distance):
+        """Calculate match score (0-100)"""
+        score = 50  # Base score for compatibility
+        
+        # Distance factor (closer = higher score)
+        if distance < 5:
+            score += 30
+        elif distance < 10:
+            score += 20
+        elif distance < 25:
+            score += 10
+        elif distance < 50:
+            score += 5
+        
+        # Priority factor
+        if blood_request.priority == 'emergency':
+            score += 20
+        elif blood_request.priority == 'urgent':
+            score += 10
+        
+        # Donor experience factor
+        donation_count = getattr(donor, 'donation_count', 0) or 0
+        if donation_count > 10:
+            score += 10
+        elif donation_count > 5:
+            score += 5
+        
+        # Rating factor (if available)
+        average_rating = getattr(donor, 'average_rating', None)
+        if average_rating:
+            score += average_rating * 2  # Max 10 points
+        
+        return min(score, 100)  # Cap at 100
+
+
+class DonorNotificationService:
+    """Send email, SMS, and in-app notifications to donors"""
+    
+    @classmethod
+    def notify_donors(cls, blood_request, matching_donors):
+        """Notify matching donors about new blood request"""
+        for donor_data in matching_donors[:20]:  # Notify top 20 matches
+            donor = donor_data['donor']
+            
+            # Send email
+            cls.send_email_notification(donor, blood_request, donor_data)
+            
+            # Send SMS (if phone number available and Twilio configured)
+            if hasattr(donor, 'phone_number') and donor.phone_number:
+                cls.send_sms_notification(donor, blood_request)
+            
+            # Create in-app notification
+            cls.create_in_app_notification(donor, blood_request)
+    
+    @classmethod
+    def send_email_notification(cls, donor, blood_request, donor_data):
+        """Send email to donor"""
+        try:
+            context = {
+                'donor': donor,
+                'request': blood_request,
+                'distance': donor_data['distance'],
+                'match_score': donor_data['score'],
+                'response_url': f'{getattr(settings, "SITE_URL", "http://localhost:8000")}/requests/track/{blood_request.id}/',
+            }
+            
+            html_message = render_to_string('emails/blood_request_notification.html', context)
+            plain_message = f"""
+            URGENT: {blood_request.patient_blood_group} Blood Needed
+            
+            Patient: {blood_request.patient_name}
+            Hospital: {blood_request.hospital_name}
+            Priority: {blood_request.priority.upper()}
+            Distance from you: {donor_data['distance']:.1f} km
+            
+            Respond now: {context['response_url']}
+            """
+            
+            send_mail(
+                subject=f"🩸 Urgent: {blood_request.patient_blood_group} Blood Needed - {blood_request.hospital_name}",
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[donor.email],
+                fail_silently=True,
+            )
+            logger.info(f"Email sent to {donor.email} for request #{blood_request.id}")
+        except Exception as e:
+            logger.error(f"Email notification failed for {donor.email}: {str(e)}")
+    
+    @classmethod
+    def send_sms_notification(cls, donor, blood_request):
+        """Send SMS via Twilio or other provider"""
+        try:
+            # Check if Twilio is configured
+            if not hasattr(settings, 'TWILIO_ACCOUNT_SID') or not settings.TWILIO_ACCOUNT_SID:
+                return  # SMS not configured, skip silently
+            
+            from twilio.rest import Client
+            
+            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            
+            message = f"🩸 URGENT: {blood_request.patient_blood_group} blood needed at {blood_request.hospital_name}. Priority: {blood_request.priority.upper()}. Respond: {getattr(settings, 'SITE_URL', '')}/requests/track/{blood_request.id}/"
+            
+            client.messages.create(
+                body=message[:160],  # SMS limit
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=donor.phone_number
+            )
+            logger.info(f"SMS sent to {donor.phone_number} for request #{blood_request.id}")
+        except ImportError:
+            logger.warning("Twilio not installed, SMS notifications disabled")
+        except Exception as e:
+            logger.error(f"SMS failed for {donor.phone_number}: {str(e)}")
+    
+    @classmethod
+    def create_in_app_notification(cls, donor, blood_request):
+        """Create in-app notification"""
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                user=donor,
+                notification_type='blood_request',
+                title=f'🩸 {blood_request.patient_blood_group} Blood Needed',
+                message=f'{blood_request.hospital_name} needs {blood_request.patient_blood_group} blood. Priority: {blood_request.priority}',
+                related_request=blood_request,
+                priority='high' if blood_request.priority in ['emergency', 'urgent'] else 'medium'
+            )
+            logger.info(f"In-app notification created for donor {donor.id}")
+        except Exception as e:
+            logger.error(f"In-app notification failed: {str(e)}")
+
+
+class AutoApprovalService:
+    """Auto-approve blood requests based on priority and time"""
+    
+    APPROVAL_RULES = {
+        'emergency': {'delay_minutes': 0, 'auto_approve': True},
+        'urgent': {'delay_minutes': 5, 'auto_approve': True},
+        'normal': {'delay_minutes': 30, 'auto_approve': True},
+    }
+    
+    @classmethod
+    def check_and_approve(cls, blood_request):
+        """Check if request should be auto-approved"""
+        if blood_request.status != 'pending':
+            return False
+        
+        rule = cls.APPROVAL_RULES.get(blood_request.priority)
+        if not rule or not rule['auto_approve']:
+            return False
+        
+        # Check if enough time has passed
+        minutes_since_creation = (timezone.now() - blood_request.created_at).total_seconds() / 60
+        if minutes_since_creation >= rule['delay_minutes']:
+            cls.approve_request(blood_request)
+            return True
+        
+        return False
+    
+    @classmethod
+    def approve_request(cls, blood_request):
+        """Approve the request and notify donors"""
+        blood_request.status = 'approved'
+        blood_request.approved_at = timezone.now()
+        blood_request.approval_notes = f'Auto-approved ({blood_request.priority} priority)'
+        blood_request.save()
+        
+        # Trigger donor matching and notifications
+        matching_donors = DonorMatchingService.find_matching_donors(blood_request)
+        DonorNotificationService.notify_donors(blood_request, matching_donors)
+        
+        logger.info(f"Auto-approved request #{blood_request.id} ({blood_request.priority})")

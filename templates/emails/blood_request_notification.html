@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 30px;
+            background: #f9fafb;
+        }
+        .info-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .blood-group {
+            font-size: 56px;
+            font-weight: bold;
+            color: #dc2626;
+            text-align: center;
+            margin: 20px 0;
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .info-value {
+            color: #6b7280;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .priority-emergency {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .priority-urgent {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+        .priority-normal {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            padding: 16px 40px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            margin: 30px 0;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        .match-score {
+            text-align: center;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .match-score strong {
+            color: #059669;
+            font-size: 24px;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 13px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer a {
+            color: #dc2626;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🩸 Urgent Blood Request</h1>
+            <p>A patient needs your help right now</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Blood Group -->
+            <div class="info-box">
+                <div class="blood-group">{{ request.patient_blood_group }}</div>
+                <h2 style="text-align: center; margin: 0; color: #374151;">Blood Group Needed</h2>
+            </div>
+            
+            <!-- Patient Details -->
+            <div class="info-box">
+                <h3 style="margin-top: 0; color: #374151;">Patient Details</h3>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ request.patient_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Age:</span>
+                    <span class="info-value">{{ request.patient_age }} years</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Required Units:</span>
+                    <span class="info-value">{{ request.required_units }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Priority:</span>
+                    <span class="info-value">
+                        <span class="priority-badge priority-{{ request.priority }}">
+                            {{ request.priority|upper }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Hospital Information -->
+            <div class="info-box">
+                <h3 style="margin-top: 0; color: #374151;">Hospital Information</h3>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span class="info-value">{{ request.hospital_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value">{{ request.city }}, {{ request.state }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Distance from you:</span>
+                    <span class="info-value"><strong>{{ distance|floatformat:1 }} km</strong></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Required By:</span>
+                    <span class="info-value">{{ request.required_by|date:"M d, Y h:i A" }}</span>
+                </div>
+            </div>
+            
+            <!-- Match Score -->
+            <div class="match-score">
+                <p style="margin: 0; color: #6b7280;">Your compatibility match score</p>
+                <strong>{{ match_score|floatformat:0 }}%</strong>
+                <p style="margin: 10px 0 0 0; color: #059669; font-weight: 600;">You can make a difference!</p>
+            </div>
+            
+            <!-- Call to Action -->
+            <div style="text-align: center;">
+                <a href="{{ response_url }}" class="btn">Respond to Request →</a>
+            </div>
+            
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 20px;">
+                Every minute counts. Your response can save a life.
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>This is an automated notification from <strong>BloodLife</strong></p>
+            <p style="margin: 10px 0;">
+                To update your notification preferences, visit 
+                <a href="{{ settings.SITE_URL }}/settings/">Account Settings</a>
+            </p>
+            <p style="margin: 10px 0; font-size: 12px;">
+                © 2024 BloodLife. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

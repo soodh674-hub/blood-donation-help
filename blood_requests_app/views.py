@@ -2531,3 +2531,25 @@ def manage_all_requests(request):
     }
     
     return render(request, 'requests/manage_all_requests.html', context)
+
+
+@login_required
+def analytics_dashboard(request):
+    """Analytics dashboard view for blood requests"""
+    from .analytics import RequestAnalytics
+    
+    # Get time filter from request
+    days = int(request.GET.get('days', 30))
+    
+    # Only staff users can see global analytics, others see their own
+    if request.user.is_staff:
+        stats = RequestAnalytics.get_dashboard_stats(days=days)
+    else:
+        stats = RequestAnalytics.get_dashboard_stats(user=request.user, days=days)
+    
+    context = {
+        'stats': stats,
+        'days': days,
+    }
+    
+    return render(request, 'requests/analytics_dashboard.html', context)

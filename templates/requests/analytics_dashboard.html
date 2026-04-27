@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - BloodLife{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stats-card {
+        background: var(--card-bg, white);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .stats-card:hover {
+        transform: translateY(-4px);
+    }
+    .stats-card h3 {
+        font-size: 36px;
+        font-weight: bold;
+        color: var(--primary-color, #dc2626);
+        margin: 0 0 8px 0;
+    }
+    .stats-card p {
+        color: var(--text-secondary, #6b7280);
+        margin: 0;
+        font-size: 14px;
+    }
+    .chart-card {
+        background: var(--card-bg, white);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .chart-card h4 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: var(--text-primary, #374151);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-md-5">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 mb-md-5">
+        <div>
+            <h1 class="display-5 display-md-4 fw-bold text-white mb-2">Analytics Dashboard</h1>
+            <p class="fs-6 fs-md-5 mb-0" style="color: var(--text-secondary);">Insights and performance metrics</p>
+        </div>
+        <a href="{% url 'requests:track-request-dashboard' %}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-1"></i>Back to Track
+        </a>
+    </div>
+    
+    <!-- Time Filter -->
+    <div class="mb-4">
+        <form method="GET" class="d-inline">
+            <select name="days" class="form-select d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+                <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+                <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+            </select>
+        </form>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.total_requests }}</h3>
+                <p>Total Requests</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.fulfillment_rate|floatformat:1 }}%</h3>
+                <p>Fulfillment Rate</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.active_requests }}</h3>
+                <p>Active Requests</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.donor_stats.total_responses }}</h3>
+                <p>Donor Responses</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.avg_response_time }}</h3>
+                <p>Avg Response (hrs)</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.avg_fulfillment_time }}</h3>
+                <p>Avg Fulfillment (hrs)</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.pending_requests }}</h3>
+                <p>Pending Requests</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <h3>{{ stats.fulfilled_requests }}</h3>
+                <p>Fulfilled</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row g-4">
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <h4><i class="bi bi-pie-chart me-2"></i>Requests by Blood Group</h4>
+                <canvas id="bloodGroupChart"></canvas>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <h4><i class="bi bi-graph-up me-2"></i>Requests Over Time</h4>
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Priority Distribution -->
+    <div class="row g-4 mt-2">
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <h4><i class="bi bi-bar-chart me-2"></i>Requests by Priority</h4>
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <h4><i class="bi bi-people me-2"></i>Donor Response Status</h4>
+                <canvas id="donorStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Prepare data from Django context
+const bloodGroupData = {{ stats.by_blood_group|safe }};
+const priorityData = {{ stats.by_priority|safe }};
+const trendData = {{ stats.trend_data|safe }};
+const donorStats = {{ stats.donor_stats|safe }};
+
+// Blood Group Chart (Pie)
+if (bloodGroupData && bloodGroupData.length > 0) {
+    const bloodGroupCtx = document.getElementById('bloodGroupChart').getContext('2d');
+    new Chart(bloodGroupCtx, {
+        type: 'pie',
+        data: {
+            labels: bloodGroupData.map(item => item.patient_blood_group),
+            datasets: [{
+                data: bloodGroupData.map(item => item.count),
+                backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+// Trend Chart (Line)
+if (trendData && trendData.length > 0) {
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(item => item.date),
+            datasets: [{
+                label: 'Requests',
+                data: trendData.map(item => item.count),
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Priority Chart (Bar)
+if (priorityData && priorityData.length > 0) {
+    const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+    new Chart(priorityCtx, {
+        type: 'bar',
+        data: {
+            labels: priorityData.map(item => item.priority.toUpperCase()),
+            datasets: [{
+                label: 'Requests',
+                data: priorityData.map(item => item.count),
+                backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Donor Status Chart (Doughnut)
+const donorStatusCtx = document.getElementById('donorStatusChart').getContext('2d');
+new Chart(donorStatusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Interested', 'En Route', 'Arrived', 'Donated'],
+        datasets: [{
+            data: [
+                donorStats.interested || 0,
+                donorStats.en_route || 0,
+                donorStats.arrived || 0,
+                donorStats.donated || 0
+            ],
+            backgroundColor: ['#3b82f6', '#f59e0b', '#8b5cf6', '#10b981'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

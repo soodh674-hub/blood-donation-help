@@ -143,6 +143,9 @@ urlpatterns = [
     # Manage all requests
     path("manage-all/", views.manage_all_requests, name='manage-all-requests'),
     
+    # Analytics dashboard
+    path("analytics/", views.analytics_dashboard, name='analytics-dashboard'),
+    
     # Chat conversation with specific user
     path("chat/<int:user_id>/", views.chat_conversation, name='chat-conversation'),
     
