@@ -11,7 +11,7 @@ import logging
 from accounts.models import User
 from accounts.serializers import UserPublicSerializer
 from donors.models import DonorHistory
-from blood_requests_app.models import BloodRequest
+from blood_requests_app.models import BloodRequest, RequestResponse
 from .matching import BloodMatcher
 
 # Setup logging
@@ -266,8 +266,11 @@ def donor_profile(request, user_id):
         compatibility_info = BloodMatcher.get_compatibility_info(donor.blood_group)
         compatibility_count = compatibility_info.get('total_compatible_types', 0)
 
-        # Get total requests completed
-        total_requests = BloodRequest.objects.filter(donor=donor, status='fulfilled').count()
+        # Get total requests completed (requests where donor donated and request is fulfilled)
+        total_requests = RequestResponse.objects.filter(
+            donor=donor, 
+            status='donated'
+        ).count()
 
         # Calculate rating (placeholder - can be enhanced later)
         rating = getattr(donor.donor_profile, 'rating', 0) if hasattr(donor, 'donor_profile') and donor.donor_profile else 0
