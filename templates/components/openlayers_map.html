@@ -145,13 +145,13 @@
     
     <!-- Map Controls -->
     <div class="map-controls">
-        <button class="map-control-btn" onclick="zoomIn('{{ map_id|default:'map' }}')" title="Zoom In">
+        <button class="map-control-btn" data-map-action="zoomIn" data-map-id="{{ map_id|default:'map' }}" title="Zoom In">
             <i class="bi bi-plus-lg"></i>
         </button>
-        <button class="map-control-btn" onclick="zoomOut('{{ map_id|default:'map' }}')" title="Zoom Out">
+        <button class="map-control-btn" data-map-action="zoomOut" data-map-id="{{ map_id|default:'map' }}" title="Zoom Out">
             <i class="bi bi-dash-lg"></i>
         </button>
-        <button class="map-control-btn" onclick="locateUser('{{ map_id|default:'map' }}')" title="My Location">
+        <button class="map-control-btn" data-map-action="locateUser" data-map-id="{{ map_id|default:'map' }}" title="My Location">
             <i class="bi bi-geo"></i>
         </button>
     </div>
@@ -397,4 +397,22 @@ function locateUser(mapId) {
         bloodLifeMaps[mapId].locateUser();
     }
 }
+
+// Event delegation for map control buttons
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-map-action]').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('data-map-action');
+            const mapId = this.getAttribute('data-map-id');
+            
+            if (action === 'zoomIn') {
+                zoomIn(mapId);
+            } else if (action === 'zoomOut') {
+                zoomOut(mapId);
+            } else if (action === 'locateUser') {
+                locateUser(mapId);
+            }
+        });
+    });
+});
 </script>
