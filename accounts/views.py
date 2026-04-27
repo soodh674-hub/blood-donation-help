@@ -1148,11 +1148,12 @@ def register_with_otp(request):
             
             # Generate email verification token
             from .utils import generate_verification_token
-            verification_token = generate_verification_token(user)
+            token_data = generate_verification_token(user)
             
-            # Send verification email
-            from .services import send_verification_email
-            send_verification_email(user, verification_token)
+            # Send verification email with uid and token
+            # The URL pattern expects /verify-email/<uidb64>/<token>/
+            verification_path = f"{token_data['uid']}/{token_data['token']}"
+            send_verification_email(user, verification_path)
             
             # Clear OTP - use consistent key based on email
             import hashlib
