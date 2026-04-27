@@ -807,6 +807,11 @@ def login_view(request):
             User = get_user_model()
             try:
                 user_obj = User.objects.get(email=username)
+                # Check if user exists but is inactive
+                if not user_obj.is_active:
+                    messages.error(request, 'Your account is not activated yet. Please check your email to verify your account before logging in.')
+                    captcha_form = CaptchaForm() if CaptchaForm else None
+                    return render(request, template_name, {'captcha_form': captcha_form})
                 user = authenticate(request, username=user_obj.username, password=password)
             except User.DoesNotExist:
                 user = None
@@ -1192,6 +1197,13 @@ def otp_login_verify(request):
     success, message = otp_services.verify_otp_cache(user.id, otp)
 
     if success:
+        # Check if user is active before logging in
+        if not user.is_active:
+            return JsonResponse({
+                'success': False,
+                'message': 'Your account is not activated yet. Please check your email to verify your account before logging in.'
+            })
+        
         # Log user in with explicit backend (required when multiple backends configured)
         from django.contrib.auth import get_backends
         backend = 'django.contrib.auth.backends.ModelBackend'
