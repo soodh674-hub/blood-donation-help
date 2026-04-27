@@ -560,7 +560,9 @@
                     {{ blood_request.hospital_name }}<br>
                     {{ blood_request.city }}, {{ blood_request.state }}
                 </p>
-                <div id="map" style="height: 250px; border-radius: 0.5rem;"></div>
+                <div id="zomato-map-wrapper" style="height: 250px; border-radius: 0.5rem;">
+                    {% include 'components/openlayers_map.html' with map_id='zomato-map' center_lat=blood_request.latitude|default:28.6139 center_lng=blood_request.longitude|default:77.2090 zoom=15 %}
+                </div>
             </div>
         </div>
     </div>
@@ -598,7 +600,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // Countdown Timer
 function updateCountdown() {
@@ -630,39 +631,20 @@ function deleteRequest() {
 
 // Initialize Map
 document.addEventListener('DOMContentLoaded', function() {
-    const lat = parseFloat('{{ blood_request.latitude|default:28.6139 }}') || 28.6139;
-    const lng = parseFloat('{{ blood_request.longitude|default:77.2090 }}') || 77.2090;
+    const lat = parseFloat('{{ blood_request.latitude|default:"28.6139" }}') || 28.6139;
+    const lng = parseFloat('{{ blood_request.longitude|default:"77.2090" }}') || 77.2090;
     
-    const map = L.map('map', {
+    const map = initBloodLifeMap('zomato-map', {
         center: [lat, lng],
-        zoom: 15,
-        zoomControl: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        dragging: true,
-        keyboard: true
+        zoom: 15
     });
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    // Add location control for auto-detect
-    L.control.locate({
-        position: 'topleft',
-        flyTo: true,
-        keepCurrentZoomLevel: true,
-        showUserLocation: true,
-        locateOptions: {
-            enableHighAccuracy: true,
-            maxZoom: 16
-        }
-    }).addTo(map);
-    
     const hospitalName = '{{ blood_request.hospital_name|escapejs }}';
-    L.marker([lat, lng]).addTo(map)
-        .bindPopup(hospitalName)
-        .openPopup();
+    map.addMarker(lat, lng, {
+        type: 'hospital',
+        popupContent: hospitalName,
+        title: hospitalName
+    });
 });
 </script>
 {% endblock %}
