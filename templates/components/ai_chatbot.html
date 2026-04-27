@@ -308,7 +308,7 @@ function aiChatbot() {
 
                 const data = await response.json();
 
-                if (data.success) {
+                if (data.success && data.response) {
                     this.messages.push({
                         type: 'bot',
                         text: data.response,
@@ -320,7 +320,8 @@ function aiChatbot() {
                         this.sessionId = data.session_id;
                     }
                 } else {
-                    // Fallback to local response if API fails
+                    // Fallback to local response if API fails or returns empty
+                    console.warn('Chatbot API returned empty or error response, using fallback');
                     const fallbackResponse = this.generateResponse(userMessage);
                     this.messages.push({
                         type: 'bot',

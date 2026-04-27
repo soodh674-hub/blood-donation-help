@@ -462,6 +462,8 @@ def delete_request_permanently(request, request_id):
     Only the requester can delete their own request
     """
     from django.http import JsonResponse
+    from django.shortcuts import redirect
+    from django.contrib import messages
     from .models import BloodRequest
     
     try:
@@ -469,38 +471,55 @@ def delete_request_permanently(request, request_id):
         
         # Check if user is the requester
         if blood_request.requester != request.user:
-            return JsonResponse({
-                'success': False,
-                'error': 'You can only delete your own requests'
-            }, status=403)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': 'You can only delete your own requests'
+                }, status=403)
+            messages.error(request, 'You can only delete your own requests')
+            return redirect('requests:my-requests')
         
         # Check if request is in a state that can be deleted
         if blood_request.status in ['active', 'fulfilled']:
-            return JsonResponse({
-                'success': False,
-                'error': 'Cannot delete request that is active or fulfilled'
-            }, status=400)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Cannot delete request that is active or fulfilled'
+                }, status=400)
+            messages.error(request, 'Cannot delete request that is active or fulfilled')
+            return redirect('requests:my-requests')
         
         # Delete the request
         request_id_str = str(blood_request.id)
         blood_request.delete()
         
-        return JsonResponse({
-            'success': True,
-            'message': 'Request deleted permanently'
-        })
+        # Check if it's an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Request deleted permanently'
+            })
+        
+        messages.success(request, 'Request deleted permanently')
+        return redirect('requests:my-requests')
         
     except BloodRequest.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Request not found'
-        }, status=404)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'Request not found'
+            }, status=404)
+        messages.error(request, 'Request not found')
+        return redirect('requests:my-requests')
     except Exception as e:
         logger.error(f'Error deleting request: {str(e)}', exc_info=True)
-        return JsonResponse({
-            'success': False,
-            'error': 'Failed to delete request'
-        }, status=500)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'error': 'An error occurred while deleting the request'
+            }, status=500)
+        messages.error(request, 'An error occurred while deleting the request')
+        return redirect('requests:my-requests')
 
 
 def manage_request(request, request_id):

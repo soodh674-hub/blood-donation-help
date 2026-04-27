@@ -513,5 +513,110 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
         });
     });
 });
+
+// Auto-refresh live requests every 30 seconds
+let refreshInterval = 30000; // 30 seconds
+let lastRequestCount = document.querySelectorAll('#live-requests-list .request-card').length;
+
+function refreshLiveRequests() {
+    fetch(window.location.href, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newLiveList = doc.querySelector('#live-requests-list');
+        const currentLiveList = document.querySelector('#live-requests-list');
+        
+        if (newLiveList && currentLiveList) {
+            const newCount = newLiveList.querySelectorAll('.request-card').length;
+            if (newCount !== lastRequestCount) {
+                currentLiveList.innerHTML = newLiveList.innerHTML;
+                lastRequestCount = newCount;
+                
+                // Show notification
+                showRefreshNotification(newCount);
+            }
+        }
+    })
+    .catch(error => {
+        console.log('Auto-refresh failed:', error);
+    });
+}
+
+function showRefreshNotification(count) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3';
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `
+        <i class="bi bi-arrow-clockwise me-2"></i>
+        Live feed updated! ${count} requests available.
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Start auto-refresh
+setInterval(refreshLiveRequests, refreshInterval);
+
+// Also refresh stats
+function refreshStats() {
+    fetch(window.location.href, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Update stat values
+        const statValues = doc.querySelectorAll('.stat-value');
+        const currentStatValues = document.querySelectorAll('.stat-value');
+        
+        statValues.forEach((newStat, index) => {
+            if (currentStatValues[index]) {
+                currentStatValues[index].textContent = newStat.textContent;
+            }
+        });
+    })
+    .catch(error => console.log('Stats refresh failed:', error));
+}
+
+// Refresh stats every 60 seconds
+setInterval(refreshStats, 60000);
+
+// Add live indicator
+const liveIndicator = document.createElement('div');
+liveIndicator.className = 'position-fixed bottom-0 end-0 m-3';
+liveIndicator.style.zIndex = '9999';
+liveIndicator.innerHTML = `
+    <div class="badge bg-success p-2">
+        <i class="bi bi-broadcast me-1"></i>
+        <span id="live-status">LIVE</span>
+        <span class="ms-2 small" id="refresh-timer">30s</span>
+    </div>
+`;
+document.body.appendChild(liveIndicator);
+
+// Update countdown timer
+let countdown = 30;
+setInterval(() => {
+    countdown--;
+    const timerElement = document.getElementById('refresh-timer');
+    if (timerElement) {
+        timerElement.textContent = countdown + 's';
+    }
+    if (countdown <= 0) {
+        countdown = 30;
+    }
+}, 1000);
 </script>
 {% endblock %}

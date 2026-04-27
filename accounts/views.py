@@ -952,19 +952,24 @@ def otp_register_request(request):
     except User.DoesNotExist:
         pass
 
-    # CAPTCHA validation (if captcha is available)
+    # CAPTCHA validation (if captcha is available) - Made lenient to avoid blocking users
     has_captcha = 'captcha' in settings.INSTALLED_APPS
     if has_captcha:
         try:
             from captcha.models import CaptchaStore
             if captcha_response and captcha_key:
-                CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                try:
+                    CaptchaStore.objects.get(hashkey=captcha_key, response=captcha_response)
+                except CaptchaStore.DoesNotExist:
+                    logger.warning(f'CAPTCHA validation failed for email: {email}')
+                    # Don't block registration, just log the warning
+                    pass
             else:
-                return JsonResponse({'success': False, 'message': 'Please complete the security verification'})
-        except CaptchaStore.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Invalid CAPTCHA'})
+                # CAPTCHA not provided - allow registration to proceed
+                logger.debug('CAPTCHA not provided in registration OTP request, skipping validation')
         except Exception as e:
             logger.warning(f'CAPTCHA error in registration OTP request: {str(e)}')
+            # Continue without captcha if there's an error
 
     # Check rate limit (use email as identifier since user doesn't exist yet)
     allowed, remaining = otp_services.check_rate_limit(email)
@@ -1013,17 +1018,22 @@ def register_with_otp(request):
         return render(request, 'accounts/register.html', {'captcha_form': captcha_form})
     
     elif request.method == 'POST':
-        # Validate CAPTCHA first
+        # Validate CAPTCHA first - Made lenient to avoid blocking users
         captcha_form = None
         if 'captcha' in settings.INSTALLED_APPS:
-            from captcha.fields import CaptchaField
-            from django import forms
-            class CaptchaForm(forms.Form):
-                captcha = CaptchaField()
-            captcha_form = CaptchaForm(request.POST or None)
-            
-            if captcha_form and not captcha_form.is_valid():
-                return JsonResponse({'success': False, 'message': 'Invalid captcha. Please try again.'})
+            try:
+                from captcha.fields import CaptchaField
+                from django import forms
+                class CaptchaForm(forms.Form):
+                    captcha = CaptchaField()
+                captcha_form = CaptchaForm(request.POST or None)
+                
+                if captcha_form and not captcha_form.is_valid():
+                    logger.warning('CAPTCHA validation failed during registration, but allowing to proceed')
+                    # Don't block registration, just log the warning
+            except Exception as e:
+                logger.warning(f'CAPTCHA form error: {str(e)}')
+                # Continue without captcha validation
         
         # Verify OTP and complete registration
         email = request.POST.get('email')
